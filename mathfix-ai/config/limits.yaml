@@ -1,0 +1,19 @@
+# MathFix AI: per-user daily limits and the global capacity guard.
+# Admins can change limits live with /setlimit (stored in the database, overrides this file).
+
+reset_timezone: "UTC"        # ONE timezone for everyone: set your main audience's, e.g. "Asia/Kolkata"
+
+per_user_daily:
+  solves: 5                  # raise to 10 once capacity grows (OpenRouter $10 top-up or Plan C)
+  tutor: 15
+
+burst:
+  max_in_flight: 1           # one request at a time per user
+  max_per_minute: 5
+
+wrong_report_refunds_per_day: 3
+
+capacity_guard:
+  soft_at: 0.85              # solve pool 85 % used -> shrink limits for the rest of the day
+  soft_limits: {solves: 3, tutor: 8}
+  hard_at: 0.98              # pool 98 % used -> pause new solves (cache hits + tutor still work)

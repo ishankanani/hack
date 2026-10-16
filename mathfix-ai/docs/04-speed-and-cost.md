@@ -24,7 +24,7 @@
 | **Solve** (Groq gpt-oss-120b) | **1–3 s** | Groq is extremely fast at generating tokens; low reasoning for easy problems; ≤ 12 steps |
 | SymPy verification | 10–300 ms | Process pool, 2 s hard timeout |
 | Send answer text | 100–200 ms | Sent as soon as verified, without waiting for the image |
-| Render + send image | 300–800 ms | Runs **in parallel** after the text is sent |
+| Render + send image | 0 ms (not on the answer path) | Only when the student taps 🖼; ~0.3 s render, then Telegram's file id is reused |
 | Second opinion (only 10–20 % of solves) | +1–3 s | User sees "🔁 Double-checking…" |
 
 ### Speed techniques, ranked by impact
@@ -40,7 +40,8 @@
 6. **Right-sized reasoning.** `reasoning_effort: low` for easy problems and `medium` only for calculus, trigonometry, proofs
    or long problems. High is only for second opinions.
 7. **Small images.** ≤ 1280 px, JPEG quality 85, which means fewer image tokens and a faster upload.
-8. **Send text first, image second.** The student starts reading while the image renders.
+8. **Handwritten image on demand.** It's drawn only when the student taps 🖼, and the Telegram file id is stored so
+   later taps (by anyone) are instant.
 9. **Persistent HTTP connections** to each provider (one shared client, keep-alive), saving 100–300 ms per call.
 10. **Skip a busy provider *before* calling it.** Our own rate-limit counters know when a quota is nearly gone, so we
     never wait on a 429 and retry.

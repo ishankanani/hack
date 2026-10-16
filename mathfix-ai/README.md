@@ -1,5 +1,8 @@
 # MathFix AI: Launch Plan & Documentation
 
+> **The Plan A bot is built.** Code is in [`mathfix/`](mathfix/), with 77 tests. To run it, see
+> [Run the bot](#run-the-bot). Changes after review are under [Decisions after review](#decisions-after-review).
+
 > Snap or type any maths problem and get the correct answer, step-by-step explanation,
 > a handwritten-style solution image, and a patient AI tutor.
 
@@ -50,7 +53,7 @@ free, instant and exact.
 | 6 | Check the answer is correct | Code (**SymPy** verification) | – |
 | 7 | Second opinion, *only* if the check fails or the problem is hard | **Groq · Qwen** (different model family) | Groq `gpt-oss-120b` (high reasoning) |
 | 8 | Telegram-friendly text (LaTeX → x², √, π) | Code | – |
-| 9 | **Handwritten-style solution image** | Code (**Pillow + matplotlib + free handwriting font**), *not* an image AI | plain-text fallback |
+| 9 | **Handwritten-style solution image**, only when the student taps 🖼 | Code (**Pillow + matplotlib + free handwriting font**), *not* an image AI | plain-text fallback |
 | 10 | **Tutor chat** (hints, "why?", next step) | **Groq · `openai/gpt-oss-20b`** (very fast) | Cloudflare small model → OpenRouter `:free` |
 
 Model IDs, settings, prompts and the JSON format are in [docs/03-ai-models.md](docs/03-ai-models.md).
@@ -64,8 +67,9 @@ Model IDs, settings, prompts and the JSON format are in [docs/03-ai-models.md](d
 
 ### 3. How it stays fast (targets: text ≈ 2–4 s, photo ≈ 4–7 s, cached < 0.5 s)
 Groq (one of the fastest AI APIs) for solving and tutoring · always-on server with a webhook (no cold starts) · instant
-"typing…"/draft feedback · images shrunk before upload · cache · SymPy instant path · answer text sent first, image
-rendered in parallel · per-provider rate limiters so we skip a provider *before* it returns 429.
+"typing…"/draft feedback · images shrunk before upload · cache · SymPy instant path · handwritten image drawn **only
+when the student taps 🖼** (and reused after the first time) · per-provider rate limiters so we skip a provider
+*before* it returns 429.
 See [docs/04-speed-and-cost.md](docs/04-speed-and-cost.md).
 
 ### 4. Daily limit per user (launch values for Plan A, changeable live without redeploy)
@@ -103,6 +107,50 @@ See [docs/06-weekend-launch-plan.md](docs/06-weekend-launch-plan.md).
    the terms of service. It can get every key banned at once.
 
 ---
+
+## Run the bot
+
+```bash
+cd mathfix-ai
+python3 -m venv .venv && .venv/bin/pip install -r requirements-dev.txt
+cp .env.example .env              # fill in TELEGRAM_BOT_TOKEN, GROQ_API_KEY, CF_ACCOUNT_ID, CF_AI_API_TOKEN, ADMIN_USER_IDS
+.venv/bin/python -m pytest -q     # 77 tests, no keys needed
+.venv/bin/python -m scripts.smoke_test   # checks every free model with YOUR keys (uses a little quota)
+.venv/bin/python -m mathfix.main  # MODE=polling: talk to @mathfixbot from your phone right away
+```
+On the server, set `MODE=webhook` and use [`deploy/mathfix.service`](deploy/mathfix.service) plus the Cloudflare Tunnel
+from [docs/07](docs/07-deployment-and-ops.md). Before launch, fill in the two `"<...>"` model ids in
+[`config/models.yaml`](config/models.yaml) (the Groq Qwen id and, optionally, OpenRouter free models). Until then
+they're simply skipped.
+
+| Folder | What's inside |
+|---|---|
+| `mathfix/ai/` | `router.py` (fallback chains, retries, cooldowns), `budget.py` (RPM/RPD/TPM/TPD + Cloudflare neurons per model), `prompts.py` |
+| `mathfix/core/` | `pipeline.py` (cache → read photo → SymPy quick path → solve → verify → second opinion), `limits.py`, `tutor.py` |
+| `mathfix/mathcheck/` | SymPy verification, quick answers, safe parsing, process sandbox with timeouts, LaTeX → Unicode |
+| `mathfix/render/` | handwritten-style image (Kalam font, SIL Open Font License) |
+| `mathfix/bot/` | Telegram handlers, buttons, texts, admin commands |
+| `config/` | `models.yaml` (which model does what, and free limits), `limits.yaml` (daily limits, capacity guard) |
+
+## Decisions after review
+
+**1. The handwritten image is made only when the student taps 🖼.** The answer arrives faster, and no CPU is spent
+on images nobody opens. The first tap renders it in about 0.3 s. Later taps, by anyone, reuse Telegram's stored copy instantly.
+
+**2. No multiple accounts rotated per request.** Groq, OpenRouter and Google set their free limits **per account or
+organisation**, and their terms forbid creating extra accounts to get around those limits. If one account is flagged,
+providers typically ban all the linked accounts and keys, and the bot goes down for everyone. The same goal (more free
+capacity, used efficiently) is met legitimately:
+- **every model has its own free bucket**, and the router spreads requests across all of them (Groq gpt-oss-120b, Qwen
+  and gpt-oss-20b; Cloudflare Llama 4 Scout and gpt-oss-120b; OpenRouter free models),
+- the router **checks each bucket before calling** (no wasted 429s) and moves to the next model when one is full,
+- a **cache**, the **SymPy quick path**, and **one-time image rendering** remove AI calls entirely where possible,
+- if that isn't enough, the cheapest real boosts are the one-time $10 OpenRouter top-up, or Plan C at about $0.001 per solve.
+
+**3. Gemini is not used for 18+ users either.** Google's clause is about the **app**: an API client "directed towards or
+likely to be accessed by" under-18s. MathFix as a whole is a student app, so routing adults to Gemini inside it doesn't
+change that. Age would also be self-declared and easy to fake. If you want Gemini's capacity, the legitimate route is a
+**separate adults-only product** (e.g. for university students) with its own bot and terms, or ask Google directly.
 
 ## Documentation index
 

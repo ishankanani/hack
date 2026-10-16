@@ -1,0 +1,98 @@
+# MathFix AI: model routing (Plan A, $0)
+#
+# Every step lists models in order. The router uses the first one that is
+#   enabled (API key set, id filled in), has budget left today, has room in the
+#   current minute, and is not cooling down after an error.
+# A model whose id still contains "<" is disabled: fill it in from your console.
+#
+# Limits = YOUR console numbers x 0.9. The numbers below are October 2026 reports;
+# check Groq console -> Settings -> Limits and the Cloudflare Workers AI dashboard.
+
+providers:
+  groq:
+    base_url: https://api.groq.com/openai/v1
+    api_key_env: GROQ_API_KEY
+  cloudflare:
+    # OpenAI-compatible Workers AI endpoint; {CF_ACCOUNT_ID} is filled from the env var
+    base_url: https://api.cloudflare.com/client/v4/accounts/{CF_ACCOUNT_ID}/ai/v1
+    api_key_env: CF_AI_API_TOKEN
+  openrouter:
+    base_url: https://openrouter.ai/api/v1
+    api_key_env: OPENROUTER_API_KEY
+
+models:
+  # --- photo reading (vision) ---
+  cf_llama4_scout:
+    provider: cloudflare
+    id: "@cf/meta/llama-4-scout-17b-16e-instruct"
+    vision: true
+    json_mode: false
+    max_tokens: 400
+    # Cloudflare bills "neurons": listed $0.27 / $0.85 per M tokens at $0.011 per 1,000 neurons
+    neurons_per_m_tokens: {input: 24545, output: 77273}
+    limits: {neurons_per_day: 9000}
+
+  or_free_vision:
+    provider: openrouter
+    id: "<pick a :free vision model, e.g. from openrouter.ai/models?max_price=0>"
+    vision: true
+    json_mode: false
+    max_tokens: 400
+    limits: {rpm: 18, rpd: 45}
+
+  # --- solving ---
+  groq_oss_120b:
+    provider: groq
+    id: openai/gpt-oss-120b
+    json_mode: true
+    reasoning_effort: true      # accepts reasoning_effort: low | medium | high
+    max_tokens: 2500
+    limits: {rpm: 27, rpd: 900, tpm: 7200, tpd: 180000}
+
+  groq_qwen:
+    provider: groq
+    id: "<current free Qwen model id from the Groq console>"
+    json_mode: true
+    max_tokens: 2500
+    limits: {rpm: 27, rpd: 900, tpm: 7200, tpd: 180000}
+
+  cf_oss_120b:
+    provider: cloudflare
+    id: "@cf/openai/gpt-oss-120b"
+    json_mode: false
+    max_tokens: 2500
+    neurons_per_m_tokens: {input: 31818, output: 68182}   # listed $0.35 / $0.75 per M tokens
+    limits: {neurons_per_day: 9000}                        # shares the 10,000/day pool with Llama 4 Scout
+
+  or_free_text:
+    provider: openrouter
+    id: "<pick a :free reasoning model>"
+    json_mode: false
+    max_tokens: 2500
+    limits: {rpm: 18, rpd: 45}
+
+  # --- tutor ---
+  groq_oss_20b:
+    provider: groq
+    id: openai/gpt-oss-20b
+    reasoning_effort: true
+    max_tokens: 600
+    limits: {rpm: 27, rpd: 900, tpm: 7200, tpd: 180000}
+
+# Cloudflare models share ONE daily neuron pool per account
+shared_pools:
+  cloudflare_neurons: {models: [cf_llama4_scout, cf_oss_120b], neurons_per_day: 9000}
+
+steps:
+  read_photo: [cf_llama4_scout, or_free_vision]
+  solve: [groq_oss_120b, groq_qwen, cf_oss_120b, or_free_text]
+  escalate: [groq_qwen, groq_oss_120b, cf_oss_120b]
+  tutor: [groq_oss_20b, groq_oss_120b, or_free_text]
+
+timeouts: {read_photo: 12, solve: 20, escalate: 25, tutor: 10}
+
+# rough tokens per call, used to check budgets BEFORE calling
+est_tokens: {read_photo: 1800, solve: 1500, escalate: 2500, tutor: 700}
+
+# when every model is only out of PER-MINUTE room, wait this long before giving up
+queue_wait_seconds: 30

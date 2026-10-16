@@ -39,7 +39,7 @@ Student sends photo
   → bot instantly shows "typing…" and a draft/placeholder: "🔍 Reading your question…"
   → (2–6 s) placeholder becomes: "🧮 Solving…"
   → Answer message (text):   I read · Answer · Steps · buttons
-  → Handwritten image (photo) follows ~0.5 s later
+  → Student taps [🖼 Handwritten image] → image arrives in ~0.5 s (drawn once, then reused for everyone)
 ```
 
 ### B. Typed question
@@ -102,10 +102,11 @@ shows proper typeset maths.
 
 ✔️ Checked: both answers make the equation true.
 
+[🖼 Handwritten image]
 [💡 Hint] [➡️ Next step] [❓ Why?]
 [🧒 Explain simpler] [⚠️ Wrong answer?]
 ```
-Then the **handwritten-style image** of the same solution, with a small `mathfix.ai` footer. Every shared image
+Tapping 🖼 sends the **handwritten-style image** of the same solution, with a small `mathfix.ai` footer. Every shared image
 is free marketing.
 
 **Rules**

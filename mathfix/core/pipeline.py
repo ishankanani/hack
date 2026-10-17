@@ -59,6 +59,18 @@ def preprocess_image(data: bytes, max_side: int = 1024) -> tuple[bytes, str]:
     return out.getvalue(), str(imagehash.phash(img))
 
 
+def cache_key(text: str, lang: str = "en") -> str:
+    """Same question, same explanation language -> same cached answer."""
+    key = problem_key(text)
+    return key if lang in ("", "en") else f"{key}:{lang}"
+
+
+def _system(grade: str | None, lang: str) -> str:
+    student, language = prompts.student_context(grade, lang)
+    # SOLVE_SYSTEM contains literal JSON braces, so fill it with replace(), not format()
+    return prompts.SOLVE_SYSTEM.replace("{student}", student).replace("{language}", language)
+
+
 def _same_answer(a: str, b: str) -> bool:
     norm = lambda s: re.sub(r"[\s$\\{}]|text|or|and|,", "", (s or "").lower())  # noqa: E731
     return bool(a) and norm(a) == norm(b)
@@ -71,8 +83,11 @@ class Pipeline:
         self.sandbox = sandbox
 
     # ---------------------------------------------------------------- photo
-    async def solve_photo(self, image: bytes, lang: str = "English", progress: Progress = _no_progress) -> Outcome:
+    async def solve_photo(self, image: bytes, progress: Progress = _no_progress, *, grade: str | None = None,
+                          lang: str = "en") -> Outcome:
         jpeg, phash = await asyncio.to_thread(preprocess_image, image)
+        if lang not in ("", "en"):
+            phash = f"{phash}:{lang}"               # cached explanations are per language
         cached = await self.repo.get_image(phash)
         if cached:
             row = await self.repo.get_solution(cached["solution_id"])
@@ -104,18 +119,18 @@ class Pipeline:
         if not text.strip():
             return Outcome(status="unreadable")
         await progress("read", text)
-        out = await self.solve_text(text, lang, progress, latex=reading.problem_latex)
+        out = await self.solve_text(text, progress, latex=reading.problem_latex, grade=grade, lang=lang)
         out.other_problems = problems[1:]
         if out.status == "solved" and out.solution_id:
             await self.repo.put_image(phash, out.solution_id, problems)
         return out
 
     # ---------------------------------------------------------------- text
-    async def solve_text(self, text: str, lang: str = "English", progress: Progress = _no_progress,
-                         latex: str = "") -> Outcome:
+    async def solve_text(self, text: str, progress: Progress = _no_progress, latex: str = "", *,
+                         grade: str | None = None, lang: str = "en") -> Outcome:
         t0 = time.monotonic()
         text = text.strip()[:2000]
-        key = problem_key(text)
+        key = cache_key(text, lang)
         row = await self.repo.find_solution(key)
         if row:
             return self._from_row(row)
@@ -125,7 +140,7 @@ class Pipeline:
         user = prompts.SOLVE_USER.format(problem=text)
         if quick:
             user += prompts.KNOWN_ANSWER.format(answer=quick["answer_text"])
-        messages = [{"role": "system", "content": prompts.SOLVE_SYSTEM.replace("{language}", lang)},
+        messages = [{"role": "system", "content": _system(grade, lang)},
                     {"role": "user", "content": user}]
         await progress("solve", "")
         try:
@@ -151,7 +166,7 @@ class Pipeline:
                         or (hard and status == "unchecked" and not quick))
         if needs_second:
             await progress("double_check", "")
-            sol, status, model = await self._second_opinion(text, lang, sol, status, model)
+            sol, status, model = await self._second_opinion(text, grade, lang, sol, status, model)
 
         sid = await self.repo.add_solution(
             problem_key=key, problem_text=text, problem_latex=latex, topic=sol.topic, difficulty=sol.difficulty,
@@ -160,9 +175,10 @@ class Pipeline:
         return Outcome(status="solved", solution_id=sid, solution=sol, verified=status, problem_text=text,
                        problem_latex=latex, model=model, latency_ms=int((time.monotonic() - t0) * 1000))
 
-    async def _second_opinion(self, text: str, lang: str, sol: Solution, status: str, model: str):
+    async def _second_opinion(self, text: str, grade: str | None, lang: str, sol: Solution, status: str,
+                              model: str):
         reason = "verification failed" if status == "failed" else "low confidence or not machine-checkable"
-        messages = [{"role": "system", "content": prompts.SOLVE_SYSTEM.replace("{language}", lang)},
+        messages = [{"role": "system", "content": _system(grade, lang)},
                     {"role": "user", "content": prompts.ESCALATE_USER.format(
                         problem=text, previous=sol.final_answer, reason=reason)}]
         try:

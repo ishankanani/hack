@@ -132,6 +132,24 @@ they're simply skipped.
 | `mathfix/bot/` | Telegram handlers, buttons, texts, admin commands |
 | `config/` | `models.yaml` (which model does what, and free limits), `limits.yaml` (daily limits, capacity guard) |
 
+## Premium experience (built)
+
+| What | How it works |
+|---|---|
+| **Onboarding** | `/start` asks 2 quick questions: class (6–8, 9–10, 11–12, college, parent/teacher) and language (English or Hinglish). Every explanation, hint and tutor reply is then pitched at that level |
+| **Answer layout** | Topic header → question → **bold answer** → 💡 key idea → numbered steps (collapsible) → ⚠️ common mistake → verified badge → 🔥 streak and free solves left |
+| **Solution image** | Brand header with logo, maths grid paper, faint logo watermark, numbered step badges, key-idea note, green answer box with a ✓ VERIFIED stamp, and a footer with a **QR code** + logo. Symbols like √ π ≤ ≠ ∞ use a fallback font, so no more boxes |
+| **QR & sharing** | The QR (and the 📤 Share button) opens that exact solution in the bot for anyone. Links are signed, so people can't browse other students' solutions. New users who arrive this way get onboarded |
+| **Invites** | `/invite` gives a personal link. When a friend solves their first problem, the inviter gets +3 and the friend +2 solves that day |
+| **Personal touches** | `/me` profile with streak, best streak, problems solved, friends invited and today's usage. Milestone messages at 3/7/14/30-day streaks and 10/25/50/100 solves |
+| **Plans** | Free plan with daily limits for everyone now. `premium` is already wired in for later (`/setplan`, `/setlimit premium solves 50`) |
+
+**Logo & brand:** the official MathFix logo is in [`brand/`](brand/): `logo-mark.png`, `logo-full.png` and
+`telegram-profile.png` (upload that one in BotFather with `/setuserpic`). The image renderer uses the transparent copies
+in `mathfix/render/assets/` (`logo.png` for the mark, `logo_full.png` for the full logo); replace those files to update
+the logo everywhere. Brand colours sampled from the logo: cyan `#01E3FD` → blue `#006EFC` → royal `#003DE3`,
+navy `#051744`, slate `#525E77`.
+
 ## Decisions after review
 
 **1. The handwritten image is made only when the student taps 🖼.** The answer arrives faster, and no CPU is spent

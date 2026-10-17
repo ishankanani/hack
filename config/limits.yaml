@@ -3,9 +3,17 @@
 
 reset_timezone: "UTC"        # ONE timezone for everyone: set your main audience's, e.g. "Asia/Kolkata"
 
-per_user_daily:
-  solves: 5                  # raise to 10 once capacity grows (OpenRouter $10 top-up or Plan C)
-  tutor: 15
+# Daily allowance per plan. Everyone is on "free" for now; "premium" is ready for later and can
+# be given to testers with /setplan <user_id> premium. /setlimit changes the free plan live.
+plans:
+  free: {solves: 5, tutor: 15}         # raise to 10 once capacity grows (OpenRouter $10 top-up or Plan C)
+  premium: {solves: 50, tutor: 200}
+
+# Invite friends: both sides get extra solves for that day when the friend solves their first problem
+referral:
+  inviter_bonus_solves: 3
+  friend_bonus_solves: 2
+  max_rewards_per_day: 5
 
 burst:
   max_in_flight: 1           # one request at a time per user

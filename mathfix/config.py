@@ -1,6 +1,7 @@
 """Settings from environment variables and the YAML config files."""
 from __future__ import annotations
 
+import hashlib
 import os
 from dataclasses import dataclass, field
 from datetime import datetime, time, timedelta, timezone
@@ -38,6 +39,8 @@ class Settings:
     log_level: str
     models: dict = field(default_factory=dict)
     limits: dict = field(default_factory=dict)
+    bot_username: str = "mathfixbot"         # replaced with the real one from Telegram at startup
+    share_secret: str = ""                   # signs shared-solution links (QR codes)
 
     @property
     def reset_tz(self) -> ZoneInfo:
@@ -75,4 +78,7 @@ def load_settings(env_file: Path | None = None) -> Settings:
         log_level=os.environ.get("LOG_LEVEL", "INFO"),
         models=models,
         limits=limits,
+        bot_username=os.environ.get("BOT_USERNAME", "mathfixbot").lstrip("@"),
+        share_secret=os.environ.get("SHARE_SECRET") or hashlib.sha256(
+            ("mathfix-share:" + os.environ.get("TELEGRAM_BOT_TOKEN", "")).encode()).hexdigest(),
     )

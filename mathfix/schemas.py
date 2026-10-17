@@ -66,6 +66,8 @@ class Solution(BaseModel):
     final_answer_latex: str = ""
     check: Check = Field(default_factory=Check)
     confidence: float = 0.8
+    key_idea: str = ""        # the one idea to remember, shown in a highlighted note
+    tip: str = ""             # a common mistake to avoid
 
     @field_validator("steps")
     @classmethod

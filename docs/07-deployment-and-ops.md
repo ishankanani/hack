@@ -66,7 +66,7 @@ curl -s "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/getWebhookInfo"   # che
 | `/setname` | `MathFix AI` |
 | `/setabouttext` (≤ 120 chars) | `Snap or type a maths problem → answer, steps, handwritten notes & an AI tutor. Free daily. mathfix.ai` |
 | `/setdescription` (≤ 512 chars, shown before Start) | see below |
-| `/setuserpic` | 512×512 logo (simple, readable at small size) |
+| `/setuserpic` | upload [`brand/telegram-profile.png`](../brand/telegram-profile.png) (the MathFix "M" on white, made for Telegram's round avatar) |
 | `/setcommands` | see below |
 | `/setjoingroups` | **Disable** (private chats only at launch) |
 | `/setprivacy` | Enable (default) |
@@ -88,9 +88,12 @@ Privacy: mathfix.ai/privacy
 ```
 start - Start MathFix AI
 solve - Solve a typed problem (or just send a photo)
+me - Your profile, streak and free solves
+invite - Invite friends, get extra solves
 tutor - Turn tutor mode on or off
 usage - Free solves left today
 lang - Change explanation language
+class - Change your class
 help - Tips for the best results
 feedback - Tell us what to improve
 privacy - How we handle your data

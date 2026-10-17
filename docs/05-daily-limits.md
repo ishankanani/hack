@@ -9,7 +9,8 @@ Daily limits keep it fair, so one heavy user can't use up the bot for everyone e
 |---|---|---|
 | **Solves** (photo or typed) | **5** at launch (Plan A) → 10+ when capacity grows | One unit per question solved |
 | **Tutor messages** (Hint / Next step / Why? / typed follow-ups) | **15** at launch → 20+ later | Short replies, so they cost less capacity |
-| Bonus solves (referrals, later) | +2 per friend who solves their first problem, max +10 | Not at launch |
+| Invite bonus | Inviter **+3** and friend **+2** solves that day, when the friend solves their first problem (inviter rewarded max 5 times a day) | `/invite` |
+| Plans | Everyone is **free**. `premium` (50 solves / 200 tutor) is ready for later; give it to testers with `/setplan <user_id> premium` | `plans:` in `config/limits.yaml` |
 
 All values live in `config/limits.yaml` and can be changed **live** with an admin command (no redeploy).
 

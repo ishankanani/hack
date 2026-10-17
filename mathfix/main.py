@@ -75,6 +75,10 @@ async def build() -> tuple[Settings, Bot, Dispatcher, dict]:
     deps = dict(settings=settings, repo=repo, sandbox=sandbox, ai=ai, limits=limits,
                 pipeline=Pipeline(ai, repo, sandbox), tutor=Tutor(ai, repo))
     bot = Bot(settings.bot_token, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
+    try:
+        settings.bot_username = (await bot.me()).username or settings.bot_username   # for QR and share links
+    except Exception:  # noqa: BLE001 - the bot still works; links use BOT_USERNAME
+        log.warning("could not read the bot username from Telegram; using %s", settings.bot_username)
     dp = Dispatcher(**deps)
     dp.include_router(admin.setup(settings.admin_user_ids))
     dp.include_router(handlers.router)

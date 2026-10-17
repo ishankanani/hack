@@ -15,10 +15,13 @@ class Tutor:
         self.router = router
         self.repo = repo
 
-    async def reply(self, user_id: int, solution_row: dict, action: str, text: str = "", step: int = 1) -> str:
+    async def reply(self, user_id: int, solution_row: dict, action: str, text: str = "", step: int = 1, *,
+                    grade: str | None = None, lang: str = "en") -> str:
         sol = Solution.model_validate_json(solution_row["solution_json"])
         steps = "\n".join(f"{i}. {s.say} {latex_to_text(s.math)}".strip() for i, s in enumerate(sol.steps, 1))
-        system = prompts.TUTOR_SYSTEM.format(problem=solution_row["problem_text"], steps=steps,
+        student, language = prompts.student_context(grade, lang)
+        system = prompts.TUTOR_SYSTEM.format(student=student, language=language,
+                                             problem=solution_row["problem_text"], steps=steps,
                                              answer=sol.final_answer)
         if action == "ask":
             question = text.strip()[:1000]

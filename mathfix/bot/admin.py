@@ -32,6 +32,7 @@ async def cmd_stats(message: Message, repo: Repo, limits: Limits, ai: AIRouter):
         f"solves: {solved}  cache hits: {cached} ({100 * cached // max(1, solved + cached)}%)",
         f"tutor msgs: {n('tutor_msg')}  images: {n('image_rendered')} (+{n('image_cached')} reused)",
         f"limit hits: {n('limit_hit')}  capacity hits: {n('capacity_hit')}  wrong reports: {n('wrong_report')}",
+        f"shared opens: {n('shared_open')}  referrals rewarded: {n('ref_reward')}  invites opened: {n('invite_opened')}",
         "verification: " + ", ".join(f"{k} {v['n']} (avg {v['avg_ms']} ms)" for k, v in st["solutions"].items()),
         f"guard: {await limits.guard_mode()}  solve pool used: {ai.pool_used('solve'):.0%}",
         "",
@@ -47,13 +48,29 @@ async def cmd_stats(message: Message, repo: Repo, limits: Limits, ai: AIRouter):
     await message.answer("\n".join(lines), parse_mode=None)
 
 
+PLANS = ("free", "premium")
+
+
 @router.message(Command("setlimit"))
 async def cmd_setlimit(message: Message, command: CommandObject, repo: Repo):
     parts = (command.args or "").split()
+    plan = parts.pop(0) if parts and parts[0] in PLANS else "free"
     if len(parts) != 2 or parts[0] not in ("solves", "tutor") or not parts[1].isdigit():
-        return await message.answer("Usage: /setlimit solves 8   or   /setlimit tutor 15", parse_mode=None)
-    await repo.set_setting(f"limit_{parts[0]}", parts[1])
-    await message.answer(f"✅ Daily {parts[0]} limit is now {parts[1]}")
+        return await message.answer("Usage: /setlimit solves 8   ·   /setlimit tutor 15   ·   "
+                                    "/setlimit premium solves 50", parse_mode=None)
+    await repo.set_setting(f"limit_{parts[0]}" if plan == "free" else f"limit_{plan}_{parts[0]}", parts[1])
+    await message.answer(f"✅ Daily {parts[0]} limit for the {plan} plan is now {parts[1]}")
+
+
+@router.message(Command("setplan"))
+async def cmd_setplan(message: Message, command: CommandObject, repo: Repo):
+    parts = (command.args or "").split()
+    if len(parts) != 2 or not parts[0].isdigit() or parts[1] not in PLANS:
+        return await message.answer("Usage: /setplan <user_id> free|premium", parse_mode=None)
+    if not await repo.get_user(int(parts[0])):
+        return await message.answer("User not found (they need to /start the bot first)", parse_mode=None)
+    await repo.set_user_flag(int(parts[0]), "plan", parts[1])
+    await message.answer(f"✅ {parts[0]} is now on the {parts[1]} plan")
 
 
 @router.message(Command("guard"))
@@ -104,6 +121,7 @@ async def cmd_user(message: Message, command: CommandObject, repo: Repo, limits:
     st = await limits.status(int(arg))
     await message.answer(
         f"{u['user_id']} @{u['username']} since {u['created_at'][:10]} source={u['start_source']} "
-        f"banned={u['is_banned']} tutor_mode={u['tutor_mode']}\n"
+        f"banned={u['is_banned']} tutor_mode={u['tutor_mode']} plan={u['plan']} class={u['grade']} "
+        f"lang={u['explain_lang']} solved={u['total_solves']} streak={u['streak']} ref_by={u['referred_by']}\n"
         f"solves left {st['solves_left']}/{st['solves_limit']}, tutor left {st['tutor_left']}/{st['tutor_limit']}",
         parse_mode=None)

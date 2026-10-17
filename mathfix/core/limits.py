@@ -58,11 +58,14 @@ class Limits:
             return "soft"
         return "normal"
 
-    async def base_limit(self, kind: str) -> int:
-        override = await self.repo.get_setting(f"limit_{kind}")
-        if override is not None:
-            return int(override)
-        return int(self.cfg.get("per_user_daily", {}).get(kind, 0))
+    async def base_limit(self, kind: str, plan: str = "free") -> int:
+        keys = [f"limit_{plan}_{kind}"] + ([f"limit_{kind}"] if plan == "free" else [])
+        for key in keys:                                  # live overrides from /setlimit
+            override = await self.repo.get_setting(key)
+            if override is not None:
+                return int(override)
+        plans = self.cfg.get("plans") or {"free": self.cfg.get("per_user_daily", {})}
+        return int((plans.get(plan) or plans.get("free") or {}).get(kind, 0))
 
     async def effective_limit(self, user_id: int, kind: str) -> int:
         if user_id in self.s.admin_user_ids:
@@ -71,7 +74,7 @@ class Limits:
         if user and user["is_banned"]:
             return 0
         mode = await self.guard_mode()
-        limit = await self.base_limit(kind)
+        limit = await self.base_limit(kind, (user or {}).get("plan") or "free")
         if mode == "soft":
             limit = min(limit, int(self.cfg["capacity_guard"]["soft_limits"].get(kind, limit)))
         if mode == "hard" and kind == "solves":
@@ -104,6 +107,8 @@ class Limits:
         u = await self.repo.usage(user_id, self.s.user_day())
         solves = await self.effective_limit(user_id, "solves")
         tutor = await self.effective_limit(user_id, "tutor")
+        user = await self.repo.get_user(user_id) or {}
         return {"solves_left": max(0, solves - u["solves_used"]), "solves_limit": solves,
+                "plan": user.get("plan") or "free", "bonus": u.get("bonus_solves", 0),
                 "tutor_left": max(0, tutor - u["tutor_used"]), "tutor_limit": tutor,
                 "reset_in_s": self.s.seconds_to_reset(), "mode": await self.guard_mode()}

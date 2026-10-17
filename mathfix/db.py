@@ -98,6 +98,22 @@ CREATE TABLE IF NOT EXISTS settings (
 );
 """
 
+# Columns added after the first release. init() adds any that are missing, so an existing
+# data/mathfix.db upgrades in place without losing data.
+USER_COLUMNS = {
+    "grade": "TEXT",                         # class band chosen at onboarding, e.g. "9-10"
+    "explain_lang": "TEXT DEFAULT 'en'",     # en | hinglish
+    "plan": "TEXT DEFAULT 'free'",           # free | premium (premium not sold yet)
+    "onboarded": "INTEGER DEFAULT 0",
+    "referred_by": "INTEGER",
+    "ref_rewarded": "INTEGER DEFAULT 0",     # referrer already rewarded for this user
+    "total_solves": "INTEGER DEFAULT 0",
+    "streak": "INTEGER DEFAULT 0",
+    "best_streak": "INTEGER DEFAULT 0",
+    "last_solve_day": "TEXT",
+}
+PROFILE_FIELDS = {"grade", "explain_lang", "plan", "onboarded", "tutor_mode", "is_banned"}
+
 # column names are fixed here, never taken from user input
 _KIND_COLS = {"solves": ("solves_used", "solves_reserved"), "tutor": ("tutor_used", "tutor_reserved")}
 
@@ -117,6 +133,11 @@ class Repo:
         self.db = await aiosqlite.connect(self.path)
         self.db.row_factory = aiosqlite.Row
         await self.db.executescript(SCHEMA)
+        cur = await self.db.execute("PRAGMA table_info(users)")
+        have = {r[1] for r in await cur.fetchall()}
+        for col, decl in USER_COLUMNS.items():
+            if col not in have:
+                await self.db.execute(f"ALTER TABLE users ADD COLUMN {col} {decl}")
         # crash recovery: reservations never survive a restart
         await self.db.execute("UPDATE usage_daily SET solves_reserved = 0, tutor_reserved = 0")
         await self.db.commit()
@@ -153,11 +174,54 @@ class Repo:
         row = await cur.fetchone()
         return dict(row) if row else None
 
-    async def set_user_flag(self, user_id: int, column: str, value: int) -> None:
-        if column not in ("tutor_mode", "is_banned"):
+    async def set_user_flag(self, user_id: int, column: str, value) -> None:
+        if column not in PROFILE_FIELDS:
             raise ValueError(column)
         await self.db.execute(f"UPDATE users SET {column} = ? WHERE user_id = ?", (value, user_id))
         await self.db.commit()
+
+    async def set_referrer(self, user_id: int, referrer_id: int) -> bool:
+        """Only for brand-new users, never self-referral, never overwritten."""
+        if user_id == referrer_id:
+            return False
+        cur = await self.db.execute(
+            "UPDATE users SET referred_by = ? WHERE user_id = ? AND referred_by IS NULL AND total_solves = 0"
+            " AND EXISTS (SELECT 1 FROM users WHERE user_id = ?)", (referrer_id, user_id, referrer_id))
+        await self.db.commit()
+        return cur.rowcount == 1
+
+    async def record_solve(self, user_id: int, day: str, yesterday: str) -> dict:
+        """Update total solves and the daily streak. Returns the user's new numbers."""
+        u = await self.get_user(user_id) or {}
+        last = u.get("last_solve_day")
+        streak = u.get("streak") or 0
+        if last != day:
+            streak = streak + 1 if last == yesterday else 1
+        best = max(u.get("best_streak") or 0, streak)
+        await self.db.execute(
+            "UPDATE users SET total_solves = total_solves + 1, streak = ?, best_streak = ?, last_solve_day = ?"
+            " WHERE user_id = ?", (streak, best, day, user_id))
+        await self.db.commit()
+        return {"total_solves": (u.get("total_solves") or 0) + 1, "streak": streak, "best_streak": best,
+                "first_solve": not (u.get("total_solves") or 0), "new_day": last != day}
+
+    async def claim_referral(self, user_id: int) -> int | None:
+        """Mark this user's referral as rewarded (once). Returns the referrer id to reward, if any."""
+        cur = await self.db.execute(
+            "UPDATE users SET ref_rewarded = 1 WHERE user_id = ? AND referred_by IS NOT NULL AND ref_rewarded = 0"
+            " RETURNING referred_by", (user_id,))
+        row = await cur.fetchone()
+        await self.db.commit()
+        return row[0] if row else None
+
+    async def count_events(self, user_id: int, name: str, since_iso: str) -> int:
+        cur = await self.db.execute("SELECT COUNT(*) FROM events WHERE user_id = ? AND name = ? AND created_at >= ?",
+                                    (user_id, name, since_iso))
+        return (await cur.fetchone())[0]
+
+    async def referral_count(self, user_id: int) -> int:
+        cur = await self.db.execute("SELECT COUNT(*) FROM users WHERE referred_by = ? AND ref_rewarded = 1", (user_id,))
+        return (await cur.fetchone())[0]
 
     async def delete_user(self, user_id: int) -> None:
         for table in ("users", "usage_daily", "tutor_turns", "events"):

@@ -17,6 +17,7 @@ from mathfix.core.tutor import Tutor
 from .conftest import FakeAI, InlineSandbox
 
 USER = User(id=1, is_bot=False, first_name="Asha", username="asha", language_code="en")
+FRIEND = User(id=2, is_bot=False, first_name="Ravi", username="ravi", language_code="en")
 CHAT = Chat(id=1, type="private")
 NOW = datetime.now(timezone.utc)
 
@@ -73,52 +74,131 @@ async def env(settings, repo):
 _uid = iter(range(1, 10**6))
 
 
-async def send(dp, bot, text):
-    msg = Message(message_id=next(_uid), date=NOW, chat=CHAT, from_user=USER, text=text)
+async def send(dp, bot, text, user=USER):
+    msg = Message(message_id=next(_uid), date=NOW, chat=Chat(id=user.id, type="private"), from_user=user, text=text)
     await dp.feed_update(bot, Update(update_id=next(_uid), message=msg))
 
 
-async def tap(dp, bot, data, message_text="answer"):
-    msg = Message(message_id=next(_uid), date=NOW, chat=CHAT, text=message_text)
-    call = CallbackQuery(id=str(next(_uid)), from_user=USER, chat_instance="c", message=msg, data=data)
+async def tap(dp, bot, data, user=USER, message_text="answer"):
+    msg = Message(message_id=next(_uid), date=NOW, chat=Chat(id=user.id, type="private"), text=message_text)
+    call = CallbackQuery(id=str(next(_uid)), from_user=user, chat_instance="c", message=msg, data=data)
     await dp.feed_update(bot, Update(update_id=next(_uid), callback_query=call))
 
 
-SOL = {"topic": "algebra", "steps": [{"say": "Subtract 3 from both sides", "math": "2x=8"},
-                                     {"say": "Divide by 2", "math": "x=4"}],
-       "final_answer": "x = 4", "final_answer_latex": "x=4", "check": {"type": "none"}, "confidence": 0.9}
+def buttons(method):
+    rows = method.reply_markup.inline_keyboard if method.reply_markup else []
+    return [b for row in rows for b in row]
 
 
-async def test_start_solve_image_button_tutor_and_usage(env):
+def last_answer(tg):
+    return [m for m in tg.sent if isinstance(m, EditMessageText)][-1]
+
+
+SOL = {"topic": "Linear equations",
+       "steps": [{"say": "Subtract 3 from both sides", "math": "2x=8"},
+                 {"say": "Divide both sides by 2", "math": "x=4"}],
+       "final_answer": "x = 4", "final_answer_latex": "x=4", "check": {"type": "none"}, "confidence": 0.9,
+       "key_idea": "Undo operations in reverse order.", "tip": "Do the same thing to both sides."}
+
+
+async def onboard(dp, bot, user=USER, grade="9-10", lang="en"):
+    await send(dp, bot, "/start", user)
+    await tap(dp, bot, f"grade:{grade}:o", user)
+    await tap(dp, bot, f"lang:{lang}:o", user)
+
+
+async def test_onboarding_asks_class_and_language(env):
     dp, bot, tg, ai, repo = env
     await send(dp, bot, "/start")
-    assert "Welcome to MathFix AI" in tg.texts()[-1] and "5 solves + 15 tutor" in tg.texts()[-1]
+    assert "welcome to <b>MathFix.ai</b>" in tg.texts()[-1] and "Which class" in tg.texts()[-1]
+    assert [b.callback_data for b in buttons(tg.sent[-1])][1] == "grade:9-10:o"
+    await tap(dp, bot, "grade:9-10:o")
+    assert "Which language" in tg.texts()[-1]
+    await tap(dp, bot, "lang:hinglish:o")
+    done = tg.texts()[-1]
+    assert "You're all set" in done and "Class 9–10" in done and "Hinglish" in done and "5 solves" in done
+    u = await repo.get_user(1)
+    assert u["grade"] == "9-10" and u["explain_lang"] == "hinglish" and u["onboarded"] == 1
+    await send(dp, bot, "/start")
+    assert "Welcome back" in tg.texts()[-1]
 
+
+async def test_personalised_solve_answer_layout_image_and_tutor(env):
+    dp, bot, tg, ai, repo = env
+    await onboard(dp, bot, lang="hinglish")
     ai.add("openai/gpt-oss-120b", SOL)
     await send(dp, bot, "2x + 3 = 11")
-    answer = [m for m in tg.sent if isinstance(m, EditMessageText)][-1]
-    assert "✅ <b>Answer:</b> x = 4" in answer.text and "Checked by our maths engine" in answer.text
-    buttons = [b.callback_data for row in answer.reply_markup.inline_keyboard for b in row]
-    assert buttons[0].startswith("img:")
-    assert not any(isinstance(m, SendPhoto) for m in tg.sent)          # image NOT rendered by default
-    sid = buttons[0].split(":")[1]
+    system = ai.calls[0]["messages"][0]["content"]
+    assert "Class 9–10" in system and "Hinglish" in system          # explanation tuned to the student
+    ans = last_answer(tg)
+    assert "✅ <b>ANSWER:  x = 4</b>" in ans.text and "💡 <b>Key idea:</b>" in ans.text
+    assert "1️⃣ Subtract 3" in ans.text and "⚠️ <b>Watch out:</b>" in ans.text
+    assert "Verified by our maths engine" in ans.text and "4/5 free solves left today" in ans.text
+    btns = buttons(ans)
+    assert btns[0].callback_data.startswith("img:")
+    share_btn = [b for b in btns if b.url][0]
+    assert share_btn.url.startswith("https://t.me/share/url?url=https%3A%2F%2Ft.me%2Fmathfixbot%3Fstart%3Ds_")
+    sid = btns[0].callback_data.split(":")[1]
+    assert not any(isinstance(m, SendPhoto) for m in tg.sent)          # image only on request
 
-    await tap(dp, bot, f"img:{sid}")                                     # rendered on demand
+    await tap(dp, bot, f"img:{sid}")
     photos = [m for m in tg.sent if isinstance(m, SendPhoto)]
     assert len(photos) == 1 and photos[0].photo.data[:4] == b"\x89PNG"
-    await tap(dp, bot, f"img:{sid}")                                     # second tap reuses file_id
+    assert "Solved with MathFix.ai" in photos[0].caption and any(b.url for b in buttons(photos[0]))
+    await tap(dp, bot, f"img:{sid}")                                     # reused file_id, no re-render
     photos = [m for m in tg.sent if isinstance(m, SendPhoto)]
     assert len(photos) == 2 and isinstance(photos[1].photo, str)
 
-    ai.add("openai/gpt-oss-20b", "Think: what undoes +3?")
+    ai.add("openai/gpt-oss-20b", "Socho: +3 ko kaise hatayenge?")
     await tap(dp, bot, f"hint:{sid}")
-    assert tg.texts()[-1] == "🎓 Think: what undoes +3?"
-    ai.add("openai/gpt-oss-20b", "Because division undoes the 2 times x.")
-    await send(dp, bot, "why divide by 2?")                              # free-text follow-up -> tutor
-    assert "division" in tg.texts()[-1]
+    assert "Socho" in tg.texts()[-1]
+    assert "Hinglish" in ai.calls[-1]["messages"][0]["content"]
 
+    await send(dp, bot, "/me")
+    me = tg.texts()[-1]
+    assert "Asha" in me and "Class 9–10" in me and "Problems solved: <b>1</b>" in me and "4</b> of 5" in me
+
+
+async def test_shared_link_opens_solution_for_anyone_and_rejects_forgery(env, settings):
+    from mathfix.core import share
+    dp, bot, tg, ai, repo = env
+    await onboard(dp, bot)
+    ai.add("openai/gpt-oss-120b", SOL)
+    await send(dp, bot, "2x + 3 = 11")
+    sid = int(buttons(last_answer(tg))[0].callback_data.split(":")[1])
+    payload = share.solution_payload(sid, settings.share_secret)
+    await send(dp, bot, f"/start {payload}", FRIEND)                    # friend scans the QR code
+    texts_sent = tg.texts()
+    assert any("shared this MathFix solution" in t for t in texts_sent)
+    assert any("ANSWER:  x = 4" in t for t in texts_sent[-3:])
+    assert isinstance(tg.sent[-2], SendPhoto) or any(isinstance(m, SendPhoto) for m in tg.sent[-3:])
+    assert "Which class" in tg.texts()[-1]                              # new user then gets onboarding
+    n = len(tg.sent)
+    await send(dp, bot, f"/start s_{sid}_0000000000", FRIEND)           # forged signature: ignored
+    assert not any("shared this MathFix solution" in (getattr(m, "text", "") or "") for m in tg.sent[n:])
+
+
+async def test_invite_rewards_both_after_first_solve(env):
+    dp, bot, tg, ai, repo = env
+    await onboard(dp, bot)
+    await send(dp, bot, "/invite")
+    assert "ref_1" in tg.texts()[-1]
+    await send(dp, bot, "/start ref_1", FRIEND)
+    assert (await repo.get_user(2))["referred_by"] == 1
+    await tap(dp, bot, "grade:6-8:o", FRIEND)
+    await tap(dp, bot, "lang:en:o", FRIEND)
+    ai.add("openai/gpt-oss-120b", SOL)
+    await send(dp, bot, "2x + 3 = 11", FRIEND)
+    assert "Welcome gift" in last_answer(tg).text
+    to_inviter = [m for m in tg.sent if isinstance(m, SendMessage) and m.chat_id == 1 and "friend you invited" in m.text]
+    assert to_inviter
     await send(dp, bot, "/usage")
-    assert "4 of 5 left" in tg.texts()[-1] and "13 of 15 left" in tg.texts()[-1]
+    assert "8</b> of 8 left" in tg.texts()[-1]                          # 5 free + 3 inviter bonus
+    await send(dp, bot, "/usage", FRIEND)
+    assert "6</b> of 7 left" in tg.texts()[-1]                          # 5 + 2 friend bonus, 1 used
+    ai.add("openai/gpt-oss-120b", SOL)
+    await send(dp, bot, "3x + 3 = 12", FRIEND)                           # second solve: no second reward
+    assert "Welcome gift" not in last_answer(tg).text
 
 
 async def test_daily_limit_message_and_cache_hits_are_free(env, settings):
@@ -128,9 +208,9 @@ async def test_daily_limit_message_and_cache_hits_are_free(env, settings):
     for i in range(5):
         await send(dp, bot, f"x + {i} = 10")
     await send(dp, bot, "x + 0 = 10")             # solved before: served from cache even at the limit
-    assert "✅ <b>Answer:</b>" in tg.texts()[-1]
+    assert "ANSWER:" in tg.texts()[-1]
     await send(dp, bot, "x + 99 = 1")
-    assert "used all 5 free solves" in tg.texts()[-1]
+    assert "used all 5 free solves" in tg.texts()[-1] and "/invite" in tg.texts()[-1]
 
 
 async def test_burst_limit(env):
@@ -142,33 +222,36 @@ async def test_burst_limit(env):
 
 
 async def test_wrong_report_refunds_and_fix_question_is_free(env):
+    from mathfix.core.pipeline import cache_key
     dp, bot, tg, ai, repo = env
     ai.add("openai/gpt-oss-120b", SOL, SOL)
     await send(dp, bot, "2x+3=11")
-    sid = (await repo.find_solution(__import__("mathfix.mathcheck.text", fromlist=["x"]).problem_key("2x+3=11")))["id"]
+    sid = (await repo.find_solution(cache_key("2x+3=11")))["id"]
     await tap(dp, bot, f"wrong:{sid}")
     assert "free solve was given back" in tg.texts()[-1]
     await tap(dp, bot, f"fix:{sid}")
     await send(dp, bot, "2x+3=13")
     await send(dp, bot, "/usage")
-    assert "5 of 5 left" in tg.texts()[-1]
+    assert "5</b> of 5 left" in tg.texts()[-1]
 
 
 async def test_admin_commands_only_for_admins(env, settings):
     dp, bot, tg, ai, repo = env
+    await send(dp, bot, "/start")
     await send(dp, bot, "/setlimit solves 9")                             # user 1 is not an admin
     assert await repo.get_setting("limit_solves") is None
     admin_user = User(id=999, is_bot=False, first_name="Admin")
-    msg = Message(message_id=next(_uid), date=NOW, chat=Chat(id=999, type="private"), from_user=admin_user,
-                  text="/setlimit solves 9")
-    await dp.feed_update(bot, Update(update_id=next(_uid), message=msg))
+    await send(dp, bot, "/setlimit solves 9", admin_user)
     assert await repo.get_setting("limit_solves") == "9"
-    msg = msg.model_copy(update={"text": "/stats", "message_id": next(_uid)})
-    await dp.feed_update(bot, Update(update_id=next(_uid), message=msg))
-    assert "solve pool used" in tg.texts()[-1]
+    await send(dp, bot, "/setplan 1 premium", admin_user)
+    assert (await repo.get_user(1))["plan"] == "premium"
+    await send(dp, bot, "/usage")
+    assert "Premium" in tg.texts()[-1] and "of 50 left" in tg.texts()[-1]
+    await send(dp, bot, "/stats", admin_user)
+    assert "solve pool used" in tg.texts()[-1] and "shared opens" in tg.texts()[-1]
 
 
-async def test_burst_and_non_maths_text(env):
+async def test_non_maths_text(env):
     dp, bot, tg, ai, repo = env
     await send(dp, bot, "hello there")
     assert "I only do maths" in tg.texts()[-1]

@@ -28,6 +28,9 @@ private folder.
 | Data | Collected? | Why | Kept for |
 |---|---|---|---|
 | Telegram user id, first name, username, language code | ✅ | Limits, replies, language | Until `/deleteme`, or 12 months inactive |
+| Class band (e.g. "Class 9–10") and explanation language, chosen in onboarding | ✅ | Explain at the right level and language | Until `/deleteme` |
+| Plan, solve count, streak, who invited them (Telegram id) | ✅ | Daily limits, streaks, invite rewards | Until `/deleteme` |
+| Age, school, phone, email, exact location | ❌ never asked | – | – |
 | Daily usage counters | ✅ | Daily limits | 90 days |
 | **Photos** | ❌ **Not stored.** Processed in memory, sent to the vision model, then discarded | – | – |
 | Image perceptual hash | ✅ (can't be turned back into the image) | Cache | 12 months |

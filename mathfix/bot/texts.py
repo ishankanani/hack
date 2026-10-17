@@ -7,27 +7,53 @@ from ..core.tutor import clean_reply
 from ..mathcheck.text import latex_to_text
 from ..schemas import Solution
 
-WELCOME = (
-    "👋 <b>Welcome to MathFix AI!</b>\n\n"
-    "📸 Send me a <b>photo</b> of a maths question, or just <b>type</b> it.\n"
-    "✅ I'll give you the answer, checked by a maths engine\n"
-    "📝 step-by-step explanation\n"
-    "✍️ a handwritten-style image (tap 🖼 under the answer)\n"
-    "💬 and a tutor for hints and \"why?\"\n\n"
-    "Free beta: <b>{solves} solves + {tutor} tutor messages every day</b>.\n\n"
-    "Tip: photograph only the question, with no names or faces. We don't keep your photos. /privacy\n\n"
-    "Try one 👇"
-)
 EXAMPLES = ["2x + 5 = 17", "x^2 - 5x + 6 = 0", "15% of 240"]
+GRADES = [("6-8", "Class 6–8"), ("9-10", "Class 9–10"), ("11-12", "Class 11–12"),
+          ("college", "College"), ("parent", "Parent / Teacher")]
+LANGS = [("en", "English"), ("hinglish", "Hinglish")]
+GRADE_LABEL = dict(GRADES)
+LANG_LABEL = dict(LANGS)
+KEYCAPS = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟"]
+RULE = "━━━━━━━━━━━━━━━"
+
+# ---------------------------------------------------------------- onboarding & profile
+ONBOARD_HELLO = (
+    "👋 Hi <b>{name}</b>, welcome to <b>MathFix.ai</b>!\n\n"
+    "📸 Snap or ✏️ type any maths question and I'll give you:\n"
+    "✅ the answer, checked by a maths engine\n"
+    "📝 clear step-by-step explanation\n"
+    "✍️ a beautiful solution image to save and share\n"
+    "🎓 a tutor for hints and \"why?\"\n\n"
+    "<b>Quick setup</b> (2 taps) so I explain at your level.\n\n"
+    "🎓 <b>Which class are you in?</b>"
+)
+ONBOARD_LANG = "Nice! 🗣 <b>Which language should I explain in?</b>"
+ONBOARD_DONE = (
+    "🎉 You're all set, <b>{name}</b>!\n\n"
+    "🎓 {grade}  ·  🗣 {lang}\n"
+    "🎁 Free every day: <b>{solves} solves</b> + <b>{tutor} tutor messages</b>\n\n"
+    "📸 Send a photo of a maths question, or type it.\n"
+    "Try one now 👇"
+)
+WELCOME_BACK = (
+    "👋 Welcome back, <b>{name}</b>!{streak}\n"
+    "🧮 <b>{left}</b> of {limit} free solves left today.\n\n"
+    "📸 Send a photo or ✏️ type a question 👇"
+)
+SAVED = "✅ Saved! I'll explain for <b>{grade}</b> in <b>{lang}</b>."
+CHOOSE_GRADE = "🎓 <b>Which class are you in?</b>"
+CHOOSE_LANG = "🗣 <b>Which language should I explain in?</b>"
 
 HELP = (
-    "<b>How to get the best results</b>\n"
-    "• One question per photo, in good light, phone held flat\n"
+    "💡 <b>How to get the best results</b>\n"
+    "• One question per photo, good light, phone held flat\n"
     "• Or type it: <code>3x - 7 = 11</code>, <code>x^2 - 4 = 0</code>, <code>d/dx x^3 sin x</code>\n"
-    "• Use ^ for powers and / for fractions when typing\n\n"
-    "<b>Commands</b>\n"
-    "/usage: free solves left today\n"
-    "/tutor: tutor-first mode (hints before answers)\n"
+    "• Use ^ for powers and / for fractions\n\n"
+    "⚙️ <b>Commands</b>\n"
+    "/me: your profile, streak and free solves\n"
+    "/invite: invite friends and get extra solves\n"
+    "/lang: change class or language\n"
+    "/tutor: hints first, answer later\n"
     "/feedback &lt;text&gt;: tell us what to improve\n"
     "/privacy · /deleteme"
 )
@@ -35,7 +61,8 @@ HELP = (
 PRIVACY = (
     "🔒 <b>Privacy in short</b>\n"
     "• Photos are processed and then discarded. We never store them\n"
-    "• We keep your Telegram id/name, daily usage counts, and the maths problems (not linked to you)\n"
+    "• We keep your Telegram id and first name, your class and language choice, usage counts and "
+    "your streak, and the maths problems (not linked to you)\n"
     "• Tutor chats are deleted after 7 days\n"
     "• No ads, no tracking, no selling of data\n"
     "• The maths problem is sent to our AI providers to read and explain it\n"
@@ -43,6 +70,7 @@ PRIVACY = (
     "Full policy: https://mathfix.ai/privacy"
 )
 
+# ---------------------------------------------------------------- statuses
 READING = "🔍 Reading your question…"
 SOLVING = "🧮 Solving…"
 QUEUE = "⏳ Busy right now, you're in line. One moment…"
@@ -59,16 +87,25 @@ BANNED = "Your access to MathFix has been paused. Contact support@mathfix.ai if 
 FIX_PROMPT = "✏️ Type the question exactly as it should be, and I'll solve that instead (free)."
 NO_CONTEXT = "Send me a maths question first, then I can help with hints 🙂"
 DRAWING = "✍️ Drawing your solution…"
-IMAGE_CAPTION = "✍️ Your solution, handwritten style. Share it with friends! @mathfixbot"
 WRONG_THANKS = "Thanks for telling us! 🙏 We'll review this answer.{refund}"
 REFUND_NOTE = " Your free solve was given back."
 TUTOR_ON = "🎓 Tutor-first mode is <b>ON</b>: I'll give hints first and the answer only when you ask."
 TUTOR_OFF = "Tutor-first mode is <b>OFF</b>: you'll get full solutions straight away."
-DELETE_CONFIRM = "This deletes all your MathFix data (usage, tutor chats, history). Are you sure?"
+DELETE_CONFIRM = "This deletes all your MathFix data (profile, usage, tutor chats). Are you sure?"
 DELETED = "✅ Your data has been deleted. Send /start any time to come back."
 FEEDBACK_THANKS = "Thank you! 💙 Your feedback was sent to the team."
 FEEDBACK_HOW = "Write your feedback after the command, e.g. <code>/feedback the photo reading is great</code>"
-LANG = "English only during the beta. More languages are coming soon!"
+SHARED_INTRO = "📬 <b>Someone shared this MathFix solution with you!</b>"
+SHARED_NOT_FOUND = "This shared solution isn't available any more 🙂 Send me your own question instead!"
+SHARE_TEXT = "I solved this maths problem with MathFix ✨ Free step-by-step answers on Telegram:"
+INVITE_SHARE_TEXT = "Try MathFix: snap any maths question, get step-by-step answers free 📸✨"
+
+VERIFY_LINE = {
+    "verified": "✔️ <i>Verified by our maths engine</i>",
+    "agreed": "✔️ <i>Double-checked by two independent methods</i>",
+    "unchecked": "ℹ️ <i>Couldn't verify this one automatically, so double-check it</i>",
+    "failed": "⚠️ <i>This answer did not pass our automatic check. Please double-check it</i>",
+}
 
 
 def fmt_duration(seconds: int) -> str:
@@ -76,13 +113,46 @@ def fmt_duration(seconds: int) -> str:
     return f"{h} h {m} m" if h else f"{m} m"
 
 
+def topic_label(topic: str) -> str:
+    t = (topic or "").replace("_", " ").strip()
+    return "" if t.lower() in ("", "general", "refused") else t[:1].upper() + t[1:]
+
+
+def streak_line(streak: int) -> str:
+    return f"\n🔥 <b>{streak}-day streak!</b>" if streak >= 2 else ""
+
+
 def usage(st: dict) -> str:
+    plan = "⭐ Premium" if st.get("plan") == "premium" else "Free plan"
     return (
-        "📊 <b>Today's free MathFix</b>\n"
-        f"🧮 Solves: {st['solves_left']} of {st['solves_limit']} left\n"
-        f"💬 Tutor: {st['tutor_left']} of {st['tutor_limit']} left\n"
+        f"📊 <b>Today</b> · {plan}\n"
+        f"🧮 Solves: <b>{st['solves_left']}</b> of {st['solves_limit']} left\n"
+        f"💬 Tutor: <b>{st['tutor_left']}</b> of {st['tutor_limit']} left\n"
         f"⏰ Resets in {fmt_duration(st['reset_in_s'])}\n"
-        "Tip: questions solved before are free!"
+        "💡 Questions solved before are free · /invite friends for extra solves"
+    )
+
+
+def profile(user: dict, st: dict, referrals: int) -> str:
+    name = escape(user.get("first_name") or "friend")
+    badge = "⭐ Premium" if (user.get("plan") == "premium") else "Free"
+    return (
+        f"👤 <b>{name}</b> · {badge}\n"
+        f"🎓 {GRADE_LABEL.get(user.get('grade') or '', 'Class not set')}  ·  "
+        f"🗣 {LANG_LABEL.get(user.get('explain_lang') or 'en', 'English')}\n\n"
+        f"🔥 Streak: <b>{user.get('streak') or 0}</b> days (best {user.get('best_streak') or 0})\n"
+        f"✅ Problems solved: <b>{user.get('total_solves') or 0}</b>\n"
+        f"🤝 Friends invited: <b>{referrals}</b>\n\n" + usage(st)
+    )
+
+
+def invite(link: str, cfg: dict) -> str:
+    return (
+        "🤝 <b>Invite friends, get more free solves!</b>\n\n"
+        "When a friend joins with your link and solves their first problem:\n"
+        f"🎁 you get <b>+{cfg.get('inviter_bonus_solves', 3)} solves</b> that day\n"
+        f"🎁 they get <b>+{cfg.get('friend_bonus_solves', 2)} solves</b>\n\n"
+        f"Your personal link:\n{link}"
     )
 
 
@@ -90,39 +160,82 @@ def limit_reached(kind: str, st: dict) -> str:
     reset = fmt_duration(st["reset_in_s"])
     if kind == "tutor":
         return f"That's all your tutor messages for today, great effort! 💪\nYour tutor is back in {reset}."
-    return (f"You've used all {st['solves_limit']} free solves for today 🎉 That's a lot of maths!\n"
-            f"⏰ More in {reset}.\n💬 You can still use the tutor on your last answers "
-            f"({st['tutor_left']} messages left).")
+    return (f"🎉 You've used all {st['solves_limit']} free solves today. That's a lot of maths!\n\n"
+            f"⏰ More in <b>{reset}</b>\n"
+            f"🤝 Want more today? /invite a friend: you both get extra solves\n"
+            f"💬 You can still use the tutor on your last answers ({st['tutor_left']} left)")
 
 
-VERIFY_LINE = {
-    "verified": "✔️ <i>Checked by our maths engine.</i>",
-    "agreed": "✔️ <i>Two independent methods agree.</i>",
-    "unchecked": "ℹ️ <i>I couldn't check this one automatically, so double-check it.</i>",
-    "failed": "⚠️ <i>This answer did not pass our automatic check. Please double-check it.</i>",
-}
+def footer(st: dict, streak: int) -> str:
+    bits = []
+    if streak >= 2:
+        bits.append(f"🔥 {streak}-day streak")
+    bits.append(f"🧮 {st['solves_left']}/{st['solves_limit']} free solves left today")
+    return " · ".join(bits)
+
+
+def milestone(streak: int, total: int, new_day: bool) -> str:
+    if new_day and streak in (3, 7, 14, 30, 50, 100):
+        return f"\n\n🏆 <b>{streak}-day streak!</b> You're on fire, keep it going!"
+    if total in (10, 25, 50, 100, 250, 500):
+        return f"\n\n🏅 <b>{total} problems solved!</b> Amazing work!"
+    return ""
+
+
+def _step_number(i: int) -> str:
+    return KEYCAPS[i - 1] if i <= len(KEYCAPS) else f"<b>{i}.</b>"
 
 
 def answer(sol: Solution, problem: str, verified: str, *, from_photo: bool, tutor_first: bool,
-           other_problems: list[str]) -> str:
-    parts = []
-    if from_photo:
-        parts.append(f"📸 <b>I read:</b> {escape(problem)}")
-    else:
-        parts.append(f"❓ {escape(problem)}")
+           other_problems: list[str], name: str = "", foot: str = "", extra: str = "") -> str:
+    """Telegram allows 4096 characters. Never cut HTML in half: show fewer steps instead."""
+    max_steps = len(sol.steps)
+    while True:
+        text = _answer(sol, problem, verified, from_photo=from_photo, tutor_first=tutor_first,
+                       other_problems=other_problems, name=name, foot=foot, extra=extra, max_steps=max_steps)
+        if len(text) <= 4000 or max_steps == 0:
+            return text if len(text) <= 4000 else escape(problem[:300]) + "\n\n" + VERIFY_LINE.get(verified, "")
+        max_steps -= 1
+
+
+def _answer(sol: Solution, problem: str, verified: str, *, from_photo: bool, tutor_first: bool,
+            other_problems: list[str], name: str, foot: str, extra: str, max_steps: int) -> str:
+    topic = topic_label(sol.topic)
+    head = "✨ <b>MathFix</b>" + (f" · <i>{escape(topic)}</i>" if topic else "")
+    parts = [head, "",
+             f"{'📸' if from_photo else '✏️'} <b>{'I read' if from_photo else 'Your question'}</b>",
+             f"<blockquote>{escape(problem)}</blockquote>"]
     if tutor_first:
-        parts.append("\n🎓 Let's work it out together! Tap <b>💡 Hint</b> to start, or <b>👀 Show answer</b>.")
+        who = f", {escape(name)}" if name else ""
+        parts.append(f"\n🎓 Let's work it out together{who}! Tap <b>💡 Hint</b> to start, or <b>👀 Show answer</b>.")
     else:
-        parts.append(f"\n✅ <b>Answer:</b> {escape(sol.final_answer or latex_to_text(sol.final_answer_latex))}")
+        final = escape(sol.final_answer or latex_to_text(sol.final_answer_latex))
+        parts += ["", f"✅ <b>ANSWER:  {final}</b>"]
+        if sol.key_idea:
+            parts += ["", f"💡 <b>Key idea:</b> {escape(clean_reply(sol.key_idea))}"]
         if sol.steps:
-            parts.append("\n📝 <b>Steps</b>")
-            for i, s in enumerate(sol.steps, 1):
-                line = f"{i}. {escape(clean_reply(s.say))}"
+            lines = []
+            for i, s in enumerate(sol.steps[:max_steps], 1):
+                line = f"{_step_number(i)} {escape(clean_reply(s.say))}"
                 if s.math:
-                    line += f"\n    <code>{escape(latex_to_text(s.math))}</code>"
-                parts.append(line)
-        parts.append("\n" + VERIFY_LINE.get(verified, VERIFY_LINE["unchecked"]))
+                    line += f"\n      <code>{escape(latex_to_text(s.math))}</code>"
+                lines.append(line)
+            if max_steps < len(sol.steps):
+                lines.append(f"… {len(sol.steps) - max_steps} more step(s) in the 🖼 solution image")
+            tag = "blockquote expandable" if len(sol.steps) > 3 else "blockquote"
+            parts += ["", "📝 <b>Step-by-step</b>" + (" <i>(tap to expand)</i>" if len(sol.steps) > 3 else ""),
+                      f"<{tag}>" + "\n\n".join(lines) + "</blockquote>"]
+        if sol.tip:
+            parts += [f"⚠️ <b>Watch out:</b> {escape(clean_reply(sol.tip))}"]
+        parts += ["", VERIFY_LINE.get(verified, VERIFY_LINE["unchecked"])]
     if other_problems:
-        parts.append(f"\n🧾 I also found {len(other_problems)} more question(s) in your photo; tap below to solve them.")
-    text = "\n".join(parts)
-    return text if len(text) < 4000 else text[:3990] + "…"
+        parts.append(f"\n🧾 I also found {len(other_problems)} more question(s) in your photo. Tap below to solve them.")
+    if foot:
+        parts += [RULE, foot]
+    return "\n".join(parts) + extra
+
+
+def image_caption(topic: str) -> str:
+    t = topic_label(topic)
+    return (f"✍️ <b>{escape(t) + ' · ' if t else ''}Solved with MathFix.ai</b>\n"
+            "📲 Save it, or tap <b>Share</b> to send it to a friend. Anyone can scan the QR to open it.")

@@ -10,6 +10,7 @@ import asyncio
 import logging
 import multiprocessing as mp
 from concurrent.futures import ProcessPoolExecutor
+from concurrent.futures.process import BrokenProcessPool
 from typing import Any, Callable
 
 log = logging.getLogger(__name__)
@@ -24,7 +25,7 @@ def _warm() -> None:
 
 
 class SandboxTimeout(Exception):
-    pass
+    """The call took too long, or the worker process died; the pool has been restarted."""
 
 
 class Sandbox:
@@ -40,7 +41,10 @@ class Sandbox:
     async def start(self) -> None:
         self._pool = self._new_pool()
         # start every worker now so the first user doesn't wait for imports
-        await asyncio.gather(*(self.run(_noop, timeout=60) for _ in range(self.workers)))
+        try:
+            await asyncio.gather(*(self.run(_noop, timeout=60) for _ in range(self.workers)))
+        except SandboxTimeout:
+            log.warning("sandbox workers failed to warm up; they will be started on first use")
 
     async def run(self, fn: Callable, *args: Any, timeout: float = 2.0) -> Any:
         if self._pool is None:
@@ -51,6 +55,10 @@ class Sandbox:
             return await asyncio.wait_for(fut, timeout)
         except asyncio.TimeoutError:
             log.warning("sandbox timeout in %s; restarting pool", getattr(fn, "__name__", fn))
+            await self._restart(pool)
+            raise SandboxTimeout from None
+        except BrokenProcessPool:
+            log.warning("sandbox worker died in %s; restarting pool", getattr(fn, "__name__", fn))
             await self._restart(pool)
             raise SandboxTimeout from None
 

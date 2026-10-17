@@ -6,6 +6,7 @@ MODE=webhook  -> server: aiohttp app with /tg/webhook and /health (behind Cloudf
 from __future__ import annotations
 
 import asyncio
+import os
 import logging
 
 from aiogram import Bot, Dispatcher
@@ -66,7 +67,7 @@ async def build() -> tuple[Settings, Bot, Dispatcher, dict]:
         raise SystemExit("TELEGRAM_BOT_TOKEN is not set (copy .env.example to .env)")
     repo = Repo(settings.database_path)
     await repo.init()
-    sandbox = Sandbox(workers=2)
+    sandbox = Sandbox(workers=int(os.environ.get("SANDBOX_WORKERS", "2")))
     await sandbox.start()
     ai = AIRouter(settings.models, repo)
     await ai.start()

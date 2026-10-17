@@ -3,8 +3,8 @@ from __future__ import annotations
 
 from html import escape
 
-from ..core.tutor import clean_reply
-from ..mathcheck.text import latex_to_text
+from ..core.limits import UNLIMITED
+from ..mathcheck.text import pretty_math, pretty_text
 from ..schemas import Solution
 
 EXAMPLES = ["2x + 5 = 17", "x^2 - 5x + 6 = 0", "15% of 240"]
@@ -37,7 +37,7 @@ ONBOARD_DONE = (
 )
 WELCOME_BACK = (
     "👋 Welcome back, <b>{name}</b>!{streak}\n"
-    "🧮 <b>{left}</b> of {limit} free solves left today.\n\n"
+    "🧮 {quota}\n\n"
     "📸 Send a photo or ✏️ type a question 👇"
 )
 SAVED = "✅ Saved! I'll explain for <b>{grade}</b> in <b>{lang}</b>."
@@ -103,7 +103,7 @@ INVITE_SHARE_TEXT = "Try MathFix: snap any maths question, get step-by-step answ
 VERIFY_LINE = {
     "verified": "✔️ <i>Verified by our maths engine</i>",
     "agreed": "✔️ <i>Double-checked by two independent methods</i>",
-    "unchecked": "ℹ️ <i>Couldn't verify this one automatically, so double-check it</i>",
+    "unchecked": "ℹ️ <i>Not auto-checked: our maths engine can't verify this kind of problem yet</i>",
     "failed": "⚠️ <i>This answer did not pass our automatic check. Please double-check it</i>",
 }
 
@@ -122,12 +122,28 @@ def streak_line(streak: int) -> str:
     return f"\n🔥 <b>{streak}-day streak!</b>" if streak >= 2 else ""
 
 
+def amount(n: int) -> str:
+    """Limits for admins are a huge number internally; show them as 'unlimited'."""
+    return "unlimited" if n >= UNLIMITED else str(n)
+
+
+def left_of(left: int, limit: int) -> str:
+    return "<b>unlimited</b>" if limit >= UNLIMITED else f"<b>{left}</b> of {limit}"
+
+
+def quota(st: dict) -> str:
+    """'3 of 5 free solves left today', for the welcome message."""
+    if st["solves_limit"] >= UNLIMITED:
+        return "<b>Unlimited</b> solves (admin)."
+    return f"<b>{st['solves_left']}</b> of {st['solves_limit']} free solves left today."
+
+
 def usage(st: dict) -> str:
     plan = "⭐ Premium" if st.get("plan") == "premium" else "Free plan"
     return (
         f"📊 <b>Today</b> · {plan}\n"
-        f"🧮 Solves: <b>{st['solves_left']}</b> of {st['solves_limit']} left\n"
-        f"💬 Tutor: <b>{st['tutor_left']}</b> of {st['tutor_limit']} left\n"
+        f"🧮 Solves: {left_of(st['solves_left'], st['solves_limit'])} left\n"
+        f"💬 Tutor: {left_of(st['tutor_left'], st['tutor_limit'])} left\n"
         f"⏰ Resets in {fmt_duration(st['reset_in_s'])}\n"
         "💡 Questions solved before are free · /invite friends for extra solves"
     )
@@ -170,7 +186,10 @@ def footer(st: dict, streak: int) -> str:
     bits = []
     if streak >= 2:
         bits.append(f"🔥 {streak}-day streak")
-    bits.append(f"🧮 {st['solves_left']}/{st['solves_limit']} free solves left today")
+    if st["solves_limit"] >= UNLIMITED:
+        bits.append("♾️ Unlimited solves (admin)")
+    else:
+        bits.append(f"🧮 {st['solves_left']}/{st['solves_limit']} free solves left today")
     return " · ".join(bits)
 
 
@@ -194,31 +213,51 @@ def answer(sol: Solution, problem: str, verified: str, *, from_photo: bool, tuto
         text = _answer(sol, problem, verified, from_photo=from_photo, tutor_first=tutor_first,
                        other_problems=other_problems, name=name, foot=foot, extra=extra, max_steps=max_steps)
         if len(text) <= 4000 or max_steps == 0:
-            return text if len(text) <= 4000 else escape(problem[:300]) + "\n\n" + VERIFY_LINE.get(verified, "")
+            return text if len(text) <= 4000 else escape(pretty_math(problem)[:300]) + "\n\n" + VERIFY_LINE.get(verified, "")
         max_steps -= 1
+
+
+SHORT_ANSWER = 48      # longer answers get their own block instead of the bold headline
+MAX_ANSWER = 600       # the full working is in the steps
+
+
+def answer_text(sol: Solution) -> str:
+    """The final answer as clean Unicode, one statement per line."""
+    final = pretty_math(sol.final_answer) or pretty_math(sol.final_answer_latex)
+    if len(final) > SHORT_ANSWER:
+        final = "\n".join(p.strip() for p in final.replace("; ", "\n").splitlines() if p.strip())
+    if len(final) > MAX_ANSWER:
+        final = final[:MAX_ANSWER].rsplit(" ", 1)[0] + " … (see the steps)"
+    return final
 
 
 def _answer(sol: Solution, problem: str, verified: str, *, from_photo: bool, tutor_first: bool,
             other_problems: list[str], name: str, foot: str, extra: str, max_steps: int) -> str:
     topic = topic_label(sol.topic)
     head = "✨ <b>MathFix</b>" + (f" · <i>{escape(topic)}</i>" if topic else "")
+    question = pretty_math(problem) or problem
+    q_tag = "blockquote expandable" if len(question) > 280 else "blockquote"
     parts = [head, "",
              f"{'📸' if from_photo else '✏️'} <b>{'I read' if from_photo else 'Your question'}</b>",
-             f"<blockquote>{escape(problem)}</blockquote>"]
+             f"<{q_tag}>{escape(question)}</blockquote>"]
     if tutor_first:
         who = f", {escape(name)}" if name else ""
         parts.append(f"\n🎓 Let's work it out together{who}! Tap <b>💡 Hint</b> to start, or <b>👀 Show answer</b>.")
     else:
-        final = escape(sol.final_answer or latex_to_text(sol.final_answer_latex))
-        parts += ["", f"✅ <b>ANSWER:  {final}</b>"]
+        final = answer_text(sol) or "see the steps below"
+        if len(final) <= SHORT_ANSWER and "\n" not in final:
+            parts += ["", f"✅ <b>ANSWER:  {escape(final)}</b>"]
+        else:
+            body = "\n".join(f"<b>{escape(ln)}</b>" if len(final) <= 240 else escape(ln) for ln in final.splitlines())
+            parts += ["", "✅ <b>ANSWER</b>", f"<blockquote>{body}</blockquote>"]
         if sol.key_idea:
-            parts += ["", f"💡 <b>Key idea:</b> {escape(clean_reply(sol.key_idea))}"]
+            parts += ["", f"💡 <b>Key idea:</b> {escape(pretty_text(sol.key_idea))}"]
         if sol.steps:
             lines = []
             for i, s in enumerate(sol.steps[:max_steps], 1):
-                line = f"{_step_number(i)} {escape(clean_reply(s.say))}"
+                line = f"{_step_number(i)} {escape(pretty_text(s.say))}"
                 if s.math:
-                    line += f"\n      <code>{escape(latex_to_text(s.math))}</code>"
+                    line += f"\n      <code>{escape(pretty_math(s.math))}</code>"
                 lines.append(line)
             if max_steps < len(sol.steps):
                 lines.append(f"… {len(sol.steps) - max_steps} more step(s) in the 🖼 solution image")
@@ -226,7 +265,7 @@ def _answer(sol: Solution, problem: str, verified: str, *, from_photo: bool, tut
             parts += ["", "📝 <b>Step-by-step</b>" + (" <i>(tap to expand)</i>" if len(sol.steps) > 3 else ""),
                       f"<{tag}>" + "\n\n".join(lines) + "</blockquote>"]
         if sol.tip:
-            parts += [f"⚠️ <b>Watch out:</b> {escape(clean_reply(sol.tip))}"]
+            parts += [f"⚠️ <b>Watch out:</b> {escape(pretty_text(sol.tip))}"]
         parts += ["", VERIFY_LINE.get(verified, VERIFY_LINE["unchecked"])]
     if other_problems:
         parts.append(f"\n🧾 I also found {len(other_problems)} more question(s) in your photo. Tap below to solve them.")

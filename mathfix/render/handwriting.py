@@ -10,16 +10,21 @@ Same input → identical image, so the Telegram file_id can be reused for everyo
 from __future__ import annotations
 
 import io
+import logging
 import random
+import re
+import unicodedata
 from functools import lru_cache
 from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont
 
-from ..mathcheck.text import latex_to_text
+from ..mathcheck.text import pretty_math, pretty_text
 from . import brand
 from .brand import CYAN, INK, NAVY, PAPER, PRIMARY, SLATE, SUCCESS, TEXT_DARK, WHITE
 
+# Bump when the design changes: on startup the bot forgets old Telegram file_ids, so users get the new image.
+RENDER_VERSION = "3"
 FONT_DIR = Path(__file__).parent / "assets" / "fonts"
 WIDTH = 1080
 LEFT = 120                     # content starts right of the red margin
@@ -76,6 +81,12 @@ class Pen:
         out: list[tuple[str, ImageFont.FreeTypeFont]] = []
         for ch in text:
             f = self.main if (ord(ch) in self.cmap or ch == " ") else self.fallback
+            if unicodedata.combining(ch) and f is self.fallback and out and out[-1][1] is self.main:
+                base = out[-1][0][-1:]                       # x̄: draw the letter and its accent in one font
+                out[-1] = (out[-1][0][:-1], self.main)
+                if not out[-1][0]:
+                    out.pop()
+                ch = base + ch
             if out and out[-1][1] is f:
                 out[-1] = (out[-1][0] + ch, f)
             else:
@@ -111,11 +122,27 @@ def _text_image(text: str, pen: Pen, color: tuple, max_w: int = MAX_W) -> Image.
     return img.crop(img.getbbox() or (0, 0, 1, 1))
 
 
+_MATHTEXT_FIXES = [                     # LaTeX that models write but matplotlib's mathtext can't parse
+    (r"\\(mathbf|mathrm|mathit|mathsf|mathcal|boldsymbol|bm)\s+(\w)", r"\\\1{\2}"),   # \mathbf 1
+    (r"\\bm\{", r"\\boldsymbol{"), (r"\\tfrac(?![A-Za-z])", r"\\frac"), (r"\\operatorname\*", r"\\operatorname"),
+    (r"\\[lr]Vert(?![A-Za-z])", r"\\Vert "), (r"\\[lr]vert(?![A-Za-z])", "|"),
+    (r"\\le(?![A-Za-z])", r"\\leq"), (r"\\ge(?![A-Za-z])", r"\\geq"), (r"\\ne(?![A-Za-z])", r"\\neq"),
+    (r"\\implies(?![A-Za-z])", r"\\Rightarrow"), (r"\\iff(?![A-Za-z])", r"\\Leftrightarrow"),
+    (r"\\pmod\s*\{([^{}]*)\}", r"\\ (\\mathrm{mod}\\ \1)"),
+]
+
+
+def _for_mathtext(latex: str) -> str:
+    for pattern, repl in _MATHTEXT_FIXES:
+        latex = re.sub(pattern, repl, latex)
+    return latex
+
+
 def _math_image(latex: str, size: int, color: tuple) -> Image.Image | None:
     """One line of LaTeX via matplotlib mathtext. None if mathtext can't parse it."""
     from matplotlib.backends.backend_agg import FigureCanvasAgg
     from matplotlib.figure import Figure
-    latex = (latex or "").strip().strip("$")
+    latex = _for_mathtext((latex or "").strip().strip("$"))
     if not latex or "\\begin" in latex or "\\\\" in latex:
         return None
     fig = Figure(figsize=(0.01, 0.01), dpi=100)
@@ -135,7 +162,7 @@ def _math_or_text(latex: str, fallback: str, size: int, color: tuple, max_w: int
         scale = max_w / img.width
         img = img.resize((int(img.width * scale), int(img.height * scale)), Image.LANCZOS) if scale >= 0.6 else None
     if img is None:
-        img = _text_image(fallback or latex_to_text(latex), Pen(size), color, max_w)
+        img = _text_image(fallback or pretty_math(latex), Pen(size), color, max_w)
     return img
 
 
@@ -169,10 +196,10 @@ def _stack(parts: list[tuple[Image.Image, int]], gap: int = 10) -> Image.Image:
 def _step_block(n: int, say: str, math_latex: str, rng: random.Random) -> Image.Image:
     badge_d = 52
     text_x = badge_d + 22
-    text = _jitter(_text_image(say, Pen(38), INK, MAX_W - text_x), rng, 0.6)
+    text = _jitter(_text_image(pretty_text(say), Pen(38), INK, MAX_W - text_x), rng, 0.6)
     parts = [(text, 0)]
     if math_latex:
-        parts.append((_jitter(_math_or_text(math_latex, latex_to_text(math_latex), 44, INK, MAX_W - text_x - 30),
+        parts.append((_jitter(_math_or_text(math_latex, pretty_math(math_latex), 44, INK, MAX_W - text_x - 30),
                               rng, 0.8), 30))
     body = _stack(parts, gap=12)
     out = Image.new("RGBA", (max(body.width + text_x, text_x + 10), max(body.height, badge_d)), (0, 0, 0, 0))
@@ -186,7 +213,7 @@ def _step_block(n: int, say: str, math_latex: str, rng: random.Random) -> Image.
 def _note_block(title: str, text: str, bg: tuple, title_color: tuple) -> Image.Image:
     pad = 26
     title_img = _text_image(title, Pen(30, bold=True), title_color, MAX_W - 2 * pad)
-    body = _text_image(text, Pen(34), TEXT_DARK, MAX_W - 2 * pad)
+    body = _text_image(pretty_text(text), Pen(34), TEXT_DARK, MAX_W - 2 * pad)
     inner = _stack([(title_img, 0), (body, 0)], gap=8)
     out = Image.new("RGBA", (MAX_W, inner.height + 2 * pad), (0, 0, 0, 0))
     ImageDraw.Draw(out).rounded_rectangle((0, 0, out.width - 1, out.height - 1), radius=22, fill=bg)
@@ -217,7 +244,9 @@ def _stamp(text: str, color: tuple, d_px: int = 150) -> Image.Image:
 
 def _answer_block(latex: str, text: str, verified: str, rng: random.Random) -> Image.Image:
     label = _pill("✓ FINAL ANSWER", SUCCESS, WHITE, 22)
-    ans = _jitter(_math_or_text(latex, text, 56, TEXT_DARK, MAX_W - 220), rng, 0.6)
+    text = pretty_math(text) or pretty_math(latex)
+    size = 56 if len(text) <= 40 else 46 if len(text) <= 110 else 38       # long answers: smaller, wrapped
+    ans = _jitter(_math_or_text(latex if len(text) <= 110 else "", text, size, TEXT_DARK, MAX_W - 220), rng, 0.6)
     pad = 30
     box_w, box_h = min(MAX_W - 160, ans.width + 2 * pad), ans.height + 2 * pad
     box = Image.new("RGBA", (box_w + 12, box_h + 12), (0, 0, 0, 0))
@@ -263,8 +292,12 @@ def _footer(qr_url: str) -> Image.Image:
     img.paste(strip, (0, 0), strip)
     d = ImageDraw.Draw(img)
     x = 50
-    if qr_url:
-        qr = brand.qr_image(qr_url, 220, NAVY)
+    try:
+        qr = brand.qr_image(qr_url, 220, NAVY) if qr_url else None
+    except ImportError:                                      # qrcode not installed: still send the image
+        logging.getLogger(__name__).warning("QR code skipped: run  pip install -r requirements.txt")
+        qr = None
+    if qr is not None:
         img.paste(qr, (x, 30), qr)
         d.text((x + 110, 272), "Scan to open", font=brand.font("DejaVuSans-Bold.ttf", 20), fill=PRIMARY, anchor="mm")
         x += 260
@@ -277,6 +310,10 @@ def _footer(qr_url: str) -> Image.Image:
     mark = brand.logo_mark(96)                               # corner logo
     img.paste(mark, (WIDTH - 96 - 34, FOOTER_H - 96 - 26), mark)
     return img
+
+
+_MATH_WORDS = {"min", "max", "over", "lim", "sin", "cos", "tan", "log", "exp", "sec", "csc", "cot", "sqrt", "argmin",
+               "argmax", "sup", "inf", "det", "mod", "and", "for"}
 
 
 def _topic_label(topic: str) -> str:
@@ -292,7 +329,10 @@ def render_solution(data: dict) -> bytes:
 
     blocks: list[tuple[Image.Image, int, int]] = []          # (image, x, space_after)
     blocks.append((_pill("QUESTION", CYAN, NAVY, 22), LEFT, 16))
-    q = _math_or_text(data.get("problem_latex", ""), data.get("problem_text", ""), 46, INK)
+    q_text = pretty_math(data.get("problem_text", "")) or pretty_math(data.get("problem_latex", ""))
+    words = re.findall(r"[A-Za-z]{3,}", q_text)                 # word problems: show the words, not just the maths
+    q_latex = data.get("problem_latex", "") if len(set(words) - _MATH_WORDS) < 3 else ""
+    q = _math_or_text(q_latex, q_text, 46 if len(q_text) <= 120 else 38, INK)
     blocks.append((_jitter(q, rng, 0.6), LEFT, 40))
     if data.get("steps"):
         blocks.append((_pill("STEP BY STEP", PRIMARY, WHITE, 22), LEFT, 22))

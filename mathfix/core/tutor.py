@@ -1,12 +1,10 @@
 """Tutor chat about one solved problem: hints, next step, why, simpler, show answer, free questions."""
 from __future__ import annotations
 
-import re
-
 from ..ai import prompts
 from ..ai.router import Router
 from ..db import Repo
-from ..mathcheck.text import latex_to_text
+from ..mathcheck.text import latex_to_text, pretty_text
 from ..schemas import Solution
 
 
@@ -38,12 +36,6 @@ class Tutor:
         return answer
 
 
-_INLINE_MATH = re.compile(r"\\\((.+?)\\\)|\\\[(.+?)\\\]|\$\$(.+?)\$\$|\$([^$\n]+?)\$", re.S)
-
-
 def clean_reply(text: str) -> str:
-    """Models sometimes write LaTeX like \\(x^2\\) even when asked not to; Telegram can't show it."""
-    def repl(m: re.Match) -> str:
-        return latex_to_text(next(g for g in m.groups() if g is not None))
-    text = _INLINE_MATH.sub(repl, text)
-    return re.sub(r"\*\*(.+?)\*\*", r"\1", text).strip()   # drop markdown bold
+    """Models sometimes write LaTeX like \\(x^2\\) or **bold** even when asked not to; Telegram can't show it."""
+    return pretty_text(text)

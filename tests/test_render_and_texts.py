@@ -110,3 +110,45 @@ def test_long_answers_drop_steps_instead_of_breaking_html():
     msg = texts.answer(sol, "q", "verified", from_photo=False, tutor_first=False, other_problems=[])
     assert len(msg) <= 4000 and msg.count("<blockquote") == msg.count("</blockquote>")
     assert "more step(s) in the 🖼 solution image" in msg
+
+
+def test_latex_never_reaches_the_telegram_message():
+    sol = Solution.model_validate({
+        "topic": "optimization",
+        "steps": [{"say": r"Use the subgradient of \|W\|_*", "math": r"f(W,b)=\frac{1}{n}\|XW+b\mathbf 1-y\|_2^2"}],
+        "final_answer": r"1^{T}(XW+b1-y)=0; \frac{2}{n}X^{T}(XW+b1-y) + \lambda G = 0 with G \in \partial\|W\|_*",
+        "key_idea": r"Balance the gradient and $\lambda G$"})
+    msg = texts.answer(sol, r"min_{W,b} \frac{1}{n}||XW + b1 - y||_2^2 + \lambda||W||_*", "unchecked",
+                       from_photo=True, tutor_first=False, other_problems=[])
+    assert "\\" not in msg and "^{" not in msg and "_{" not in msg and "$" not in msg
+    assert "min (over W,b) (1/n)‖XW + b1 - y‖₂² + λ‖W‖*" in msg
+    assert "✅ <b>ANSWER</b>\n<blockquote><b>1ᵀ(XW+b1-y)=0</b>\n<b>(2/n)Xᵀ(XW+b1-y) + λG = 0" in msg   # one per line
+    assert "<code>f(W,b)=(1/n)‖XW+b1-y‖₂²</code>" in msg and "Balance the gradient and λG" in msg
+
+
+def test_admins_see_unlimited_not_a_million():
+    st = {"solves_left": 999996, "solves_limit": 10**6, "tutor_left": 10**6, "tutor_limit": 10**6,
+          "reset_in_s": 60}
+    assert texts.footer(st, 0) == "♾️ Unlimited solves (admin)"
+    assert "1000000" not in texts.usage(st) and "unlimited" in texts.usage(st)
+    assert texts.quota(st) == "<b>Unlimited</b> solves (admin)." and texts.amount(10**6) == "unlimited"
+    assert texts.footer({"solves_left": 3, "solves_limit": 5}, 4) == "🔥 4-day streak · 🧮 3/5 free solves left today"
+
+
+async def test_new_image_design_forgets_old_telegram_images(repo):
+    sid = await repo.add_solution(problem_key="k", problem_text="2x=4", problem_latex="", topic="t", difficulty=1,
+                                  solution_json=Solution(final_answer="x = 2").model_dump_json(),
+                                  verified="verified", model_used="m", latency_ms=1)
+    await repo.set_image_file_id(sid, "old-design-file-id")
+    assert await repo.refresh_images("3") == 1                  # first start with this design: reset
+    assert (await repo.get_solution(sid))["image_file_id"] is None
+    await repo.set_image_file_id(sid, "new-design-file-id")
+    assert await repo.refresh_images("3") == 0                  # same design: keep the cached image
+    assert (await repo.get_solution(sid))["image_file_id"] == "new-design-file-id"
+
+
+def test_model_latex_that_mathtext_rejects_is_fixed_before_drawing():
+    from mathfix.render.handwriting import _math_image
+    for latex in (r"\frac{1}{n}\|XW+b\mathbf 1-y\|_2^2", r"\tfrac{2}{n} \le 1", r"x \implies \lVert y\rVert",
+                  r"\operatorname*{argmin}_x f(x)", r"a \equiv b \pmod{7}"):
+        assert _math_image(latex, 40, (0, 0, 0)) is not None, latex

@@ -309,6 +309,15 @@ class Repo:
         row = await cur.fetchone()
         return dict(row) if row else None
 
+    async def refresh_images(self, render_version: str) -> int:
+        """When the image design changes, forget Telegram file_ids of images drawn with the old design,
+        so the next tap on 🖼 draws the new one. Returns how many were reset."""
+        if await self.get_setting("render_version") == render_version:
+            return 0
+        cur = await self.db.execute("UPDATE solutions SET image_file_id = NULL WHERE image_file_id IS NOT NULL")
+        await self.set_setting("render_version", render_version)          # commits
+        return cur.rowcount or 0
+
     async def set_image_file_id(self, solution_id: int, file_id: str) -> None:
         await self.db.execute("UPDATE solutions SET image_file_id = ? WHERE id = ?", (file_id, solution_id))
         await self.db.commit()

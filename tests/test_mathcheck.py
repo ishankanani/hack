@@ -3,7 +3,7 @@ import pytest
 from mathfix.mathcheck.quick import quick_solve
 from mathfix.mathcheck.safe import UnsafeExpression, check_text
 from mathfix.mathcheck.sandbox import Sandbox, SandboxTimeout
-from mathfix.mathcheck.text import is_hard, latex_to_text, problem_key, to_ascii_math
+from mathfix.mathcheck.text import is_hard, latex_to_text, pretty_math, pretty_text, problem_key, to_ascii_math
 from mathfix.mathcheck.verify import verify
 
 
@@ -56,9 +56,41 @@ def test_verify(check, status):
 
 
 def test_latex_to_text():
-    assert latex_to_text(r"x=\frac{-b\pm\sqrt{b^{2}-4ac}}{2a}") == "x=(-b±√(b²-4ac))/2a"
+    assert latex_to_text(r"x=\frac{-b\pm\sqrt{b^{2}-4ac}}{2a}") == "x=(-b±√(b²-4ac))/(2a)"
     assert latex_to_text(r"x=1 \text{ or } x=3") == "x=1 or x=3"
     assert latex_to_text(r"\left(\frac{1}{2}\right)^{n+1}") == "(1/2)ⁿ⁺¹"
+
+
+@pytest.mark.parametrize("latex, text", [
+    # from a real answer that showed raw LaTeX in Telegram
+    (r"\min_{W,b} \frac{1}{n}\|XW + b\mathbf 1 - y\|_2^2 + \lambda\|W\|_*",
+     "min (over W,b) (1/n)‖XW + b1 - y‖₂² + λ‖W‖*"),
+    (r"\mathbf{1}^{T}(XW+b\mathbf{1}-y)=0", "1ᵀ(XW+b1-y)=0"),
+    (r"X^{\top}R + \lambda G = 0,\; G \in \partial\|W\|_*", "XᵀR + λG = 0, G ∈ ∂‖W‖*"),
+    (r"\{UV^{T}+Q \mid \|Q\|_2 \le 1\}", "{UVᵀ+Q | ‖Q‖₂ ≤ 1}"),
+    (r"W \in \mathbb{R}^{d \times k}", "W ∈ ℝ^(d × k)"),
+    (r"\lim_{x \to 0} \frac{\sin x}{x} = 1", "lim (x → 0) (sin x)/x = 1"),
+    (r"\sum_{i=1}^{n} i = \frac{n(n+1)}{2}", "Σᵢ₌₁ⁿ i = n(n+1)/2"),
+    (r"\int_0^1 x^2\,dx = \frac{1}{3}", "∫₀¹ x² dx = 1/3"),
+    (r"\frac{dy}{dx} = 3x^2", "dy/dx = 3x²"),
+    (r"2\frac{1}{2} + x^{10}", "2 1/2 + x¹⁰"),
+    (r"\angle ABC = 90^{\circ}", "∠ ABC = 90°"),
+    (r"\begin{pmatrix}1 & 2 \\ 3 & 4\end{pmatrix}", "(1 2 ; 3 4)"),
+    (r"e^{i\pi} + \pmod{7}", "e^(iπ) + (mod 7)"),
+    (r"\int_{0}^{\infty} \neg p \leqslant 3", "∫₀^∞ ¬ p ≤ 3"),     # \in must not eat \int / \infty
+])
+def test_latex_to_text_covers_university_notation(latex, text):
+    assert latex_to_text(latex) == text
+
+
+def test_pretty_math_and_text():
+    assert pretty_math("x^2 - 5x + 6 = 0") == "x² - 5x + 6 = 0"
+    assert pretty_math("sqrt(16) + x**3 <= 2") == "√(16) + x³ ≤ 2"
+    assert pretty_math(r"min_{W,b} \frac{1}{n}||XW - y||_2^2") == "min (over W,b) (1/n)‖XW - y‖₂²"
+    assert pretty_math("Cost is $5 and $7\n15% of 240") == "Cost is $5 and $7\n15% of 240"
+    assert pretty_text(r"Subtract \(3\) from **both** sides") == "Subtract 3 from both sides"
+    assert pretty_text(r"Use the subgradient of \|W\|_*") == "Use the subgradient of ‖W‖*"
+    assert pretty_text("So $x^2 = 4$, cost $5 and $7") == "So x² = 4, cost $5 and $7"
 
 
 def test_problem_key_ignores_wording_and_spaces():

@@ -86,7 +86,7 @@ async def cmd_start(message: Message, command: CommandObject, **deps):
         st = await limits.status(uid)
         await message.answer(texts.WELCOME_BACK.format(
             name=texts.escape(_name(user)), streak=texts.streak_line(user.get("streak") or 0),
-            left=st["solves_left"], limit=st["solves_limit"]), reply_markup=kb.examples_kb())
+            quota=texts.quota(st)), reply_markup=kb.examples_kb())
 
 
 @router.callback_query(F.data.regexp(r"^(grade|lang|prof):"))
@@ -116,7 +116,8 @@ async def on_profile_button(call: CallbackQuery, **deps):
             st = await limits.status(uid)
             return await call.message.edit_text(texts.ONBOARD_DONE.format(
                 name=texts.escape(_name(user)), grade=texts.GRADE_LABEL.get(user.get("grade") or "", "Any class"),
-                lang=texts.LANG_LABEL[code], solves=st["solves_limit"], tutor=st["tutor_limit"]),
+                lang=texts.LANG_LABEL[code], solves=texts.amount(st["solves_limit"]),
+                tutor=texts.amount(st["tutor_limit"])),
                 reply_markup=kb.examples_kb())
     else:
         return

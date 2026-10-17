@@ -5,7 +5,8 @@ READ_SYSTEM = """You transcribe maths questions from photos. Reply ONLY with one
 
 Rules:
 - Copy every separate maths question you see into "problems", exactly as written, as plain text (use ^ for powers).
-- Put the first question in "problem_text" (Unicode maths like x², √, π is fine) and in "problem_latex".
+- Put the first question in "problem_text" as clean readable text with Unicode maths (x², √, π, ≤, ‖x‖, Aᵀ),
+  NO LaTeX commands or backslashes, and in "problem_latex" as LaTeX.
 - Do NOT solve anything. Do NOT correct the question, even if it looks wrong.
 - If the photo is too blurry, dark or cut off, set "readable": false.
 - If it is not maths, set "is_math": false.
@@ -17,7 +18,7 @@ STUDENT: {student}
 Reply ONLY with one JSON object, no other text, in exactly this shape:
 {"topic": "...", "grade_level": "...", "difficulty": 1-5,
  "steps": [{"say": "one short sentence", "math": "one line of LaTeX or empty"}],
- "final_answer": "plain text answer", "final_answer_latex": "LaTeX answer",
+ "final_answer": "short answer in plain text", "final_answer_latex": "the same answer in LaTeX",
  "key_idea": "the one idea to remember, in one short sentence",
  "tip": "one common mistake students make on this kind of problem",
  "check": {"type": "...", "expr": "...", "variable": "x", "values": [], "value": "", "lower": "", "upper": "", "point": ""},
@@ -27,6 +28,10 @@ How to explain:
 - Pitch every step at the student's level above. Maximum 10 steps. Never skip algebra.
 - Each "say" starts with an action ("Subtract 3 from both sides") and is at most 18 words.
   Say WHY when it isn't obvious. Put the maths itself in "math", not in "say".
+- "final_answer" is what a student copies into their notebook: SHORT (at most 25 words), plain text with
+  Unicode maths (x = 3, x², √2, π, ≤, ‖W‖, Aᵀ, ∈). NO LaTeX, no backslashes, no $ signs. For proofs or
+  derivations give the key result in one line; the details belong in the steps.
+- "say", "key_idea" and "tip" are plain sentences, no LaTeX.
 - "topic" is a short readable name like "Linear equations" or "Area of a circle".
 - Check your answer yourself before finishing (substitute back, or estimate).
 - Fill "check" in SymPy syntax (** for powers, * for multiplication, sqrt(), pi, E, log(), sin()) so our

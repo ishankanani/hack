@@ -137,7 +137,7 @@ they're simply skipped.
 | What | How it works |
 |---|---|
 | **Onboarding** | `/start` asks 2 quick questions: class (6–8, 9–10, 11–12, college, parent/teacher) and language (English or Hinglish). Every explanation, hint and tutor reply is then pitched at that level |
-| **Answer layout** | Topic header → question → **bold answer** → 💡 key idea → numbered steps (collapsible) → ⚠️ common mistake → verified badge → 🔥 streak and free solves left |
+| **Answer layout** | Topic header → question → **bold answer** (long answers get their own block, one statement per line) → 💡 key idea → numbered steps (collapsible) → ⚠️ common mistake → verified badge → 🔥 streak and free solves left. Telegram can't show LaTeX, so every LaTeX bit is turned into readable maths first: `\frac{1}{n}\|W\|_2^2` → `(1/n)‖W‖₂²`, `X^{T}` → `Xᵀ` |
 | **Solution image** | Brand header with logo, maths grid paper, faint logo watermark, numbered step badges, key-idea note, green answer box with a ✓ VERIFIED stamp, and a footer with a **QR code** + logo. Symbols like √ π ≤ ≠ ∞ use a fallback font, so no more boxes |
 | **QR & sharing** | The QR (and the 📤 Share button) opens that exact solution in the bot for anyone. Links are signed, so people can't browse other students' solutions. New users who arrive this way get onboarded |
 | **Invites** | `/invite` gives a personal link. When a friend solves their first problem, the inviter gets +3 and the friend +2 solves that day |
@@ -149,6 +149,10 @@ they're simply skipped.
 in `mathfix/render/assets/` (`logo.png` for the mark, `logo_full.png` for the full logo); replace those files to update
 the logo everywhere. Brand colours sampled from the logo: cyan `#01E3FD` → blue `#006EFC` → royal `#003DE3`,
 navy `#051744`, slate `#525E77`.
+
+**Changing the image design:** Telegram images are cached (one upload per solution, reused for everyone). After
+changing anything in `mathfix/render/`, bump `RENDER_VERSION` in `mathfix/render/handwriting.py`; on the next start
+the bot forgets the old images and draws the new design when someone taps 🖼.
 
 ## Decisions after review
 

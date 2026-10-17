@@ -23,6 +23,7 @@ from .core.pipeline import Pipeline
 from .core.tutor import Tutor
 from .db import Repo
 from .mathcheck.sandbox import Sandbox
+from .render.handwriting import RENDER_VERSION
 
 log = logging.getLogger("mathfix")
 WEBHOOK_PATH = "/tg/webhook"
@@ -67,6 +68,8 @@ async def build() -> tuple[Settings, Bot, Dispatcher, dict]:
         raise SystemExit("TELEGRAM_BOT_TOKEN is not set (copy .env.example to .env)")
     repo = Repo(settings.database_path)
     await repo.init()
+    if n := await repo.refresh_images(RENDER_VERSION):
+        log.info("image design changed: %d cached solution images will be redrawn", n)
     sandbox = Sandbox(workers=int(os.environ.get("SANDBOX_WORKERS", "2")))
     await sandbox.start()
     ai = AIRouter(settings.models, repo)

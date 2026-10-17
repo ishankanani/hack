@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>MathFix.ai</title>
 <meta name="description" content="Snap any maths question on Telegram. MathFix reads it, solves it step by step at your class level and checks the answer with a maths engine. Free every day.">
-<meta name="theme-color" content="#006EFC">
+<meta name="theme-color" content="#FFFFFF">
 <link rel="canonical" href="https://mathfix.ai/">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://mathfix.ai/">
@@ -16,387 +16,384 @@
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Kalam:wght@400;700&family=Lexend:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500&family=Kalam:wght@400&display=swap">
 <style>
-/* Layout: a maths notebook. Graph-paper bands, a red margin rule that carries the six-step process,
-   and real bot screens beside the copy. */
+/* Layout: white, quiet and precise. Centred hero over one large product stage; the six-step process
+   as a list beside a live chat panel; light-grey panels only where the product is shown.
+   One light theme on purpose: the logo is designed for white. */
 :root {
-  --paper: #F5F8FE;
-  --sheet: #FFFFFF;
+  color-scheme: light;
+  --bg: #FFFFFF;
+  --soft: #F6F8FC;
+  --soft-2: #EEF3FA;
+  --line: #E6EAF2;
   --ink: #051744;
-  --slate: #4E5A75;
-  --grid: #DFE8F8;
-  --margin: #E99393;
+  --text: #2B3752;
+  --muted: #5D6781;
+  --faint: #8C95AA;
   --blue: #006EFC;
-  --blue-text: #0057D6;
+  --blue-deep: #003DE3;
   --cyan: #01E3FD;
-  --royal: #003DE3;
-  --green: #12A150;
-  --green-soft: #E6F6EC;
-  --amber-soft: #FFF2C9;
-  --amber-text: #8A5A00;
-  --red-soft: #FDECEC;
-  --border: #D7E1F3;
-  --frame: #0B1736;
-  --chat: #E4ECF7;
-  --bubble-in: #FFFFFF;
-  --bubble-out: #DCF5CF;
-  --key: #F0F5FC;
-  --band: #051744;
-  --band-text: #FFFFFF;
-  --band-muted: #AFC0E6;
-  --shadow: 0 1px 2px rgb(5 23 68 / .06), 0 12px 32px -12px rgb(5 23 68 / .22);
+  --green: #0E9F4E;
+  --green-soft: #E8F7EF;
+  --chat: #EEF3F9;
+  --bubble-out: #E2F6D5;
+  --navy-1: #051744;
+  --navy-2: #0B2C86;
+  --shadow-sm: 0 1px 2px rgb(5 23 68 / .05), 0 4px 12px -4px rgb(5 23 68 / .08);
+  --shadow-lg: 0 2px 6px rgb(5 23 68 / .04), 0 32px 64px -24px rgb(5 23 68 / .24);
 
-  --display: "Baloo 2", "Trebuchet MS", system-ui, sans-serif;
-  --body: "Lexend", "Segoe UI", system-ui, -apple-system, sans-serif;
-  --hand: "Kalam", "Comic Sans MS", "Segoe Print", cursive;
+  --sans: "Plus Jakarta Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --mono: "Geist Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --hand: "Kalam", "Segoe Print", "Comic Sans MS", cursive;
   --ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
-  --mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
-  --gutter: max(20px, env(safe-area-inset-left, 0px));
-  --gutter-r: max(20px, env(safe-area-inset-right, 0px));
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --paper: #060E25; --sheet: #0B1734; --ink: #EAF1FF; --slate: #A4B2D0; --grid: #12224A; --margin: #8B4256;
-    --blue: #3D8BFF; --blue-text: #8AB8FF; --cyan: #3EEBFF; --royal: #6A8BFF; --green: #3CCB7F;
-    --green-soft: #0F2F22; --amber-soft: #352C10; --amber-text: #FFD27A; --red-soft: #3A1620;
-    --border: #1D2F5E; --frame: #1C2B55; --chat: #0A1531; --bubble-in: #15264E; --bubble-out: #1B3A2B;
-    --key: #13234A; --band: #0E1D45; --band-text: #FFFFFF; --band-muted: #A9B9E2;
-    --shadow: 0 1px 2px rgb(0 0 0 / .3), 0 16px 40px -16px rgb(0 0 0 / .7);
-    color-scheme: dark;
-  }
-}
-:root[data-theme="dark"] {
-  --paper: #060E25; --sheet: #0B1734; --ink: #EAF1FF; --slate: #A4B2D0; --grid: #12224A; --margin: #8B4256;
-  --blue: #3D8BFF; --blue-text: #8AB8FF; --cyan: #3EEBFF; --royal: #6A8BFF; --green: #3CCB7F;
-  --green-soft: #0F2F22; --amber-soft: #352C10; --amber-text: #FFD27A; --red-soft: #3A1620;
-  --border: #1D2F5E; --frame: #1C2B55; --chat: #0A1531; --bubble-in: #15264E; --bubble-out: #1B3A2B;
-  --key: #13234A; --band: #0E1D45; --band-text: #FFFFFF; --band-muted: #A9B9E2;
-  --shadow: 0 1px 2px rgb(0 0 0 / .3), 0 16px 40px -16px rgb(0 0 0 / .7);
-  color-scheme: dark;
+  --gl: max(20px, env(safe-area-inset-left, 0px));
+  --gr: max(20px, env(safe-area-inset-right, 0px));
 }
 
 * { box-sizing: border-box; }
-html { scroll-behavior: smooth; scroll-padding-top: 84px; }
+html { scroll-behavior: smooth; scroll-padding-top: 88px; }
 body {
-  margin: 0; background: var(--paper); color: var(--ink);
-  font: 400 1.0625rem/1.65 var(--body); -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+  margin: 0; background: var(--bg); color: var(--text);
+  font: 400 1.0625rem/1.65 var(--sans); -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
 }
 body::before {
-  content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 30;
-  background: var(--paper);
+  content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 30; background: var(--bg);
 }
 img { max-width: 100%; display: block; }
 [hidden] { display: none !important; }
-a { color: var(--blue-text); }
-:focus-visible { outline: 3px solid var(--blue); outline-offset: 3px; border-radius: 6px; }
-h1, h2, h3 { margin: 0; text-wrap: balance; }
+a { color: var(--blue); }
+:focus-visible { outline: 3px solid color-mix(in srgb, var(--blue) 55%, transparent); outline-offset: 3px; border-radius: 8px; }
+h1, h2, h3 { margin: 0; color: var(--ink); text-wrap: balance; }
 p { margin: 0; }
-.wrap { max-width: 1160px; margin: 0 auto; padding-left: var(--gutter); padding-right: var(--gutter-r); }
+.wrap { max-width: 1200px; margin: 0 auto; padding-left: var(--gl); padding-right: var(--gr); }
+.section { padding-block: 128px; }
+.section.flush { padding-top: 0; }
 .eyebrow {
-  font: 600 .8rem/1 var(--body); letter-spacing: .12em; text-transform: uppercase; color: var(--blue-text);
+  display: inline-flex; align-items: center; gap: 8px;
+  font: 600 .8125rem/1 var(--sans); letter-spacing: .08em; text-transform: uppercase; color: var(--blue);
 }
-.h2 { font: 800 clamp(2rem, 4.2vw, 3rem)/1.05 var(--display); letter-spacing: -.01em; }
-.lede { color: var(--slate); max-width: 60ch; font-size: 1.125rem; }
-.hand { font-family: var(--hand); }
-.grid-paper {
-  background-color: var(--paper);
-  background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px);
-  background-size: 32px 32px;
+.eyebrow::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: linear-gradient(135deg, var(--cyan), var(--blue-deep)); }
+.h2 { font: 800 clamp(2.1rem, 4.4vw, 3.4rem)/1.06 var(--sans); letter-spacing: -.035em; }
+.lede { color: var(--muted); font-size: 1.1875rem; line-height: 1.6; max-width: 58ch; }
+.head { display: grid; gap: 18px; justify-items: start; max-width: 760px; }
+.head.center { justify-items: center; text-align: center; margin-inline: auto; }
+.grad {
+  background: linear-gradient(92deg, #00B4EE 0%, var(--blue) 42%, var(--blue-deep) 100%);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
 }
 
 /* ---------- buttons ---------- */
 .btn {
-  display: inline-flex; align-items: center; justify-content: center; gap: .55em; min-height: 48px;
-  padding: .7em 1.35em; border-radius: 999px; font: 600 1rem/1.1 var(--body); text-decoration: none;
-  transition: transform .15s ease, box-shadow .15s ease, background-color .15s ease;
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 52px;
+  padding: 0 26px; border-radius: 999px; font: 600 1rem/1 var(--sans); text-decoration: none; white-space: nowrap;
+  transition: transform .18s ease, box-shadow .18s ease, background-color .18s ease, border-color .18s ease;
 }
-.btn svg { width: 1.15em; height: 1.15em; flex: none; }
+.btn svg { width: 18px; height: 18px; flex: none; }
 .btn-primary {
-  color: #fff; background: linear-gradient(100deg, #0A7CFF, #003DE3);
-  box-shadow: 0 8px 22px -10px rgb(0 61 227 / .8);
+  color: #FFFFFF; background: linear-gradient(180deg, #1A7DFF, #0062F0);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / .22), 0 1px 2px rgb(0 61 227 / .3), 0 10px 24px -10px rgb(0 98 240 / .7);
 }
-.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 12px 26px -10px rgb(0 61 227 / .9); }
-.btn-ghost { color: var(--ink); border: 1.5px solid var(--border); background: var(--sheet); }
-.btn-ghost:hover { border-color: var(--blue); }
+.btn-primary:hover { transform: translateY(-1px); box-shadow: inset 0 1px 0 rgb(255 255 255 / .22), 0 2px 4px rgb(0 61 227 / .3), 0 16px 30px -12px rgb(0 98 240 / .75); }
+.btn-quiet { color: var(--ink); background: var(--bg); border: 1px solid var(--line); box-shadow: var(--shadow-sm); }
+.btn-quiet:hover { border-color: #CAD3E3; }
+.btn-white { color: var(--navy-1); background: #FFFFFF; }
+.btn-white:hover { transform: translateY(-1px); }
+.arrow { transition: transform .18s ease; }
+.btn:hover .arrow { transform: translateX(3px); }
 
 /* ---------- header ---------- */
 .site-header {
   position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20;
-  background: color-mix(in srgb, var(--paper) 86%, transparent);
-  backdrop-filter: saturate(1.4) blur(12px); -webkit-backdrop-filter: saturate(1.4) blur(12px);
-  border-bottom: 1px solid var(--border);
+  background: rgb(255 255 255 / .82); backdrop-filter: saturate(1.6) blur(14px); -webkit-backdrop-filter: saturate(1.6) blur(14px);
+  border-bottom: 1px solid transparent; transition: border-color .2s ease;
 }
-.site-header .wrap { display: flex; align-items: center; gap: 24px; min-height: 68px; }
-.brand { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; color: var(--ink); }
-.brand img { width: 40px; height: 40px; }
-.brand span { font: 800 1.6rem/1 var(--display); letter-spacing: -.01em; }
-.brand span b { font-weight: 800; color: var(--blue); }
-.brand span i { font-style: normal; color: var(--slate); font-weight: 700; }
-.nav { display: flex; gap: 26px; margin-left: auto; }
-.nav a { color: var(--slate); text-decoration: none; font-size: .95rem; font-weight: 500; }
+.site-header.scrolled { border-bottom-color: var(--line); }
+.site-header .wrap { display: flex; align-items: center; gap: 32px; height: 72px; }
+.logo { display: inline-flex; flex: none; }
+.logo img { height: 34px; width: auto; }
+.nav { display: flex; gap: 32px; margin-left: auto; }
+.nav a { color: var(--muted); text-decoration: none; font-size: .95rem; font-weight: 500; transition: color .15s ease; }
 .nav a:hover { color: var(--ink); }
-.site-header .btn { min-height: 42px; padding: .55em 1.1em; font-size: .92rem; }
+.site-header .btn { min-height: 42px; padding: 0 18px; font-size: .9375rem; }
 
 /* ---------- hero ---------- */
 .hero { position: relative; overflow: hidden; }
-.hero::after {
-  content: ""; position: absolute; inset: auto 0 0; height: 120px; pointer-events: none;
-  background: linear-gradient(transparent, var(--paper));
+.hero::before {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background:
+    radial-gradient(48% 38% at 50% 72%, rgb(0 110 252 / .10), transparent 70%),
+    radial-gradient(30% 26% at 30% 64%, rgb(1 227 253 / .10), transparent 70%);
 }
-.hero .wrap {
-  position: relative; z-index: 1; display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr);
-  gap: 48px; align-items: center; padding-block: 64px 40px;
+.hero-top { position: relative; display: grid; justify-items: center; text-align: center; gap: 26px; padding-block: 88px 64px; }
+.pill {
+  display: inline-flex; align-items: center; gap: 10px; padding: 6px 16px 6px 6px; border-radius: 999px;
+  background: var(--bg); border: 1px solid var(--line); box-shadow: var(--shadow-sm); font-size: .9rem; font-weight: 500; color: var(--text);
 }
-.hero-copy { display: grid; gap: 24px; justify-items: start; }
-.tag {
-  display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px 6px 8px; border-radius: 999px;
-  background: var(--sheet); border: 1px solid var(--border); font-size: .88rem; font-weight: 500; color: var(--slate);
-}
-.tag img { width: 22px; height: 22px; }
-.hero h1 { font: 800 clamp(2.9rem, 7vw, 5rem)/.98 var(--display); letter-spacing: -.02em; }
-.hero h1 .line2 { display: block; color: var(--blue-text); }
-.underline { position: relative; white-space: nowrap; }
-.underline svg { position: absolute; left: -2%; bottom: .22em; width: 104%; height: .32em; overflow: visible; }
-.hero .lede { font-size: 1.18rem; }
-.ctas { display: flex; flex-wrap: wrap; gap: 12px; }
-.facts { display: flex; flex-wrap: wrap; gap: 10px 22px; padding: 0; margin: 4px 0 0; list-style: none; color: var(--slate); font-size: .95rem; }
+.pill img { width: 26px; height: 26px; }
+.hero h1 { font: 800 clamp(2.6rem, 6vw, 4.75rem)/1.04 var(--sans); letter-spacing: -.045em; }
+.hero h1 > span { display: block; }
+.hero .lede { font-size: clamp(1.0625rem, 1.6vw, 1.25rem); max-width: 54ch; }
+.ctas { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-top: 4px; }
+.facts { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 28px; margin: 6px 0 0; padding: 0; list-style: none; font-size: .9375rem; color: var(--muted); }
 .facts li { display: inline-flex; align-items: center; gap: 8px; }
-.facts svg { width: 18px; height: 18px; color: var(--green); flex: none; }
-.hero-visual { position: relative; justify-self: end; width: 100%; max-width: 380px; }
-.note {
-  position: absolute; font: 700 1.25rem/1.15 var(--hand); color: var(--blue-text); width: 9.5em;
-}
-.note svg { display: block; overflow: visible; }
-.note-check { right: calc(100% + 14px); top: 56%; width: 7.5em; text-align: right; transform: rotate(-4deg); }
-.note-check svg { width: 90px; height: 46px; margin: 4px 0 0 auto; }
+.facts svg { width: 16px; height: 16px; color: var(--green); }
 
-/* ---------- phone + chat (mirrors the real bot messages) ---------- */
-.phone {
-  width: 100%; border-radius: 42px; padding: 10px; background: var(--frame); box-shadow: var(--shadow);
+.stage-hero { position: relative; display: grid; justify-items: center; padding-bottom: 112px; }
+.float {
+  position: absolute; width: 290px; background: var(--bg); border: 1px solid var(--line); border-radius: 20px;
+  box-shadow: var(--shadow-lg); padding: 18px; display: grid; gap: 12px; text-align: left;
 }
-.screen { border-radius: 33px; overflow: hidden; background: var(--chat); font: 400 14px/1.45 var(--ui); color: var(--ink); }
-.chat-top { display: flex; align-items: center; gap: 10px; padding: 18px 16px 12px; background: var(--sheet); border-bottom: 1px solid var(--border); }
-.chat-top img { width: 36px; height: 36px; border-radius: 50%; background: #fff; padding: 4px; border: 1px solid var(--border); }
-.chat-top b { display: block; font-size: 15px; }
-.chat-top small { color: var(--slate); font-size: 12.5px; }
-.chat { display: grid; gap: 8px; padding: 14px 10px 14px; }
+.float-check { left: max(0px, calc(50% - 560px)); top: 23%; }
+.float-page { right: max(0px, calc(50% - 560px)); top: 9%; width: 260px; padding: 12px; }
+.float .label { display: flex; align-items: center; gap: 8px; font: 600 .75rem/1 var(--sans); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.float .label i { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 4px var(--green-soft); }
+.float code { display: block; font: 400 .8125rem/1.9 var(--mono); color: var(--text); white-space: nowrap; }
+.float code b { color: var(--green); font-weight: 500; }
+.verified { justify-self: start; display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px; background: var(--green-soft); color: var(--green); font-size: .8125rem; font-weight: 600; }
+.float-page .crop { height: 248px; overflow: hidden; border-radius: 12px; border: 1px solid var(--line); }
+.float-page .crop img { width: 100%; }
+.float-page .cap { display: flex; justify-content: space-between; align-items: center; padding: 2px 4px; font-size: .875rem; }
+.float-page .cap b { color: var(--ink); font-weight: 600; }
+.float-page .cap span { color: var(--muted); font-size: .8125rem; }
+
+/* ---------- phone + chat: mirrors the real bot messages ---------- */
+.phone {
+  position: relative; width: 340px; max-width: 100%; border-radius: 48px; padding: 11px;
+  background: linear-gradient(160deg, #1B2A55, #050D26); box-shadow: var(--shadow-lg), inset 0 0 0 1px rgb(255 255 255 / .08);
+}
+.phone::before { content: ""; position: absolute; top: 22px; left: 50%; width: 92px; height: 26px; margin-left: -46px; border-radius: 20px; background: #050D26; z-index: 2; }
+.screen { border-radius: 38px; overflow: hidden; background: var(--chat); font: 400 13.5px/1.45 var(--ui); color: #10213F; }
+.chat-top { display: flex; align-items: center; gap: 10px; padding: 46px 16px 12px; background: #FFFFFF; border-bottom: 1px solid var(--line); }
+.chat-top img { width: 34px; height: 34px; border-radius: 50%; padding: 4px; background: #FFFFFF; border: 1px solid var(--line); }
+.chat-top b { display: block; font-size: 14.5px; color: #10213F; }
+.chat-top small { color: var(--faint); font-size: 12px; }
+.chat { display: grid; gap: 7px; padding: 12px 9px 14px; }
 .msg {
-  max-width: 92%; padding: 8px 11px 6px; border-radius: 16px; background: var(--bubble-in);
-  box-shadow: 0 1px 1px rgb(5 23 68 / .08); overflow-wrap: anywhere;
+  max-width: 92%; padding: 8px 11px 6px; border-radius: 16px; background: #FFFFFF;
+  box-shadow: 0 1px 1px rgb(5 23 68 / .07); overflow-wrap: anywhere;
 }
 .msg.out { justify-self: end; background: var(--bubble-out); border-bottom-right-radius: 5px; }
 .msg.in { justify-self: start; border-bottom-left-radius: 5px; }
-.msg .time { display: block; text-align: right; font-size: 11px; color: var(--slate); margin-top: 2px; }
-.msg .quote {
-  margin: 3px 0 6px; padding: 3px 9px; border-left: 3px solid var(--blue); border-radius: 4px;
-  background: color-mix(in srgb, var(--blue) 9%, transparent);
-}
-.msg .gap { height: 6px; }
-.msg code { font: 12.5px/1.4 var(--mono); color: var(--blue-text); }
-.msg .muted { color: var(--slate); }
+.msg .time { display: block; text-align: right; font-size: 10.5px; color: var(--faint); margin-top: 2px; }
+.msg .quote { margin: 3px 0 6px; padding: 3px 9px; border-left: 3px solid var(--blue); border-radius: 4px; background: rgb(0 110 252 / .07); }
+.msg .gap { height: 5px; }
+.msg code { font: 12px/1.4 var(--mono); color: var(--blue-deep); }
+.msg .muted { color: var(--faint); }
 .photo {
-  position: relative; margin: 0 0 4px; padding: 14px 16px 16px; border-radius: 10px; overflow: hidden;
-  background: repeating-linear-gradient(#fffdf6 0 25px, #cfe0f7 25px 26px); color: #16328a;
-  font: 400 21px/26px var(--hand); transform: rotate(-1.2deg);
+  position: relative; margin: 0 0 4px; padding: 13px 14px 15px; border-radius: 10px; overflow: hidden;
+  background: repeating-linear-gradient(#FFFDF6 0 24px, #D2E1F6 24px 25px); color: #17338C;
+  font: 400 20px/25px var(--hand); transform: rotate(-1deg);
 }
-.photo::before { content: ""; position: absolute; inset: 0 auto 0 22px; width: 1px; background: #eba0a0; }
-.photo span { position: relative; display: block; padding-left: 16px; }
-.keys { display: grid; gap: 5px; margin-top: 2px; }
+.photo::before { content: ""; position: absolute; inset: 0 auto 0 20px; width: 1px; background: #EBA3A3; }
+.photo span { position: relative; display: block; padding-left: 14px; }
+.keys { display: grid; gap: 5px; }
 .keys .row { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 5px; }
 .keys span {
-  display: block; text-align: center; padding: 8px 4px; border-radius: 10px; background: var(--key);
-  font-size: 12.5px; font-weight: 500; color: var(--blue-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  display: block; text-align: center; padding: 8px 4px; border-radius: 10px; background: rgb(255 255 255 / .72);
+  font-size: 12px; font-weight: 500; color: var(--blue-deep); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .dots { display: inline-flex; gap: 3px; margin-left: 4px; vertical-align: middle; }
-.dots i { width: 5px; height: 5px; border-radius: 50%; background: var(--slate); animation: blink 1.2s infinite; }
+.dots i { width: 5px; height: 5px; border-radius: 50%; background: var(--faint); animation: blink 1.2s infinite; }
 .dots i:nth-child(2) { animation-delay: .2s; } .dots i:nth-child(3) { animation-delay: .4s; }
 @keyframes blink { 0%, 80%, 100% { opacity: .25; } 40% { opacity: 1; } }
 
 /* ---------- how it works ---------- */
-.how { background: var(--sheet); border-block: 1px solid var(--border); }
-.how > .wrap { padding-block: 88px; display: grid; gap: 48px; }
-.section-head { display: grid; gap: 14px; max-width: 760px; }
-.how-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 420px); gap: 56px; align-items: start; }
-.steps { list-style: none; margin: 0; padding: 0 0 0 0; position: relative; display: grid; gap: 6px; }
-.steps::before {
-  content: ""; position: absolute; top: 6px; bottom: 6px; left: 23px; width: 2px; background: var(--margin); opacity: .7;
+.how-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 520px); gap: 72px; align-items: start; margin-top: 64px; }
+.steps { list-style: none; margin: 0; padding: 0; border-bottom: 1px solid var(--line); }
+.step { position: relative; border-top: 1px solid var(--line); display: grid; grid-template-columns: 56px minmax(0, 1fr); gap: 8px; padding: 26px 0 28px; }
+.step::before {
+  content: ""; position: absolute; top: -1px; left: 0; height: 2px; width: 0; background: linear-gradient(90deg, var(--cyan), var(--blue-deep));
 }
-.step { position: relative; display: grid; grid-template-columns: 48px minmax(0, 1fr); gap: 18px; padding: 14px 16px 16px 0; border-radius: 18px; }
-.step .num {
-  position: relative; z-index: 1; width: 48px; height: 48px; border-radius: 50%; display: grid; place-items: center;
-  font: 800 1.35rem/1 var(--display); color: var(--blue-text); background: var(--sheet); border: 2px solid var(--border);
-  transition: background-color .2s ease, color .2s ease, border-color .2s ease;
-}
-.step h3 { font: 600 1.2rem/1.3 var(--body); padding-top: 10px; }
-.step .body { display: grid; gap: 6px; grid-column: 2; }
-.step p { color: var(--slate); }
-.step .margin-note { font: 400 1.08rem/1.35 var(--hand); color: var(--blue-text); }
+.step.is-active::before { width: 100%; }
+.steps.playing .step.is-active::before { width: 0; animation: fill 4.5s linear forwards; }
+@keyframes fill { to { width: 100%; } }
+.step .n { font: 500 .875rem/1.9 var(--mono); color: var(--faint); transition: color .2s ease; }
 .step .title { all: unset; display: block; cursor: pointer; border-radius: 6px; }
-.step .title:focus-visible { outline: 3px solid var(--blue); outline-offset: 4px; }
-.step .title:hover h3 { color: var(--blue-text); }
-.step.is-active { background: color-mix(in srgb, var(--blue) 7%, transparent); }
-.step.is-active .num { background: var(--blue); border-color: var(--blue); color: #fff; }
-.stage-col { position: sticky; top: 96px; }
-.stage { display: grid; gap: 12px; }
-.stage .phone { border-radius: 36px; padding: 9px; }
-.stage .screen { border-radius: 28px; min-height: 470px; display: flex; flex-direction: column; }
-.stage .chat { flex: 1; align-content: end; }
-.scene { display: grid; gap: 8px; animation: rise .35s ease both; }
-@keyframes rise { from { transform: translateY(8px); opacity: .4; } to { transform: none; opacity: 1; } }
-.stage-caption { display: flex; justify-content: space-between; align-items: center; gap: 12px; font-size: .9rem; color: var(--slate); }
-.stage-caption .pager { display: flex; gap: 6px; }
-.stage-caption .pager button {
-  width: 10px; height: 10px; padding: 0; border-radius: 50%; border: 0; background: var(--border); cursor: pointer;
-}
-.stage-caption .pager button[aria-current="true"] { background: var(--blue); width: 26px; border-radius: 6px; }
+.step .title:focus-visible { outline: 3px solid color-mix(in srgb, var(--blue) 55%, transparent); outline-offset: 4px; }
+.step h3 { font: 700 1.25rem/1.4 var(--sans); letter-spacing: -.015em; color: var(--muted); transition: color .2s ease; }
+.step .title:hover h3 { color: var(--ink); }
+.step p { color: var(--muted); margin-top: 8px; max-width: 54ch; }
+.step .detail { display: inline-flex; align-items: center; gap: 8px; margin-top: 12px; font-size: .9rem; color: var(--faint); }
+.step .detail svg { width: 16px; height: 16px; color: var(--blue); flex: none; }
+.step.is-active .n { color: var(--blue); }
+.step.is-active h3 { color: var(--ink); }
+.step.is-active .detail { color: var(--text); }
+.stage-col { position: sticky; top: 104px; }
+.panel { background: var(--soft); border: 1px solid var(--line); border-radius: 32px; padding: 44px 32px 24px; display: grid; justify-items: center; gap: 20px; }
+.panel .phone { width: 320px; }
+.panel .screen { min-height: 540px; display: flex; flex-direction: column; }
+.panel .chat { flex: 1; align-content: end; }
+.scene { display: grid; gap: 7px; animation: rise .4s cubic-bezier(.2, .7, .2, 1) both; }
+@keyframes rise { from { transform: translateY(10px); opacity: .3; } to { transform: none; opacity: 1; } }
+.panel-cap { width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 12px; font-size: .9rem; color: var(--muted); }
+.pager { display: flex; gap: 6px; }
+.pager button { width: 8px; height: 8px; padding: 0; border: 0; border-radius: 99px; background: #D3DAE7; cursor: pointer; transition: width .2s ease, background-color .2s ease; }
+.pager button[aria-current="true"] { width: 24px; background: var(--blue); }
 .scan { position: relative; }
 .scan::after {
   content: ""; position: absolute; left: 0; right: 0; top: 0; height: 3px; border-radius: 3px;
-  background: linear-gradient(90deg, transparent, var(--cyan), transparent); box-shadow: 0 0 12px var(--cyan);
-  animation: scan 2.2s ease-in-out infinite;
+  background: linear-gradient(90deg, transparent, var(--cyan), transparent); box-shadow: 0 0 12px var(--cyan); animation: scan 2.2s ease-in-out infinite;
 }
 @keyframes scan { 0% { top: 4%; } 50% { top: 92%; } 100% { top: 4%; } }
-.engine {
-  justify-self: stretch; border-radius: 14px; background: var(--sheet); border: 1px solid var(--border); padding: 12px 14px;
-  font: 12.5px/1.7 var(--mono);
-}
-.engine .label { font: 600 11px/1 var(--ui); letter-spacing: .08em; text-transform: uppercase; color: var(--slate); margin-bottom: 8px; }
-.engine .ok { color: var(--green); font-weight: 700; }
-.chip-row { display: flex; flex-wrap: wrap; gap: 6px; justify-self: center; }
-.chip-row span { padding: 4px 10px; border-radius: 999px; background: var(--sheet); border: 1px solid var(--border); font-size: 12px; color: var(--slate); }
-.thumb { border-radius: 10px; overflow: hidden; height: 210px; margin-bottom: 4px; }
-.thumb img { width: 100%; }
+.engine { border-radius: 14px; background: #FFFFFF; border: 1px solid var(--line); padding: 12px 14px; font: 12px/1.8 var(--mono); color: var(--text); }
+.engine .label { font: 600 10.5px/1 var(--ui); letter-spacing: .08em; text-transform: uppercase; color: var(--faint); margin-bottom: 8px; }
+.engine b { color: var(--green); font-weight: 500; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; justify-self: center; }
+.chips span { padding: 4px 10px; border-radius: 999px; background: #FFFFFF; border: 1px solid var(--line); font-size: 11.5px; color: var(--muted); }
+.thumb { height: 200px; overflow: hidden; border-radius: 10px; margin-bottom: 4px; }
 
 /* ---------- solution page ---------- */
-.page-sec { overflow-x: clip; }
-.page-sec > .wrap { padding-block: 96px; display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: 64px; align-items: center; }
-.sheet-photo { position: relative; justify-self: center; max-width: 360px; margin: 0; transform: rotate(-2.2deg); }
-.sheet-photo img { border-radius: 6px; box-shadow: var(--shadow); }
-.sheet-photo::before, .sheet-photo::after {
-  content: ""; position: absolute; top: -14px; width: 92px; height: 30px; background: color-mix(in srgb, var(--amber-soft) 85%, transparent);
-  border: 1px solid color-mix(in srgb, var(--amber-text) 20%, transparent); z-index: 1;
-}
-.sheet-photo::before { left: 24px; transform: rotate(-6deg); }
-.sheet-photo::after { right: 24px; transform: rotate(7deg); }
-.page-copy { display: grid; gap: 22px; }
-.ticks { list-style: none; margin: 0; padding: 0; display: grid; gap: 16px; }
-.ticks li { display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 14px; align-items: start; }
-.ticks .ico {
-  width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; background: var(--sheet); border: 1px solid var(--border); color: var(--blue-text);
-}
-.ticks .ico svg { width: 18px; height: 18px; }
-.ticks b { display: block; font-weight: 600; }
-.ticks span { color: var(--slate); font-size: 1rem; }
+.split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 72px; align-items: center; }
+.points { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px 36px; margin-top: 44px; }
+.point { display: grid; gap: 8px; align-content: start; }
+.point .ico { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; background: var(--soft); border: 1px solid var(--line); color: var(--blue); margin-bottom: 6px; }
+.point .ico svg { width: 20px; height: 20px; }
+.point h3 { font: 700 1.0625rem/1.4 var(--sans); letter-spacing: -.01em; }
+.point p { color: var(--muted); font-size: 1rem; }
+.page-panel { background: var(--soft); border: 1px solid var(--line); border-radius: 32px; padding: 48px 32px; display: grid; justify-items: center; }
+.page-panel img { width: 300px; border-radius: 14px; box-shadow: var(--shadow-lg); }
 
-/* ---------- features ---------- */
-.features { background: var(--sheet); border-block: 1px solid var(--border); }
-.features > .wrap { padding-block: 88px; display: grid; gap: 48px; }
-.feature-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 40px 48px; }
-.feature { display: grid; gap: 10px; align-content: start; }
-.feature .ico { width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; color: var(--blue-text); background: color-mix(in srgb, var(--blue) 10%, transparent); }
-.feature .ico svg { width: 22px; height: 22px; }
-.feature h3 { font: 600 1.15rem/1.3 var(--body); margin-top: 6px; }
-.feature p { color: var(--slate); font-size: 1rem; }
-.feature q { font-family: var(--hand); font-size: 1.1rem; color: var(--blue-text); quotes: "\201C" "\201D"; }
+/* ---------- features (bento) ---------- */
+.bento { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-top: 64px; }
+.tile { background: var(--soft); border: 1px solid var(--line); border-radius: 28px; padding: 32px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.tile.wide { grid-column: span 2; }
+.tile.full { grid-column: 1 / -1; }
+.tile h3 { font: 700 1.25rem/1.35 var(--sans); letter-spacing: -.015em; }
+.tile p { color: var(--muted); font-size: 1rem; max-width: 46ch; }
+.viz { margin-top: auto; padding-top: 22px; }
+.bubbles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.bubble { background: #FFFFFF; border: 1px solid var(--line); border-radius: 16px 16px 16px 6px; padding: 12px 14px; font-size: .9375rem; color: var(--ink); box-shadow: var(--shadow-sm); }
+.bubble small { display: block; font: 500 .75rem/1 var(--mono); color: var(--faint); margin-bottom: 8px; text-transform: uppercase; letter-spacing: .04em; }
+.classes { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.classes span { padding: 6px 12px; border-radius: 999px; background: #FFFFFF; border: 1px solid var(--line); font-size: .8125rem; color: var(--muted); }
+.classes span.on { background: var(--blue); border-color: var(--blue); color: #FFFFFF; }
+.mini-keys { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.mini-keys.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.mini-keys span { text-align: center; padding: 10px 6px; border-radius: 12px; background: #FFFFFF; border: 1px solid var(--line); font-size: .8125rem; font-weight: 500; color: var(--blue-deep); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mini-reply { margin-top: 8px; background: #FFFFFF; border: 1px solid var(--line); border-radius: 14px 14px 14px 6px; padding: 10px 12px; font-size: .875rem; color: var(--text); }
+.big { font: 800 3.4rem/1 var(--sans); letter-spacing: -.04em; color: var(--ink); }
+.big small { font: 600 1rem/1 var(--sans); letter-spacing: 0; color: var(--muted); margin-left: 6px; }
+.week { display: flex; gap: 6px; margin-top: 14px; }
+.week i { flex: 1; height: 8px; border-radius: 99px; background: linear-gradient(90deg, var(--cyan), var(--blue)); }
+.duo { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.duo div { background: #FFFFFF; border: 1px solid var(--line); border-radius: 16px; padding: 14px 16px; }
+.duo b { display: block; font: 800 2rem/1 var(--sans); letter-spacing: -.03em; color: var(--blue); margin-bottom: 6px; }
+.duo span { font-size: .8125rem; color: var(--muted); }
+.privacy { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr); gap: 32px; align-items: center; }
+.privacy p { margin-top: 10px; }
+.facts-row { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.facts-row li { background: #FFFFFF; border: 1px solid var(--line); border-radius: 16px; padding: 16px; font-size: .9375rem; color: var(--text); display: grid; gap: 8px; }
+.facts-row svg { width: 20px; height: 20px; color: var(--green); }
 
 /* ---------- topics ---------- */
-.topics > .wrap { padding-block: 88px; display: grid; gap: 40px; }
-.levels { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; align-items: start; }
-.level { background: var(--sheet); border: 1px solid var(--border); border-radius: 18px; padding: 22px 22px 24px; display: grid; gap: 14px; align-content: start; }
-.level h3 { font: 800 1.5rem/1 var(--display); }
-.level h3 small { display: block; font: 500 .8rem/1.4 var(--body); color: var(--slate); margin-top: 6px; }
-.level ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
-.level li { font-size: .85rem; padding: 4px 10px; border-radius: 999px; background: var(--paper); border: 1px solid var(--border); color: var(--ink); }
+.levels { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 40px; margin-top: 64px; }
+.level h3 { font: 700 1.125rem/1.3 var(--sans); padding-bottom: 14px; border-bottom: 2px solid var(--ink); }
+.level h3 small { display: block; font: 400 .875rem/1.4 var(--sans); color: var(--muted); margin-top: 4px; }
+.level ul { list-style: none; margin: 0; padding: 0; }
+.level li { padding: 11px 0; border-bottom: 1px solid var(--line); font-size: .9688rem; color: var(--text); }
 
-/* ---------- free plan ---------- */
-.free { background: var(--sheet); border-block: 1px solid var(--border); }
-.free > .wrap { padding-block: 88px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 440px); gap: 56px; align-items: center; }
-.free-copy { display: grid; gap: 18px; }
-.plan {
-  position: relative; border-radius: 24px; padding: 30px 30px 28px; background: var(--paper); border: 1.5px solid var(--border); display: grid; gap: 18px;
-}
-.plan::before {
-  content: ""; position: absolute; inset: -1.5px -1.5px auto; height: 6px; border-radius: 24px 24px 0 0;
-  background: linear-gradient(90deg, var(--cyan), var(--blue) 55%, var(--royal));
-}
-.plan-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
-.plan-head b { font: 800 1.5rem/1 var(--display); }
-.price { font: 800 2.8rem/1 var(--display); }
-.price small { font: 500 1rem/1 var(--body); color: var(--slate); }
-.plan ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 12px; }
-.plan li { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 12px; }
-.plan li svg { width: 20px; height: 20px; margin-top: 3px; color: var(--green); }
-.plan .fine { font-size: .9rem; color: var(--slate); }
+/* ---------- pricing ---------- */
+.plans { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; max-width: 900px; margin: 64px auto 0; }
+.plan { border-radius: 28px; padding: 36px; display: grid; gap: 22px; align-content: start; background: var(--bg); border: 1px solid var(--line); }
+.plan.main { border: 1.5px solid transparent; background: linear-gradient(var(--bg), var(--bg)) padding-box, linear-gradient(135deg, var(--cyan), var(--blue) 50%, var(--blue-deep)) border-box; box-shadow: var(--shadow-lg); }
+.plan.later { background: var(--soft); }
+.plan-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.plan-top b { font: 700 1.125rem/1 var(--sans); color: var(--ink); }
+.badge { font: 600 .75rem/1 var(--sans); padding: 7px 11px; border-radius: 999px; background: var(--soft-2); color: var(--blue-deep); letter-spacing: .02em; }
+.price { font: 800 3.25rem/1 var(--sans); letter-spacing: -.04em; color: var(--ink); }
+.price small { font: 500 1rem/1 var(--sans); letter-spacing: 0; color: var(--muted); }
+.plan.later .price { color: var(--faint); }
+.plan ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 13px; }
+.plan li { display: grid; grid-template-columns: 20px minmax(0, 1fr); gap: 12px; color: var(--text); font-size: 1rem; }
+.plan li svg { width: 18px; height: 18px; margin-top: 4px; color: var(--blue); }
+.plan.later li svg { color: var(--faint); }
+.plan .btn { width: 100%; }
+.btn-disabled { color: var(--faint); background: #FFFFFF; border: 1px solid var(--line); cursor: default; }
+.fine { font-size: .875rem; color: var(--muted); text-align: center; margin-top: 24px; }
 
 /* ---------- faq ---------- */
-.faq > .wrap { padding-block: 88px; display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); gap: 56px; align-items: start; }
-.faq-list { display: grid; gap: 12px; }
-.faq details { background: var(--sheet); border: 1px solid var(--border); border-radius: 16px; padding: 0 22px; }
-.faq summary {
-  cursor: pointer; list-style: none; display: flex; justify-content: space-between; gap: 16px; align-items: center;
-  padding: 18px 0; font-weight: 600;
-}
+.faq-grid { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); gap: 72px; align-items: start; }
+.faq-list { border-top: 1px solid var(--line); }
+.faq details { border-bottom: 1px solid var(--line); }
+.faq summary { cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center; gap: 24px; padding: 24px 0; font: 600 1.0625rem/1.45 var(--sans); color: var(--ink); }
 .faq summary::-webkit-details-marker { display: none; }
-.faq summary::after { content: "+"; font: 600 1.5rem/1 var(--body); color: var(--blue-text); transition: transform .2s ease; }
-.faq details[open] summary::after { transform: rotate(45deg); }
-.faq details p { color: var(--slate); padding-bottom: 20px; max-width: 62ch; }
-
-/* ---------- closing band ---------- */
-.cta-band { background: var(--band); color: var(--band-text); position: relative; overflow: hidden; }
-.cta-band::before {
-  content: ""; position: absolute; inset: 0; opacity: .18;
-  background-image: linear-gradient(rgb(255 255 255 / .35) 1px, transparent 1px), linear-gradient(90deg, rgb(255 255 255 / .35) 1px, transparent 1px);
-  background-size: 32px 32px; mask-image: radial-gradient(circle at 75% 50%, #000, transparent 70%);
-  -webkit-mask-image: radial-gradient(circle at 75% 50%, #000, transparent 70%);
+.faq summary::after {
+  content: ""; flex: none; width: 10px; height: 10px; margin-right: 4px; border-right: 2px solid var(--muted); border-bottom: 2px solid var(--muted);
+  transform: rotate(45deg); transition: transform .2s ease;
 }
-.cta-band .wrap { position: relative; padding-block: 80px; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 48px; align-items: center; }
-.cta-band h2 { font: 800 clamp(2.2rem, 5vw, 3.6rem)/1 var(--display); }
-.cta-band p { color: var(--band-muted); margin: 16px 0 28px; max-width: 46ch; }
-.qr-card { display: grid; gap: 12px; justify-items: center; text-align: center; }
-.qr-card .qr { width: 188px; height: 188px; padding: 16px; border-radius: 22px; background: #fff; color: #051744; }
-.qr-card .qr svg { width: 100%; height: 100%; display: block; }
-.qr-card span { font: 400 1.15rem/1.2 var(--hand); color: var(--band-text); }
+.faq details[open] summary::after { transform: rotate(-135deg); }
+.faq details p { color: var(--muted); padding-bottom: 26px; max-width: 62ch; }
+
+/* ---------- closing ---------- */
+.closing { padding-block: 0 128px; }
+.cta-card {
+  position: relative; overflow: hidden; border-radius: 36px; padding: 72px; color: #FFFFFF;
+  background: radial-gradient(60% 90% at 85% 20%, rgb(1 227 253 / .22), transparent 60%), linear-gradient(135deg, var(--navy-1), var(--navy-2));
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 56px; align-items: center;
+}
+.cta-card h2 { color: #FFFFFF; font: 800 clamp(2.1rem, 4.6vw, 3.5rem)/1.04 var(--sans); letter-spacing: -.04em; max-width: 14ch; }
+.cta-card p { color: #B8C6EA; margin: 18px 0 32px; max-width: 44ch; font-size: 1.125rem; }
+.qr { display: grid; gap: 14px; justify-items: center; }
+.qr .code { width: 184px; height: 184px; padding: 16px; border-radius: 24px; background: #FFFFFF; color: var(--navy-1); }
+.qr .code svg { width: 100%; height: 100%; display: block; }
+.qr span { font-size: .875rem; color: #B8C6EA; }
 
 /* ---------- footer ---------- */
-.site-footer .wrap { padding-block: 40px 48px; display: flex; flex-wrap: wrap; gap: 20px 40px; align-items: center; justify-content: space-between; color: var(--slate); font-size: .93rem; }
-.site-footer .links { display: flex; flex-wrap: wrap; gap: 8px 24px; }
-.site-footer a { color: var(--slate); }
-.site-footer .brand span { font-size: 1.35rem; }
-.site-footer .brand img { width: 32px; height: 32px; }
+.site-footer { border-top: 1px solid var(--line); }
+.foot { display: grid; grid-template-columns: minmax(0, 1.4fr) repeat(3, minmax(0, 1fr)); gap: 40px; padding-block: 64px 40px; }
+.foot p { color: var(--muted); font-size: .9375rem; margin-top: 16px; max-width: 32ch; }
+.foot h4 { margin: 0 0 14px; font: 600 .875rem/1 var(--sans); color: var(--ink); }
+.foot ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; font-size: .9375rem; }
+.foot a { color: var(--muted); text-decoration: none; }
+.foot a:hover { color: var(--ink); }
+.foot li span { color: var(--muted); }
+.legal { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; padding-block: 24px 40px; border-top: 1px solid var(--line); font-size: .875rem; color: var(--faint); }
 
 /* ---------- responsive ---------- */
-@media (max-width: 1099px) { .note-check { display: none; } }
-@media (max-width: 980px) {
+@media (max-width: 1180px) { .float { display: none; } }
+@media (max-width: 1000px) {
   .nav { display: none; }
   .site-header .btn { margin-left: auto; }
-  .hero .wrap { grid-template-columns: minmax(0, 1fr); padding-block: 44px 24px; gap: 40px; }
-  .hero-visual { justify-self: center; }
-  .how-grid, .page-sec > .wrap, .free > .wrap, .faq > .wrap { grid-template-columns: minmax(0, 1fr); gap: 40px; }
+  .section { padding-block: 96px; }
+  .closing { padding-bottom: 96px; }
+  .how-grid, .split, .faq-grid { grid-template-columns: minmax(0, 1fr); gap: 48px; }
   .stage-col { position: static; }
-  .feature-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .bento { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .tile.wide { grid-column: 1 / -1; }
+  .privacy { grid-template-columns: minmax(0, 1fr); }
   .levels { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .sheet-photo { max-width: 360px; }
+  .cta-card { grid-template-columns: minmax(0, 1fr); padding: 56px 40px; }
+  .qr { justify-items: start; }
+  .foot { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .foot .about { grid-column: 1 / -1; }
 }
 @media (max-width: 860px) {
-  .steps .stage-col { grid-column: 1 / -1; margin: 10px 0 6px; max-width: 420px; }
-  .steps .stage-caption { display: none; }
+  .steps .stage-col { grid-column: 1 / -1; margin-top: 20px; }
+  .steps .panel-cap { display: none; }
 }
-@media (max-width: 620px) {
+@media (max-width: 640px) {
   body { font-size: 1rem; }
-  .brand span { font-size: 1.4rem; }
-  .brand img { width: 34px; height: 34px; }
+  .section { padding-block: 80px; }
+  .closing { padding-bottom: 80px; }
+  .logo img { height: 28px; }
   .site-header .btn span { display: none; }
-  .site-header .btn { padding: .55em .9em; }
-  .how > .wrap, .features > .wrap, .topics > .wrap, .free > .wrap, .faq > .wrap, .page-sec > .wrap { padding-block: 64px; }
-  .feature-grid, .levels { grid-template-columns: minmax(0, 1fr); }
-  .step { grid-template-columns: 40px minmax(0, 1fr); gap: 14px; }
-  .step .num { width: 40px; height: 40px; font-size: 1.15rem; }
-  .steps::before { left: 19px; }
-  .step h3 { padding-top: 6px; }
-  .cta-band .wrap { grid-template-columns: minmax(0, 1fr); padding-block: 64px; }
-  .qr-card { justify-items: start; text-align: left; }
-  .plan { padding: 26px 22px 24px; }
+  .site-header .btn { padding: 0 14px; }
+  .hero-top { padding-block: 56px 48px; }
+  .stage-hero { padding-bottom: 80px; }
+  .phone { width: 100%; max-width: 330px; }
+  .panel { padding: 32px 14px 16px; border-radius: 24px; }
+  .panel .phone { width: 100%; max-width: 310px; }
+  .step { grid-template-columns: 40px minmax(0, 1fr); }
+  .points, .bento, .facts-row, .plans, .bubbles { grid-template-columns: minmax(0, 1fr); }
+  .levels { gap: 32px 20px; }
+  .level li { font-size: .9rem; }
+  .tile { padding: 26px 22px; }
+  .page-panel { padding: 32px 18px; }
+  .page-panel img { width: 100%; max-width: 300px; }
+  .plan { padding: 28px 24px; }
+  .cta-card { padding: 44px 24px; border-radius: 28px; }
+  .foot { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
@@ -406,16 +403,14 @@ p { margin: 0; }
 </head>
 <body>
 
-<header class="site-header">
+<header class="site-header" id="header">
   <div class="wrap">
-    <a class="brand" href="#top" aria-label="MathFix.ai home">
-      <img src="assets/logo-mark.png" alt="" width="40" height="40">
-      <span><b>Math</b>Fix<i>.ai</i></span>
-    </a>
+    <a class="logo" href="#top" aria-label="MathFix.ai home"><img src="assets/logo-full.png" alt="MathFix.ai" width="146" height="34"></a>
     <nav class="nav" aria-label="Main">
       <a href="#how">How it works</a>
       <a href="#features">Features</a>
-      <a href="#free">Free plan</a>
+      <a href="#topics">Topics</a>
+      <a href="#pricing">Pricing</a>
       <a href="#faq">FAQ</a>
     </nav>
     <a class="btn btn-primary" href="https://t.me/mathfixbot" target="_blank" rel="noopener" aria-label="Open MathFix in Telegram">
@@ -428,38 +423,39 @@ p { margin: 0; }
 <main id="top">
 
 <!-- ======================= HERO ======================= -->
-<section class="hero grid-paper">
+<section class="hero">
   <div class="wrap">
-    <div class="hero-copy">
-      <span class="tag"><img src="assets/logo-mark.png" alt="" width="22" height="22">Free maths help on Telegram</span>
-      <h1>Stuck on a sum?
-        <span class="line2">Snap it. <span class="underline">Understand it.<svg viewBox="0 0 300 20" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="ul" x1="0" x2="1"><stop offset="0" stop-color="#01E3FD"/><stop offset=".55" stop-color="#006EFC"/><stop offset="1" stop-color="#003DE3"/></linearGradient></defs><path d="M4 13C60 5 140 3 296 9" fill="none" stroke="url(#ul)" stroke-width="7" stroke-linecap="round"/></svg></span></span>
-      </h1>
-      <p class="lede">Send a photo of any maths question. MathFix reads it, solves it step by step at your class level, and checks the answer with a maths engine before you see it.</p>
+    <div class="hero-top">
+      <span class="pill"><img src="assets/logo-mark.png" alt="" width="26" height="26">Free on Telegram for every student</span>
+      <h1><span>Snap a maths question.</span> <span class="grad">Understand every step.</span></h1>
+      <p class="lede">MathFix reads your question, solves it at your class level, and checks the answer with a maths engine before you see it.</p>
       <div class="ctas">
         <a class="btn btn-primary" href="https://t.me/mathfixbot" target="_blank" rel="noopener">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.5 3.5 2.8 10.7c-.9.4-.9 1.6.1 1.9l4.6 1.5 1.8 5.6c.3.8 1.3 1 1.9.4l2.6-2.5 4.8 3.5c.7.5 1.7.1 1.9-.7l3-15.4c.2-.9-.7-1.6-1.6-1.2Z"/><path d="m7.5 14 10-7.5-7.6 8.6"/></svg>
           Start free on Telegram
         </a>
-        <a class="btn btn-ghost" href="#how">See how it works</a>
+        <a class="btn btn-quiet" href="#how">See how it works <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
       </div>
       <ul class="facts">
-        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>5 free solves every day</li>
-        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>No app to install</li>
-        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>English or Hinglish</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>5 free solves every day</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>No sign-up, no app</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>English or Hinglish</li>
       </ul>
     </div>
 
-    <div class="hero-visual">
-      <p class="note note-check">checked before you see it
-        <svg viewBox="0 0 90 46" aria-hidden="true"><path d="M4 6c26 2 52 12 76 32" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="m70 36 11 3-2-11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      </p>
+    <div class="stage-hero">
+      <div class="float float-check" aria-hidden="true">
+        <span class="label"><i></i>Maths engine check</span>
+        <div>
+          <code>x = 1 → 2(1)² − 8(1) + 6 = 0 <b>✓</b></code>
+          <code>x = 3 → 2(3)² − 8(3) + 6 = 0 <b>✓</b></code>
+        </div>
+        <span class="verified">✔ Verified answer</span>
+      </div>
+
       <div class="phone" role="img" aria-label="A Telegram chat: a student sends a photo of 2x² − 8x + 6 = 0 and MathFix replies with the verified answer x = 1 or x = 3, the key idea and the steps.">
         <div class="screen">
-          <div class="chat-top">
-            <img src="assets/logo-mark.png" alt="" width="36" height="36">
-            <div><b>MathFix.ai</b><small>bot</small></div>
-          </div>
+          <div class="chat-top"><img src="assets/logo-mark.png" alt="" width="34" height="34"><div><b>MathFix.ai</b><small>bot</small></div></div>
           <div class="chat">
             <div class="msg out">
               <div class="photo"><span>Q4. Solve</span><span>2x² − 8x + 6 = 0</span></div>
@@ -474,7 +470,7 @@ p { margin: 0; }
               <div class="gap"></div>
               💡 <b>Key idea:</b> Make the numbers smaller first, then factorise.
               <div class="gap"></div>
-              📝 <b>Step-by-step</b> <i class="muted">(tap to expand)</i>
+              📝 <b>Step-by-step</b>
               <div class="quote">1️⃣ Every term is even, so divide by 2<br>&nbsp;&nbsp;&nbsp;<code>x² − 4x + 3 = 0</code><br><span class="muted">…</span></div>
               ✔️ <i>Verified by our maths engine</i>
               <span class="time">4:12 PM</span>
@@ -482,107 +478,99 @@ p { margin: 0; }
             <div class="keys" aria-hidden="true">
               <div class="row"><span>🖼 Get solution image</span></div>
               <div class="row"><span>💡 Hint</span><span>➡️ Next step</span><span>❓ Why?</span></div>
-              <div class="row"><span>📤 Share with a friend</span></div>
             </div>
           </div>
         </div>
+      </div>
+
+      <div class="float float-page" aria-hidden="true">
+        <div class="crop"><img src="assets/solution-sample.jpg" alt="" width="720" height="1375"></div>
+        <div class="cap"><b>Solution page</b><span>Scan the QR to share</span></div>
       </div>
     </div>
   </div>
 </section>
 
 <!-- ======================= HOW IT WORKS ======================= -->
-<section class="how" id="how">
+<section class="section" id="how">
   <div class="wrap">
-    <div class="section-head">
+    <div class="head">
       <span class="eyebrow">How it works</span>
-      <h2 class="h2">From photo to understanding in six steps</h2>
-      <p class="lede">Here is everything that happens between sending your question and getting the answer. Tap a step to see it in the chat.</p>
+      <h2 class="h2">From photo to understanding in six steps.</h2>
+      <p class="lede">Everything that happens between sending your question and getting the answer. Choose a step to see it in the chat.</p>
     </div>
 
     <div class="how-grid">
       <ol class="steps" id="steps">
-        <li class="step is-active" data-step="1">
-          <span class="num">1</span>
-          <div class="body">
-            <button class="title" type="button" aria-controls="stage"><h3>Send the question</h3></button>
+        <li class="step is-active">
+          <span class="n">01</span>
+          <div>
+            <button class="title" type="button"><h3>Send the question</h3></button>
             <p>Take a photo of the sum from your textbook, worksheet or notebook. Or type it, like 3x − 7 = 11.</p>
-            <span class="margin-note">Printed or handwritten, both work.</span>
+            <span class="detail"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4Z"/></svg>Printed or handwritten, both work</span>
           </div>
         </li>
-        <li class="step" data-step="2">
-          <span class="num">2</span>
-          <div class="body">
-            <button class="title" type="button" aria-controls="stage"><h3>MathFix reads it</h3></button>
-            <p>A vision model turns the photo into maths and shows you exactly what it read. If something is off, tap Fix and type the correction. That retry is free.</p>
-            <span class="margin-note">Your photo is deleted after reading.</span>
+        <li class="step">
+          <span class="n">02</span>
+          <div>
+            <button class="title" type="button"><h3>MathFix reads it</h3></button>
+            <p>A vision model turns the photo into maths and shows you exactly what it read. If something is off, tap Fix and type it. That retry is free.</p>
+            <span class="detail"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4.5 6v5.5c0 4.6 3.2 8.1 7.5 9.5 4.3-1.4 7.5-4.9 7.5-9.5V6L12 3Z"/></svg>Your photo is deleted after reading</span>
           </div>
         </li>
-        <li class="step" data-step="3">
-          <span class="num">3</span>
-          <div class="body">
-            <button class="title" type="button" aria-controls="stage"><h3>It solves at your level</h3></button>
+        <li class="step">
+          <span class="n">03</span>
+          <div>
+            <button class="title" type="button"><h3>It solves at your level</h3></button>
             <p>An AI maths teacher works through the problem in short steps, pitched at your class and explained in English or Hinglish.</p>
-            <span class="margin-note">For simple equations the answer comes straight from our maths engine.</span>
+            <span class="detail"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 3 4 14h7l-1 7 9-11h-7l1-7Z"/></svg>Simple equations are answered by our maths engine directly</span>
           </div>
         </li>
-        <li class="step" data-step="4">
-          <span class="num">4</span>
-          <div class="body">
-            <button class="title" type="button" aria-controls="stage"><h3>The answer is checked</h3></button>
+        <li class="step">
+          <span class="n">04</span>
+          <div>
+            <button class="title" type="button"><h3>The answer is checked</h3></button>
             <p>A separate maths engine checks the result before you see it. It puts roots back into the equation, differentiates integrals and recomputes numbers. If the check fails, a second AI solves it again from scratch.</p>
-            <span class="margin-note">Passed answers get the ✔ Verified badge.</span>
+            <span class="detail"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="m8.5 12.3 2.4 2.4 4.8-5"/></svg>Passed answers get the Verified badge</span>
           </div>
         </li>
-        <li class="step" data-step="5">
-          <span class="num">5</span>
-          <div class="body">
-            <button class="title" type="button" aria-controls="stage"><h3>You learn the method</h3></button>
+        <li class="step">
+          <span class="n">05</span>
+          <div>
+            <button class="title" type="button"><h3>You learn the method</h3></button>
             <p>You get the answer, the key idea, numbered steps and the mistake students usually make. Stuck on a step? Ask for a hint, the next step, or why.</p>
-            <span class="margin-note">Tutor mode gives hints first and the answer only when you ask.</span>
+            <span class="detail"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9.5 12 5l9 4.5-9 4.5-9-4.5Z"/><path d="M7 11.5V16c0 1.4 2.2 3 5 3s5-1.6 5-3v-4.5"/></svg>Tutor mode gives hints first, the answer when you ask</span>
           </div>
         </li>
-        <li class="step" data-step="6">
-          <span class="num">6</span>
-          <div class="body">
-            <button class="title" type="button" aria-controls="stage"><h3>Save it or share it</h3></button>
+        <li class="step">
+          <span class="n">06</span>
+          <div>
+            <button class="title" type="button"><h3>Save it or share it</h3></button>
             <p>Tap for a handwritten solution page with your steps, the verified answer and a QR code. Anyone who scans it opens the same solution.</p>
-            <span class="margin-note">Questions solved before come back instantly, for free.</span>
+            <span class="detail"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 8l5-5 5 5"/><path d="M5 14v5h14v-5"/></svg>Questions solved before come back instantly, free</span>
           </div>
         </li>
       </ol>
 
       <div class="stage-col" id="stage-col">
-        <div class="stage" id="stage">
+        <div class="panel">
           <div class="phone">
             <div class="screen">
-              <div class="chat-top">
-                <img src="assets/logo-mark.png" alt="" width="36" height="36">
-                <div><b>MathFix.ai</b><small>bot</small></div>
-              </div>
+              <div class="chat-top"><img src="assets/logo-mark.png" alt="" width="34" height="34"><div><b>MathFix.ai</b><small>bot</small></div></div>
               <div class="chat">
-                <!-- 1 send -->
-                <div class="scene" data-scene="1">
-                  <div class="msg out">
-                    <div class="photo"><span>Q4. Solve</span><span>2x² − 8x + 6 = 0</span></div>
-                    <span class="time">4:12 PM ✓✓</span>
-                  </div>
-                  <div class="chip-row"><span>or type it</span></div>
+                <div class="scene">
+                  <div class="msg out"><div class="photo"><span>Q4. Solve</span><span>2x² − 8x + 6 = 0</span></div><span class="time">4:12 PM ✓✓</span></div>
+                  <div class="chips"><span>or type it</span></div>
                   <div class="msg out">3x − 7 = 11<span class="time">4:13 PM ✓✓</span></div>
                 </div>
-                <!-- 2 read -->
-                <div class="scene" data-scene="2" hidden>
-                  <div class="msg out">
-                    <div class="photo scan"><span>Q4. Solve</span><span>2x² − 8x + 6 = 0</span></div>
-                    <span class="time">4:12 PM ✓✓</span>
-                  </div>
+                <div class="scene" hidden>
+                  <div class="msg out"><div class="photo scan"><span>Q4. Solve</span><span>2x² − 8x + 6 = 0</span></div><span class="time">4:12 PM ✓✓</span></div>
                   <div class="msg in">🔍 Reading your question<span class="dots"><i></i><i></i><i></i></span></div>
                   <div class="msg in">📸 <b>I read</b><div class="quote">2x² − 8x + 6 = 0</div><span class="time">4:12 PM</span></div>
                   <div class="keys" aria-hidden="true"><div class="row"><span>✏️ Fix question</span></div></div>
                 </div>
-                <!-- 3 solve -->
-                <div class="scene" data-scene="3" hidden>
-                  <div class="chip-row"><span>🎓 Class 9–10</span><span>🗣 English</span></div>
+                <div class="scene" hidden>
+                  <div class="chips"><span>🎓 Class 9–10</span><span>🗣 English</span></div>
                   <div class="msg in">🧮 Solving<span class="dots"><i></i><i></i><i></i></span></div>
                   <div class="msg in">
                     1️⃣ Every term is even, so divide by 2<br>&nbsp;&nbsp;&nbsp;<code>x² − 4x + 3 = 0</code>
@@ -593,43 +581,33 @@ p { margin: 0; }
                   </div>
                   <div class="msg in"><span class="muted">In Hinglish:</span><br>1️⃣ Har term even hai, toh poori equation ko 2 se divide karo</div>
                 </div>
-                <!-- 4 check -->
-                <div class="scene" data-scene="4" hidden>
+                <div class="scene" hidden>
                   <div class="engine">
                     <div class="label">Maths engine check</div>
-                    x = 1 → 2(1)² − 8(1) + 6 = 0 <span class="ok">✓</span><br>
-                    x = 3 → 2(3)² − 8(3) + 6 = 0 <span class="ok">✓</span><br>
-                    roots found: 2 of 2 <span class="ok">✓</span>
+                    x = 1 → 2(1)² − 8(1) + 6 = 0 <b>✓</b><br>
+                    x = 3 → 2(3)² − 8(3) + 6 = 0 <b>✓</b><br>
+                    roots found: 2 of 2 <b>✓</b>
                   </div>
                   <div class="msg in">✅ <b>ANSWER:&nbsp; x = 1 or x = 3</b><div class="gap"></div>✔️ <i>Verified by our maths engine</i><span class="time">4:12 PM</span></div>
                 </div>
-                <!-- 5 learn -->
-                <div class="scene" data-scene="5" hidden>
-                  <div class="msg in">
-                    💡 <b>Key idea:</b> Make the numbers smaller first, then factorise.
-                    <div class="gap"></div>
-                    ⚠️ <b>Watch out:</b> Never divide both sides by x. You would lose a root.
-                  </div>
+                <div class="scene" hidden>
+                  <div class="msg in">💡 <b>Key idea:</b> Make the numbers smaller first, then factorise.<div class="gap"></div>⚠️ <b>Watch out:</b> Never divide both sides by x. You would lose a root.</div>
                   <div class="keys" aria-hidden="true"><div class="row"><span>💡 Hint</span><span>➡️ Next step</span><span>❓ Why?</span></div></div>
                   <div class="msg out">❓ Why step 1?<span class="time">4:14 PM ✓✓</span></div>
                   <div class="msg in">🎓 Every term (2, −8 and 6) is even. Dividing all of them by 2 keeps the equation balanced and gives smaller numbers that are easier to factorise.<span class="time">4:14 PM</span></div>
                 </div>
-                <!-- 6 share -->
-                <div class="scene" data-scene="6" hidden>
+                <div class="scene" hidden>
                   <div class="msg in">
-                    <div class="thumb"><img src="assets/solution-sample.jpg" alt="Handwritten-style MathFix solution page for 2x² − 8x + 6 = 0" loading="lazy" width="720" height="1375"></div>
+                    <div class="thumb"><img src="assets/solution-sample.jpg" alt="Handwritten-style MathFix solution page for 2x² − 8x + 6 = 0" width="720" height="1375" loading="lazy"></div>
                     ✍️ <b>Quadratic equations · Solved with MathFix.ai</b><br>📲 Save it, or share it. Anyone can scan the QR to open it.
                     <span class="time">4:15 PM</span>
                   </div>
-                  <div class="keys" aria-hidden="true">
-                    <div class="row"><span>📤 Share this solution</span></div>
-                    <div class="row"><span>🤝 Invite friends · get free solves</span></div>
-                  </div>
+                  <div class="keys" aria-hidden="true"><div class="row"><span>📤 Share this solution</span></div><div class="row"><span>🤝 Invite friends · get free solves</span></div></div>
                 </div>
               </div>
             </div>
           </div>
-          <div class="stage-caption">
+          <div class="panel-cap">
             <span id="stage-label">Step 1 of 6 · Send the question</span>
             <div class="pager" id="pager" aria-label="Choose a step">
               <button type="button" aria-label="Step 1" aria-current="true"></button>
@@ -647,126 +625,176 @@ p { margin: 0; }
 </section>
 
 <!-- ======================= SOLUTION PAGE ======================= -->
-<section class="page-sec grid-paper" id="page">
-  <div class="wrap">
-    <figure class="sheet-photo">
+<section class="section flush" id="page">
+  <div class="wrap split">
+    <div>
+      <div class="head">
+        <span class="eyebrow">The solution page</span>
+        <h2 class="h2">A page worth keeping.</h2>
+        <p class="lede">Tap 🖼 under any answer and MathFix writes out the whole solution on maths grid paper. Save it for revision or send it to the group chat.</p>
+      </div>
+      <div class="points">
+        <div class="point">
+          <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4Z"/><path d="m13.5 6.5 4 4"/></svg></span>
+          <h3>Written like a teacher would</h3>
+          <p>Handwriting-style steps, each one numbered, with the maths set out properly.</p>
+        </div>
+        <div class="point">
+          <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="m8.5 12.3 2.4 2.4 4.8-5"/></svg></span>
+          <h3>Answer boxed and stamped</h3>
+          <p>A green box for the final answer, and a Verified stamp when the engine agrees.</p>
+        </div>
+        <div class="point">
+          <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5a6 6 0 0 0-3.5 10.9V17h7v-2.6A6 6 0 0 0 12 3.5Z"/><path d="M9.5 20.5h5"/></svg></span>
+          <h3>Key idea and common mistake</h3>
+          <p>The one thing to remember, and the trap to avoid in the exam.</p>
+        </div>
+        <div class="point">
+          <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="3.5" width="6" height="6" rx="1"/><rect x="14.5" y="3.5" width="6" height="6" rx="1"/><rect x="3.5" y="14.5" width="6" height="6" rx="1"/><path d="M14.5 14.5h2v2h-2zM18.5 18.5h2v2h-2zM18.5 14.5h2M14.5 18.5v2"/></svg></span>
+          <h3>A QR code on every page</h3>
+          <p>Anyone who scans it opens the same solution in MathFix, with hints and steps.</p>
+        </div>
+      </div>
+    </div>
+    <div class="page-panel">
       <img src="assets/solution-sample.jpg" alt="A MathFix solution page: the question 2x² − 8x + 6 = 0, four numbered handwritten steps, the key idea, the boxed answer x = 1 or x = 3 with a Verified stamp, and a QR code." width="720" height="1375">
-    </figure>
-    <div class="page-copy">
-      <span class="eyebrow">The solution page</span>
-      <h2 class="h2">A page worth keeping in your notebook</h2>
-      <p class="lede">Tap 🖼 under any answer and MathFix draws the whole solution by hand on maths grid paper. Save it for revision or send it to the group chat.</p>
-      <ul class="ticks">
-        <li><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4Z"/><path d="m13.5 6.5 4 4"/></svg></span><div><b>Written like a teacher would</b><span>Handwriting-style steps, each one numbered, with the maths set out properly.</span></div></li>
-        <li><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="m8.5 12.3 2.4 2.4 4.8-5"/></svg></span><div><b>Answer boxed and stamped</b><span>The final answer gets a green box, and a Verified stamp when the maths engine agrees.</span></div></li>
-        <li><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5a6 6 0 0 0-3.5 10.9V17h7v-2.6A6 6 0 0 0 12 3.5Z"/><path d="M9.5 20.5h5"/></svg></span><div><b>Key idea and common mistake</b><span>The one thing to remember, and the trap to avoid in the exam.</span></div></li>
-        <li><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="3.5" width="6" height="6" rx="1"/><rect x="14.5" y="3.5" width="6" height="6" rx="1"/><rect x="3.5" y="14.5" width="6" height="6" rx="1"/><path d="M14.5 14.5h2v2h-2zM18.5 18.5h2v2h-2zM18.5 14.5h2M14.5 18.5v2"/></svg></span><div><b>A QR code on every page</b><span>Anyone who scans it opens the same solution in MathFix, with hints and steps.</span></div></li>
-      </ul>
     </div>
   </div>
 </section>
 
 <!-- ======================= FEATURES ======================= -->
-<section class="features" id="features">
+<section class="section flush" id="features">
   <div class="wrap">
-    <div class="section-head">
-      <span class="eyebrow">Made for students</span>
-      <h2 class="h2">Built around the way you study</h2>
+    <div class="head">
+      <span class="eyebrow">Features</span>
+      <h2 class="h2">Built around the way students study.</h2>
     </div>
-    <div class="feature-grid">
-      <div class="feature">
-        <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9.5 12 5l9 4.5-9 4.5-9-4.5Z"/><path d="M7 11.5V16c0 1.4 2.2 3 5 3s5-1.6 5-3v-4.5"/></svg></span>
+    <div class="bento">
+      <article class="tile wide">
         <h3>Your class, your language</h3>
-        <p>Pick your class once and every explanation matches it. Choose English or Hinglish: <q>Dono sides se 3 subtract karo</q></p>
-      </div>
-      <div class="feature">
-        <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12a8 8 0 0 1-11.6 7.1L4 20l1-4.2A8 8 0 1 1 20 12Z"/><path d="M9.8 9.6a2.3 2.3 0 0 1 4.4.9c0 1.6-2.2 1.8-2.2 3.2M12 16.2h.01"/></svg></span>
+        <p>Pick your class once and every explanation matches it. Read the steps in English or Hinglish.</p>
+        <div class="viz">
+          <div class="bubbles">
+            <div class="bubble"><small>English</small>Subtract 3 from both sides</div>
+            <div class="bubble"><small>Hinglish</small>Dono sides se 3 subtract karo</div>
+          </div>
+          <div class="classes"><span>Class 6–8</span><span class="on">Class 9–10</span><span>Class 11–12</span><span>College</span><span>Parent / Teacher</span></div>
+        </div>
+      </article>
+      <article class="tile">
         <h3>A tutor that waits for you</h3>
-        <p>Ask for a hint, the next step, or why a step works. Tutor mode holds back the answer until you ask for it.</p>
-      </div>
-      <div class="feature">
-        <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 12a8.5 8.5 0 1 0 2.6-6.1"/><path d="M3.5 4v4h4"/><path d="M12 8v4.5l3 1.8"/></svg></span>
+        <p>Ask for a hint, the next step, or why a step works.</p>
+        <div class="viz">
+          <div class="mini-keys"><span>💡 Hint</span><span>➡️ Next</span><span>❓ Why?</span></div>
+          <div class="mini-reply">Try dividing every term by 2 first. What do you get?</div>
+        </div>
+      </article>
+      <article class="tile">
         <h3>Fix it or flag it</h3>
-        <p>If it misread your photo, tap Fix and type the question. Spot a wrong answer? Tap Wrong and your free solve comes back.</p>
-      </div>
-      <div class="feature">
-        <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3c.6 3.2 4.5 4.8 4.5 9.2A4.5 4.5 0 0 1 12 17a4.5 4.5 0 0 1-4.5-4.8C7.5 10 9 9 9.5 7c1.3 1 1.8 2.2 1.8 3.4C12.6 9 12.4 5.8 12 3Z"/><path d="M6 21h12"/></svg></span>
+        <p>Misread photo? Fix it for free. Wrong answer? Your solve comes back.</p>
+        <div class="viz"><div class="mini-keys two"><span>✏️ Fix question</span><span>⚠️ Wrong answer?</span></div></div>
+      </article>
+      <article class="tile">
         <h3>Streaks that keep you going</h3>
-        <p>Solve something every day to grow your streak. Your profile shows your best streak and how many problems you've solved.</p>
-      </div>
-      <div class="feature">
-        <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.5-3.6 3.2-5.5 6.5-5.5s6 1.9 6.5 5.5"/><path d="M18.5 8v6M15.5 11h6"/></svg></span>
+        <p>Solve something every day and watch your streak grow.</p>
+        <div class="viz">
+          <div class="big">7<small>day streak</small></div>
+          <div class="week" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+        </div>
+      </article>
+      <article class="tile">
         <h3>Invite friends, get more</h3>
-        <p>When a friend joins with your link and solves their first sum, you get 3 extra solves and they get 2.</p>
-      </div>
-      <div class="feature">
-        <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4.5 6v5.5c0 4.6 3.2 8.1 7.5 9.5 4.3-1.4 7.5-4.9 7.5-9.5V6L12 3Z"/><path d="m9 12 2.2 2.2L15.5 10"/></svg></span>
-        <h3>Private by design</h3>
-        <p>Photos are read and then deleted. No ads, no selling of data. Send /deleteme to remove everything we keep about you.</p>
-      </div>
+        <p>When a friend solves their first sum with your link, you both get extra solves.</p>
+        <div class="viz"><div class="duo"><div><b>+3</b><span>solves for you</span></div><div><b>+2</b><span>for your friend</span></div></div></div>
+      </article>
+      <article class="tile full">
+        <div class="privacy">
+          <div>
+            <h3>Private by design</h3>
+            <p>We keep only what MathFix needs to work, and you can delete it any time.</p>
+          </div>
+          <ul class="facts-row">
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7h18M8 7V5h8v2M6 7l1 13h10l1-13"/></svg>Photos are deleted after reading</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="m6 6 12 12"/></svg>No ads, no selling of data</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4.5 6v5.5c0 4.6 3.2 8.1 7.5 9.5 4.3-1.4 7.5-4.9 7.5-9.5V6L12 3Z"/><path d="m9 12 2.2 2.2L15.5 10"/></svg>Send /deleteme to remove your data</li>
+          </ul>
+        </div>
+      </article>
     </div>
   </div>
 </section>
 
 <!-- ======================= TOPICS ======================= -->
-<section class="topics grid-paper" id="topics">
+<section class="section flush" id="topics">
   <div class="wrap">
-    <div class="section-head">
-      <span class="eyebrow">What it covers</span>
-      <h2 class="h2">From Class 6 fractions to college calculus</h2>
+    <div class="head">
+      <span class="eyebrow">Topics</span>
+      <h2 class="h2">From Class 6 fractions to college calculus.</h2>
       <p class="lede">Any board, any textbook. If it's maths, send it.</p>
     </div>
     <div class="levels">
       <div class="level">
         <h3>Class 6–8<small>Building blocks</small></h3>
-        <ul><li>Fractions &amp; decimals</li><li>Percentages</li><li>Ratio &amp; proportion</li><li>Simple equations</li><li>Exponents</li><li>Area &amp; perimeter</li><li>Data handling</li></ul>
+        <ul><li>Fractions &amp; decimals</li><li>Percentages</li><li>Ratio &amp; proportion</li><li>Simple equations</li><li>Exponents</li><li>Area &amp; perimeter</li></ul>
       </div>
       <div class="level">
         <h3>Class 9–10<small>Board exam years</small></h3>
-        <ul><li>Polynomials</li><li>Pair of linear equations</li><li>Quadratic equations</li><li>Arithmetic progressions</li><li>Triangles &amp; circles</li><li>Trigonometry</li><li>Surface areas &amp; volumes</li><li>Statistics &amp; probability</li></ul>
+        <ul><li>Polynomials</li><li>Pair of linear equations</li><li>Quadratic equations</li><li>Arithmetic progressions</li><li>Trigonometry</li><li>Surface areas &amp; volumes</li></ul>
       </div>
       <div class="level">
         <h3>Class 11–12<small>Entrance prep</small></h3>
-        <ul><li>Sets &amp; functions</li><li>Sequences &amp; series</li><li>Permutations &amp; combinations</li><li>Limits &amp; derivatives</li><li>Integrals</li><li>Matrices &amp; determinants</li><li>Vectors &amp; 3D</li><li>Probability</li></ul>
+        <ul><li>Sequences &amp; series</li><li>Permutations &amp; combinations</li><li>Limits &amp; derivatives</li><li>Integrals</li><li>Matrices &amp; determinants</li><li>Probability</li></ul>
       </div>
       <div class="level">
         <h3>College<small>Beyond school</small></h3>
-        <ul><li>Calculus</li><li>Linear algebra</li><li>Differential equations</li><li>Optimisation</li><li>Statistics</li></ul>
+        <ul><li>Calculus</li><li>Linear algebra</li><li>Differential equations</li><li>Optimisation</li><li>Statistics</li><li>Vectors</li></ul>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ======================= FREE PLAN ======================= -->
-<section class="free" id="free">
+<!-- ======================= PRICING ======================= -->
+<section class="section flush" id="pricing">
   <div class="wrap">
-    <div class="free-copy">
-      <span class="eyebrow">Free plan</span>
-      <h2 class="h2">Free for every student, every day</h2>
-      <p class="lede">No sign-up, no card, no ads. Open the bot, choose your class and start solving. Your free solves refill every day.</p>
-      <p class="hand" style="font-size:1.2rem;color:var(--blue-text)">A Premium plan with higher limits is planned for later.</p>
+    <div class="head center">
+      <span class="eyebrow">Pricing</span>
+      <h2 class="h2">Free for every student.</h2>
+      <p class="lede">No sign-up, no card, no ads. Your free solves refill every day.</p>
     </div>
-    <div class="plan">
-      <div class="plan-head"><b>Free</b><span class="price">₹0 <small>/ day</small></span></div>
-      <ul>
-        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg><span><b>5 solves</b> every day, with steps and the solution page</span></li>
-        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg><span><b>15 tutor messages</b> every day for hints and “why?”</span></li>
-        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg><span>Questions solved before don't use a solve</span></li>
-        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg><span><b>+3 solves</b> for every friend who joins with your link</span></li>
-      </ul>
-      <a class="btn btn-primary" href="https://t.me/mathfixbot" target="_blank" rel="noopener">Start free on Telegram</a>
-      <p class="fine">Unreadable photos and busy moments never cost a solve.</p>
+    <div class="plans">
+      <div class="plan main">
+        <div class="plan-top"><b>Free</b><span class="badge">Available now</span></div>
+        <div class="price">₹0 <small>/ day</small></div>
+        <ul>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg><span>5 solves every day, with steps and the solution page</span></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg><span>15 tutor messages every day for hints and “why?”</span></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg><span>Questions solved before don't use a solve</span></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg><span>+3 solves for every friend who joins with your link</span></li>
+        </ul>
+        <a class="btn btn-primary" href="https://t.me/mathfixbot" target="_blank" rel="noopener">Start free on Telegram</a>
+      </div>
+      <div class="plan later">
+        <div class="plan-top"><b>Premium</b><span class="badge">Coming later</span></div>
+        <div class="price">Soon</div>
+        <ul>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg><span>Higher daily limits for students who practise a lot</span></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg><span>Everything in Free</span></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg><span>We'll announce it in the bot first</span></li>
+        </ul>
+        <span class="btn btn-disabled" aria-disabled="true">Coming later</span>
+      </div>
     </div>
+    <p class="fine">Unreadable photos and busy moments never cost a solve.</p>
   </div>
 </section>
 
 <!-- ======================= FAQ ======================= -->
-<section class="faq" id="faq">
-  <div class="wrap">
-    <div class="section-head">
-      <span class="eyebrow">Questions</span>
-      <h2 class="h2">Good to know</h2>
-      <p class="lede">Something else on your mind? Write to support@mathfix.ai.</p>
+<section class="section flush faq" id="faq">
+  <div class="wrap faq-grid">
+    <div class="head">
+      <span class="eyebrow">FAQ</span>
+      <h2 class="h2">Questions, answered.</h2>
+      <p class="lede">Anything else? Write to support@mathfix.ai.</p>
     </div>
     <div class="faq-list">
       <details open>
@@ -798,19 +826,20 @@ p { margin: 0; }
 </section>
 
 <!-- ======================= CLOSING ======================= -->
-<section class="cta-band">
+<section class="closing">
   <div class="wrap">
-    <div>
-      <h2>Your next sum is one photo away.</h2>
-      <p>Open MathFix on Telegram, choose your class, and send the question you're stuck on.</p>
-      <a class="btn btn-primary" href="https://t.me/mathfixbot" target="_blank" rel="noopener">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.5 3.5 2.8 10.7c-.9.4-.9 1.6.1 1.9l4.6 1.5 1.8 5.6c.3.8 1.3 1 1.9.4l2.6-2.5 4.8 3.5c.7.5 1.7.1 1.9-.7l3-15.4c.2-.9-.7-1.6-1.6-1.2Z"/><path d="m7.5 14 10-7.5-7.6 8.6"/></svg>
-        Start free on Telegram
-      </a>
-    </div>
-    <div class="qr-card">
-      <div class="qr"><svg viewBox="0 0 25 25" shape-rendering="crispEdges" role="img" aria-label="QR code that opens t.me/mathfixbot"><path fill="currentColor" d="M0 0h1v1h-1zM1 0h1v1h-1zM2 0h1v1h-1zM3 0h1v1h-1zM4 0h1v1h-1zM5 0h1v1h-1zM6 0h1v1h-1zM9 0h1v1h-1zM10 0h1v1h-1zM11 0h1v1h-1zM12 0h1v1h-1zM13 0h1v1h-1zM14 0h1v1h-1zM18 0h1v1h-1zM19 0h1v1h-1zM20 0h1v1h-1zM21 0h1v1h-1zM22 0h1v1h-1zM23 0h1v1h-1zM24 0h1v1h-1zM0 1h1v1h-1zM6 1h1v1h-1zM8 1h1v1h-1zM11 1h1v1h-1zM13 1h1v1h-1zM14 1h1v1h-1zM18 1h1v1h-1zM24 1h1v1h-1zM0 2h1v1h-1zM2 2h1v1h-1zM3 2h1v1h-1zM4 2h1v1h-1zM6 2h1v1h-1zM8 2h1v1h-1zM10 2h1v1h-1zM11 2h1v1h-1zM12 2h1v1h-1zM15 2h1v1h-1zM18 2h1v1h-1zM20 2h1v1h-1zM21 2h1v1h-1zM22 2h1v1h-1zM24 2h1v1h-1zM0 3h1v1h-1zM2 3h1v1h-1zM3 3h1v1h-1zM4 3h1v1h-1zM6 3h1v1h-1zM8 3h1v1h-1zM9 3h1v1h-1zM10 3h1v1h-1zM13 3h1v1h-1zM15 3h1v1h-1zM16 3h1v1h-1zM18 3h1v1h-1zM20 3h1v1h-1zM21 3h1v1h-1zM22 3h1v1h-1zM24 3h1v1h-1zM0 4h1v1h-1zM2 4h1v1h-1zM3 4h1v1h-1zM4 4h1v1h-1zM6 4h1v1h-1zM10 4h1v1h-1zM11 4h1v1h-1zM12 4h1v1h-1zM13 4h1v1h-1zM16 4h1v1h-1zM18 4h1v1h-1zM20 4h1v1h-1zM21 4h1v1h-1zM22 4h1v1h-1zM24 4h1v1h-1zM0 5h1v1h-1zM6 5h1v1h-1zM9 5h1v1h-1zM10 5h1v1h-1zM12 5h1v1h-1zM18 5h1v1h-1zM24 5h1v1h-1zM0 6h1v1h-1zM1 6h1v1h-1zM2 6h1v1h-1zM3 6h1v1h-1zM4 6h1v1h-1zM5 6h1v1h-1zM6 6h1v1h-1zM8 6h1v1h-1zM10 6h1v1h-1zM12 6h1v1h-1zM14 6h1v1h-1zM16 6h1v1h-1zM18 6h1v1h-1zM19 6h1v1h-1zM20 6h1v1h-1zM21 6h1v1h-1zM22 6h1v1h-1zM23 6h1v1h-1zM24 6h1v1h-1zM8 7h1v1h-1zM11 7h1v1h-1zM14 7h1v1h-1zM16 7h1v1h-1zM0 8h1v1h-1zM6 8h1v1h-1zM8 8h1v1h-1zM10 8h1v1h-1zM11 8h1v1h-1zM13 8h1v1h-1zM14 8h1v1h-1zM15 8h1v1h-1zM16 8h1v1h-1zM17 8h1v1h-1zM18 8h1v1h-1zM21 8h1v1h-1zM22 8h1v1h-1zM23 8h1v1h-1zM2 9h1v1h-1zM4 9h1v1h-1zM9 9h1v1h-1zM11 9h1v1h-1zM12 9h1v1h-1zM13 9h1v1h-1zM15 9h1v1h-1zM20 9h1v1h-1zM21 9h1v1h-1zM22 9h1v1h-1zM23 9h1v1h-1zM0 10h1v1h-1zM1 10h1v1h-1zM2 10h1v1h-1zM3 10h1v1h-1zM4 10h1v1h-1zM5 10h1v1h-1zM6 10h1v1h-1zM7 10h1v1h-1zM9 10h1v1h-1zM15 10h1v1h-1zM16 10h1v1h-1zM17 10h1v1h-1zM21 10h1v1h-1zM23 10h1v1h-1zM24 10h1v1h-1zM0 11h1v1h-1zM3 11h1v1h-1zM5 11h1v1h-1zM7 11h1v1h-1zM8 11h1v1h-1zM9 11h1v1h-1zM10 11h1v1h-1zM11 11h1v1h-1zM12 11h1v1h-1zM19 11h1v1h-1zM21 11h1v1h-1zM24 11h1v1h-1zM3 12h1v1h-1zM6 12h1v1h-1zM8 12h1v1h-1zM10 12h1v1h-1zM11 12h1v1h-1zM12 12h1v1h-1zM15 12h1v1h-1zM16 12h1v1h-1zM18 12h1v1h-1zM24 12h1v1h-1zM0 13h1v1h-1zM2 13h1v1h-1zM3 13h1v1h-1zM4 13h1v1h-1zM7 13h1v1h-1zM9 13h1v1h-1zM10 13h1v1h-1zM15 13h1v1h-1zM16 13h1v1h-1zM19 13h1v1h-1zM23 13h1v1h-1zM0 14h1v1h-1zM2 14h1v1h-1zM3 14h1v1h-1zM4 14h1v1h-1zM6 14h1v1h-1zM8 14h1v1h-1zM9 14h1v1h-1zM10 14h1v1h-1zM11 14h1v1h-1zM12 14h1v1h-1zM13 14h1v1h-1zM15 14h1v1h-1zM16 14h1v1h-1zM17 14h1v1h-1zM19 14h1v1h-1zM20 14h1v1h-1zM21 14h1v1h-1zM23 14h1v1h-1zM24 14h1v1h-1zM0 15h1v1h-1zM2 15h1v1h-1zM4 15h1v1h-1zM5 15h1v1h-1zM8 15h1v1h-1zM11 15h1v1h-1zM14 15h1v1h-1zM17 15h1v1h-1zM18 15h1v1h-1zM19 15h1v1h-1zM21 15h1v1h-1zM22 15h1v1h-1zM24 15h1v1h-1zM0 16h1v1h-1zM3 16h1v1h-1zM4 16h1v1h-1zM5 16h1v1h-1zM6 16h1v1h-1zM7 16h1v1h-1zM11 16h1v1h-1zM13 16h1v1h-1zM14 16h1v1h-1zM16 16h1v1h-1zM17 16h1v1h-1zM18 16h1v1h-1zM19 16h1v1h-1zM20 16h1v1h-1zM22 16h1v1h-1zM8 17h1v1h-1zM9 17h1v1h-1zM10 17h1v1h-1zM12 17h1v1h-1zM13 17h1v1h-1zM16 17h1v1h-1zM20 17h1v1h-1zM0 18h1v1h-1zM1 18h1v1h-1zM2 18h1v1h-1zM3 18h1v1h-1zM4 18h1v1h-1zM5 18h1v1h-1zM6 18h1v1h-1zM11 18h1v1h-1zM16 18h1v1h-1zM18 18h1v1h-1zM20 18h1v1h-1zM24 18h1v1h-1zM0 19h1v1h-1zM6 19h1v1h-1zM9 19h1v1h-1zM12 19h1v1h-1zM14 19h1v1h-1zM15 19h1v1h-1zM16 19h1v1h-1zM20 19h1v1h-1zM23 19h1v1h-1zM0 20h1v1h-1zM2 20h1v1h-1zM3 20h1v1h-1zM4 20h1v1h-1zM6 20h1v1h-1zM9 20h1v1h-1zM12 20h1v1h-1zM13 20h1v1h-1zM14 20h1v1h-1zM15 20h1v1h-1zM16 20h1v1h-1zM17 20h1v1h-1zM18 20h1v1h-1zM19 20h1v1h-1zM20 20h1v1h-1zM22 20h1v1h-1zM23 20h1v1h-1zM24 20h1v1h-1zM0 21h1v1h-1zM2 21h1v1h-1zM3 21h1v1h-1zM4 21h1v1h-1zM6 21h1v1h-1zM15 21h1v1h-1zM17 21h1v1h-1zM18 21h1v1h-1zM23 21h1v1h-1zM24 21h1v1h-1zM0 22h1v1h-1zM2 22h1v1h-1zM3 22h1v1h-1zM4 22h1v1h-1zM6 22h1v1h-1zM9 22h1v1h-1zM11 22h1v1h-1zM12 22h1v1h-1zM14 22h1v1h-1zM16 22h1v1h-1zM21 22h1v1h-1zM22 22h1v1h-1zM24 22h1v1h-1zM0 23h1v1h-1zM6 23h1v1h-1zM9 23h1v1h-1zM11 23h1v1h-1zM16 23h1v1h-1zM17 23h1v1h-1zM18 23h1v1h-1zM19 23h1v1h-1zM20 23h1v1h-1zM24 23h1v1h-1zM0 24h1v1h-1zM1 24h1v1h-1zM2 24h1v1h-1zM3 24h1v1h-1zM4 24h1v1h-1zM5 24h1v1h-1zM6 24h1v1h-1zM8 24h1v1h-1zM9 24h1v1h-1zM10 24h1v1h-1zM12 24h1v1h-1zM13 24h1v1h-1zM14 24h1v1h-1zM15 24h1v1h-1zM16 24h1v1h-1zM18 24h1v1h-1zM21 24h1v1h-1zM24 24h1v1h-1z"/></svg></div>
-      <span>On a laptop? Scan with your phone.</span>
+    <div class="cta-card">
+      <div>
+        <h2>Your next maths question is one photo away.</h2>
+        <p>Open MathFix on Telegram, choose your class, and send the question you're stuck on.</p>
+        <a class="btn btn-white" href="https://t.me/mathfixbot" target="_blank" rel="noopener">
+          Start free on Telegram <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </a>
+      </div>
+      <div class="qr">
+        <div class="code"><svg viewBox="0 0 25 25" shape-rendering="crispEdges" role="img" aria-label="QR code that opens t.me/mathfixbot"><path fill="currentColor" d="M0 0h1v1h-1zM1 0h1v1h-1zM2 0h1v1h-1zM3 0h1v1h-1zM4 0h1v1h-1zM5 0h1v1h-1zM6 0h1v1h-1zM9 0h1v1h-1zM10 0h1v1h-1zM11 0h1v1h-1zM12 0h1v1h-1zM13 0h1v1h-1zM14 0h1v1h-1zM18 0h1v1h-1zM19 0h1v1h-1zM20 0h1v1h-1zM21 0h1v1h-1zM22 0h1v1h-1zM23 0h1v1h-1zM24 0h1v1h-1zM0 1h1v1h-1zM6 1h1v1h-1zM8 1h1v1h-1zM11 1h1v1h-1zM13 1h1v1h-1zM14 1h1v1h-1zM18 1h1v1h-1zM24 1h1v1h-1zM0 2h1v1h-1zM2 2h1v1h-1zM3 2h1v1h-1zM4 2h1v1h-1zM6 2h1v1h-1zM8 2h1v1h-1zM10 2h1v1h-1zM11 2h1v1h-1zM12 2h1v1h-1zM15 2h1v1h-1zM18 2h1v1h-1zM20 2h1v1h-1zM21 2h1v1h-1zM22 2h1v1h-1zM24 2h1v1h-1zM0 3h1v1h-1zM2 3h1v1h-1zM3 3h1v1h-1zM4 3h1v1h-1zM6 3h1v1h-1zM8 3h1v1h-1zM9 3h1v1h-1zM10 3h1v1h-1zM13 3h1v1h-1zM15 3h1v1h-1zM16 3h1v1h-1zM18 3h1v1h-1zM20 3h1v1h-1zM21 3h1v1h-1zM22 3h1v1h-1zM24 3h1v1h-1zM0 4h1v1h-1zM2 4h1v1h-1zM3 4h1v1h-1zM4 4h1v1h-1zM6 4h1v1h-1zM10 4h1v1h-1zM11 4h1v1h-1zM12 4h1v1h-1zM13 4h1v1h-1zM16 4h1v1h-1zM18 4h1v1h-1zM20 4h1v1h-1zM21 4h1v1h-1zM22 4h1v1h-1zM24 4h1v1h-1zM0 5h1v1h-1zM6 5h1v1h-1zM9 5h1v1h-1zM10 5h1v1h-1zM12 5h1v1h-1zM18 5h1v1h-1zM24 5h1v1h-1zM0 6h1v1h-1zM1 6h1v1h-1zM2 6h1v1h-1zM3 6h1v1h-1zM4 6h1v1h-1zM5 6h1v1h-1zM6 6h1v1h-1zM8 6h1v1h-1zM10 6h1v1h-1zM12 6h1v1h-1zM14 6h1v1h-1zM16 6h1v1h-1zM18 6h1v1h-1zM19 6h1v1h-1zM20 6h1v1h-1zM21 6h1v1h-1zM22 6h1v1h-1zM23 6h1v1h-1zM24 6h1v1h-1zM8 7h1v1h-1zM11 7h1v1h-1zM14 7h1v1h-1zM16 7h1v1h-1zM0 8h1v1h-1zM6 8h1v1h-1zM8 8h1v1h-1zM10 8h1v1h-1zM11 8h1v1h-1zM13 8h1v1h-1zM14 8h1v1h-1zM15 8h1v1h-1zM16 8h1v1h-1zM17 8h1v1h-1zM18 8h1v1h-1zM21 8h1v1h-1zM22 8h1v1h-1zM23 8h1v1h-1zM2 9h1v1h-1zM4 9h1v1h-1zM9 9h1v1h-1zM11 9h1v1h-1zM12 9h1v1h-1zM13 9h1v1h-1zM15 9h1v1h-1zM20 9h1v1h-1zM21 9h1v1h-1zM22 9h1v1h-1zM23 9h1v1h-1zM0 10h1v1h-1zM1 10h1v1h-1zM2 10h1v1h-1zM3 10h1v1h-1zM4 10h1v1h-1zM5 10h1v1h-1zM6 10h1v1h-1zM7 10h1v1h-1zM9 10h1v1h-1zM15 10h1v1h-1zM16 10h1v1h-1zM17 10h1v1h-1zM21 10h1v1h-1zM23 10h1v1h-1zM24 10h1v1h-1zM0 11h1v1h-1zM3 11h1v1h-1zM5 11h1v1h-1zM7 11h1v1h-1zM8 11h1v1h-1zM9 11h1v1h-1zM10 11h1v1h-1zM11 11h1v1h-1zM12 11h1v1h-1zM19 11h1v1h-1zM21 11h1v1h-1zM24 11h1v1h-1zM3 12h1v1h-1zM6 12h1v1h-1zM8 12h1v1h-1zM10 12h1v1h-1zM11 12h1v1h-1zM12 12h1v1h-1zM15 12h1v1h-1zM16 12h1v1h-1zM18 12h1v1h-1zM24 12h1v1h-1zM0 13h1v1h-1zM2 13h1v1h-1zM3 13h1v1h-1zM4 13h1v1h-1zM7 13h1v1h-1zM9 13h1v1h-1zM10 13h1v1h-1zM15 13h1v1h-1zM16 13h1v1h-1zM19 13h1v1h-1zM23 13h1v1h-1zM0 14h1v1h-1zM2 14h1v1h-1zM3 14h1v1h-1zM4 14h1v1h-1zM6 14h1v1h-1zM8 14h1v1h-1zM9 14h1v1h-1zM10 14h1v1h-1zM11 14h1v1h-1zM12 14h1v1h-1zM13 14h1v1h-1zM15 14h1v1h-1zM16 14h1v1h-1zM17 14h1v1h-1zM19 14h1v1h-1zM20 14h1v1h-1zM21 14h1v1h-1zM23 14h1v1h-1zM24 14h1v1h-1zM0 15h1v1h-1zM2 15h1v1h-1zM4 15h1v1h-1zM5 15h1v1h-1zM8 15h1v1h-1zM11 15h1v1h-1zM14 15h1v1h-1zM17 15h1v1h-1zM18 15h1v1h-1zM19 15h1v1h-1zM21 15h1v1h-1zM22 15h1v1h-1zM24 15h1v1h-1zM0 16h1v1h-1zM3 16h1v1h-1zM4 16h1v1h-1zM5 16h1v1h-1zM6 16h1v1h-1zM7 16h1v1h-1zM11 16h1v1h-1zM13 16h1v1h-1zM14 16h1v1h-1zM16 16h1v1h-1zM17 16h1v1h-1zM18 16h1v1h-1zM19 16h1v1h-1zM20 16h1v1h-1zM22 16h1v1h-1zM8 17h1v1h-1zM9 17h1v1h-1zM10 17h1v1h-1zM12 17h1v1h-1zM13 17h1v1h-1zM16 17h1v1h-1zM20 17h1v1h-1zM0 18h1v1h-1zM1 18h1v1h-1zM2 18h1v1h-1zM3 18h1v1h-1zM4 18h1v1h-1zM5 18h1v1h-1zM6 18h1v1h-1zM11 18h1v1h-1zM16 18h1v1h-1zM18 18h1v1h-1zM20 18h1v1h-1zM24 18h1v1h-1zM0 19h1v1h-1zM6 19h1v1h-1zM9 19h1v1h-1zM12 19h1v1h-1zM14 19h1v1h-1zM15 19h1v1h-1zM16 19h1v1h-1zM20 19h1v1h-1zM23 19h1v1h-1zM0 20h1v1h-1zM2 20h1v1h-1zM3 20h1v1h-1zM4 20h1v1h-1zM6 20h1v1h-1zM9 20h1v1h-1zM12 20h1v1h-1zM13 20h1v1h-1zM14 20h1v1h-1zM15 20h1v1h-1zM16 20h1v1h-1zM17 20h1v1h-1zM18 20h1v1h-1zM19 20h1v1h-1zM20 20h1v1h-1zM22 20h1v1h-1zM23 20h1v1h-1zM24 20h1v1h-1zM0 21h1v1h-1zM2 21h1v1h-1zM3 21h1v1h-1zM4 21h1v1h-1zM6 21h1v1h-1zM15 21h1v1h-1zM17 21h1v1h-1zM18 21h1v1h-1zM23 21h1v1h-1zM24 21h1v1h-1zM0 22h1v1h-1zM2 22h1v1h-1zM3 22h1v1h-1zM4 22h1v1h-1zM6 22h1v1h-1zM9 22h1v1h-1zM11 22h1v1h-1zM12 22h1v1h-1zM14 22h1v1h-1zM16 22h1v1h-1zM21 22h1v1h-1zM22 22h1v1h-1zM24 22h1v1h-1zM0 23h1v1h-1zM6 23h1v1h-1zM9 23h1v1h-1zM11 23h1v1h-1zM16 23h1v1h-1zM17 23h1v1h-1zM18 23h1v1h-1zM19 23h1v1h-1zM20 23h1v1h-1zM24 23h1v1h-1zM0 24h1v1h-1zM1 24h1v1h-1zM2 24h1v1h-1zM3 24h1v1h-1zM4 24h1v1h-1zM5 24h1v1h-1zM6 24h1v1h-1zM8 24h1v1h-1zM9 24h1v1h-1zM10 24h1v1h-1zM12 24h1v1h-1zM13 24h1v1h-1zM14 24h1v1h-1zM15 24h1v1h-1zM16 24h1v1h-1zM18 24h1v1h-1zM21 24h1v1h-1zM24 24h1v1h-1z"/></svg></div>
+        <span>On a laptop? Scan with your phone.</span>
+      </div>
     </div>
   </div>
 </section>
@@ -819,22 +848,37 @@ p { margin: 0; }
 
 <footer class="site-footer">
   <div class="wrap">
-    <a class="brand" href="#top" aria-label="MathFix.ai home">
-      <img src="assets/logo-mark.png" alt="" width="32" height="32">
-      <span><b>Math</b>Fix<i>.ai</i></span>
-    </a>
-    <div class="links">
-      <a href="https://t.me/mathfixbot" target="_blank" rel="noopener">@mathfixbot on Telegram</a>
-      <span>support@mathfix.ai</span>
-      <span>© 2026 MathFix.ai</span>
+    <div class="foot">
+      <div class="about">
+        <a class="logo" href="#top" aria-label="MathFix.ai home"><img src="assets/logo-full.png" alt="MathFix.ai" width="146" height="34"></a>
+        <p>Step-by-step maths help on Telegram, checked by a maths engine. Free for every student.</p>
+      </div>
+      <div>
+        <h4>Product</h4>
+        <ul><li><a href="#how">How it works</a></li><li><a href="#features">Features</a></li><li><a href="#topics">Topics</a></li><li><a href="#pricing">Pricing</a></li></ul>
+      </div>
+      <div>
+        <h4>Get started</h4>
+        <ul><li><a href="https://t.me/mathfixbot" target="_blank" rel="noopener">Open @mathfixbot</a></li><li><a href="#faq">FAQ</a></li></ul>
+      </div>
+      <div>
+        <h4>Contact</h4>
+        <ul><li><span>support@mathfix.ai</span></li></ul>
+      </div>
     </div>
+    <div class="legal"><span>© 2026 MathFix.ai</span><span>Made for students, parents and teachers.</span></div>
   </div>
 </footer>
 
 <script>
 (() => {
-  const steps = [...document.querySelectorAll("#steps .step")];
-  const scenes = [...document.querySelectorAll("#stage .scene")];
+  const header = document.getElementById("header");
+  const onScroll = () => header.classList.toggle("scrolled", window.scrollY > 8);
+  window.addEventListener("scroll", onScroll, { passive: true }); onScroll();
+
+  const list = document.getElementById("steps");
+  const steps = [...list.querySelectorAll(".step")];
+  const scenes = [...document.querySelectorAll("#stage-col .scene")];
   const dots = [...document.querySelectorAll("#pager button")];
   const label = document.getElementById("stage-label");
   const stageCol = document.getElementById("stage-col");
@@ -843,7 +887,7 @@ p { margin: 0; }
   const calm = window.matchMedia("(prefers-reduced-motion: reduce)");
   let current = 1, timer = null, visible = false, touched = false;
 
-  function place() {                                   // phones: show the chat right under the chosen step
+  function place() {                                   // phones: the chat opens right under the chosen step
     if (narrow.matches) steps[current - 1].appendChild(stageCol);
     else if (stageCol.parentElement !== grid) grid.appendChild(stageCol);
   }
@@ -853,21 +897,23 @@ p { margin: 0; }
     scenes.forEach((s, i) => { s.hidden = i !== n - 1; });
     dots.forEach((d, i) => d.setAttribute("aria-current", String(i === n - 1)));
     label.textContent = `Step ${n} of 6 · ${steps[n - 1].querySelector("h3").textContent}`;
+    const active = steps[n - 1];                        // restart the progress line
+    active.classList.remove("is-active"); void active.offsetWidth; active.classList.add("is-active");
     place();
   }
-  function stop() { touched = true; clearInterval(timer); timer = null; }
+  function halt() { clearInterval(timer); timer = null; list.classList.remove("playing"); }
+  function stop() { touched = true; halt(); }
   function play() {
     if (touched || calm.matches || narrow.matches || timer || !visible) return;
+    list.classList.add("playing");
+    show(current);
     timer = setInterval(() => show(current % 6 + 1), 4500);
   }
-  steps.forEach((s, i) => s.querySelector("button").addEventListener("click", () => { stop(); show(i + 1); }));
+  steps.forEach((s, i) => s.querySelector(".title").addEventListener("click", () => { stop(); show(i + 1); }));
   dots.forEach((d, i) => d.addEventListener("click", () => { stop(); show(i + 1); }));
-  narrow.addEventListener?.("change", () => { place(); clearInterval(timer); timer = null; play(); });
+  narrow.addEventListener?.("change", () => { halt(); place(); play(); });
   if ("IntersectionObserver" in window) {
-    new IntersectionObserver(([e]) => {
-      visible = e.isIntersecting;
-      if (visible) play(); else { clearInterval(timer); timer = null; }
-    }, { threshold: .35 }).observe(grid);
+    new IntersectionObserver(([e]) => { visible = e.isIntersecting; visible ? play() : halt(); }, { threshold: .3 }).observe(grid);
   }
   show(1);
 })();

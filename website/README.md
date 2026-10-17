@@ -4,13 +4,15 @@ The official website. Plain HTML and CSS with a few lines of JavaScript, so ther
 
 | File | What it is |
 |---|---|
-| `index.html` | Home page: hero, the six-step "how it works" walkthrough, solution page, features, topics, free plan, FAQ |
+| `index.html` | Home page: hero, the six-step "how it works" walkthrough, solution page, features, topics, pricing, FAQ |
+| `assets/logo-full.png` | The full MathFix.ai logo for the header and footer (from `brand/logo-full.png`) |
 | `assets/logo-mark.png` | The M mark (from `brand/logo-mark.png`, resized for the web) |
 | `assets/solution-sample.jpg` | A real solution page drawn by the bot's renderer (`mathfix/render/handwriting.py`) |
 | `assets/favicon-32.png`, `assets/apple-touch-icon.png` | Browser and home-screen icons |
 
-Fonts come from Google Fonts: Baloo 2 (headings), Lexend (text) and Kalam (the handwritten notes, the same font
-as the solution images). Colours are the brand colours from the logo, with a dark version for phones in dark mode.
+Design: white background so the logo sits naturally, navy text and the logo's blues as the only accent colour.
+Fonts come from Google Fonts: Plus Jakarta Sans (headings and text), Geist Mono (numbers and maths) and Kalam
+(only inside the photo of the handwritten question). The site is light-only on purpose.
 
 ## Preview on your computer
 

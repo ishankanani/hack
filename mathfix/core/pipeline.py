@@ -49,8 +49,9 @@ class Outcome:
     latency_ms: int = 0
 
 
-def preprocess_image(data: bytes, max_side: int = 1280) -> tuple[bytes, str]:
-    """Rotate per EXIF, shrink to <= max_side, re-encode as JPEG q85, and compute a perceptual hash."""
+def preprocess_image(data: bytes, max_side: int = 1024) -> tuple[bytes, str]:
+    """Rotate per EXIF, shrink to <= max_side (1024 px reads fast and is enough for handwriting),
+    re-encode as JPEG q85, and compute a perceptual hash."""
     img = ImageOps.exif_transpose(Image.open(io.BytesIO(data))).convert("RGB")
     img.thumbnail((max_side, max_side))
     out = io.BytesIO()

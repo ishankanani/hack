@@ -103,6 +103,7 @@ class Router:
         self.clock = clock
         self.sleep = sleep
         self._clients: dict[str, httpx.AsyncClient] = {}
+        self.last_error: dict[str, str] = {}      # model -> last failure, shown in logs and /stats
         self._transport = transport
 
     async def start(self) -> None:
@@ -160,16 +161,21 @@ class Router:
                 try:
                     return await self._attempt(spec, messages, schema, effort, timeout)
                 except _RateLimited as e:
+                    self.last_error[spec.name] = f"429 rate limited (retry-after {e.retry_after:.0f}s)"
+                    log.warning("model %s rate limited by provider, retry-after %.0fs", spec.name, e.retry_after)
                     self.budget.cool(spec.name, min(max(e.retry_after, 5), 300))
                     can_wait |= e.retry_after <= 60
                 except (_Transient, _BadOutput) as e:
-                    log.info("model %s failed (%s), trying next", spec.name, e)
+                    self.last_error[spec.name] = f"{type(e).__name__.strip('_')}: {e}"[:200]
+                    log.warning("model %s failed (%s), trying next", spec.name, e)
                     self.budget.cool(spec.name, 20)
                     can_wait = True
                 except _BadRequest as e:
+                    self.last_error[spec.name] = f"rejected: {e}"[:200]
                     log.warning("model %s rejected the request (%s); cooling 10 min", spec.name, e)
                     self.budget.cool(spec.name, 600)
             if considered == 0 or day_blocked == considered:
+                self._log_busy(step, est)
                 raise AllModelsBusy(daily=True)
             if can_wait and self.clock() < deadline:
                 if on_wait and not waited:
@@ -177,7 +183,23 @@ class Router:
                     await on_wait()
                 await self.sleep(1.5)
                 continue
+            self._log_busy(step, est)
             raise AllModelsBusy(daily=False)
+
+    def _log_busy(self, step: str, est: int) -> None:
+        """Explain, per model, why nothing could take the request (shown in the bot's terminal)."""
+        parts = []
+        for name in self.cfg["steps"][step]:
+            spec = self.specs.get(name)
+            if spec is None or not spec.enabled:
+                parts.append(f"{name}=disabled")
+                continue
+            cool = self.budget.cooling(name)
+            ok, why = self.budget.has_room(spec, est)
+            state = f"cooling {cool:.0f}s" if cool else ("ok" if ok else f"out of {why} budget")
+            err = self.last_error.get(name)
+            parts.append(f"{name}={state}" + (f" [last error: {err}]" if err else ""))
+        log.warning("ALL MODELS BUSY for step '%s': %s", step, " | ".join(parts))
 
     async def _attempt(self, spec: ModelSpec, messages: list[dict], schema, effort, timeout) -> Result:
         msgs = list(messages)
@@ -251,7 +273,8 @@ class Router:
             rows.append({"model": name, "enabled": spec.enabled, "requests": t["requests"],
                          "tokens": t["tokens"], "neurons": round(t["neurons"], 1),
                          "used": round(self.budget.fraction_used(spec), 3),
-                         "cooling_s": round(self.budget.cooling(name))})
+                         "cooling_s": round(self.budget.cooling(name)),
+                         "last_error": self.last_error.get(name, "")})
         return rows
 
 

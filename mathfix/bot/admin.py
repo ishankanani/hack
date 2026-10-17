@@ -40,6 +40,8 @@ async def cmd_stats(message: Message, repo: Repo, limits: Limits, ai: AIRouter):
     for r in ai.status():
         if r["enabled"]:
             lines.append(f"{r['model']}  {r['requests']}  {r['tokens']}  {r['neurons']}  {r['used']:.0%}  {r['cooling_s']}s")
+            if r["last_error"]:
+                lines.append(f"   ↳ last error: {r['last_error']}")
         else:
             lines.append(f"{r['model']}  (disabled)")
     await message.answer("\n".join(lines), parse_mode=None)

@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from html import escape
 
+from ..core.tutor import clean_reply
 from ..mathcheck.text import latex_to_text
 from ..schemas import Solution
 
@@ -116,7 +117,7 @@ def answer(sol: Solution, problem: str, verified: str, *, from_photo: bool, tuto
         if sol.steps:
             parts.append("\n📝 <b>Steps</b>")
             for i, s in enumerate(sol.steps, 1):
-                line = f"{i}. {escape(s.say)}"
+                line = f"{i}. {escape(clean_reply(s.say))}"
                 if s.math:
                     line += f"\n    <code>{escape(latex_to_text(s.math))}</code>"
                 parts.append(line)

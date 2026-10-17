@@ -89,7 +89,8 @@ steps:
   escalate: [groq_qwen, groq_oss_120b, cf_oss_120b]
   tutor: [groq_oss_20b, groq_oss_120b, or_free_text]
 
-timeouts: {read_photo: 12, solve: 20, escalate: 25, tutor: 10}
+# solve allows 45 s because the Cloudflare gpt-oss fallback measured ~38 s; Groq answers in ~2 s
+timeouts: {read_photo: 12, solve: 45, escalate: 45, tutor: 10}
 
 # rough tokens per call, used to check budgets BEFORE calling
 est_tokens: {read_photo: 1800, solve: 1500, escalate: 2500, tutor: 700}

@@ -7,3 +7,4 @@ pillow==12.3.0
 matplotlib==3.11.2
 ImageHash==4.3.2
 PyYAML==6.0.3
+tzdata==2026.5                   # timezone data (needed on Windows)

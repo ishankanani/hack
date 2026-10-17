@@ -17,11 +17,16 @@ log = logging.getLogger(__name__)
 
 
 def _warm() -> None:
-    """Import SymPy and set up matplotlib fonts once per worker, so the first real call is fast."""
-    from ..render import handwriting
-    from . import quick, verify  # noqa: F401
+    """Import SymPy once per worker so the first real call is fast.
 
-    handwriting._setup()
+    matplotlib/numpy are NOT loaded here: maths checks don't need them, and on low-memory Windows
+    PCs numpy's OpenBLAS can fail to start in extra processes. They load on the first image instead.
+    """
+    import os
+
+    for var in ("OPENBLAS_NUM_THREADS", "OMP_NUM_THREADS", "MKL_NUM_THREADS"):
+        os.environ.setdefault(var, "1")
+    from . import quick, verify  # noqa: F401
 
 
 class SandboxTimeout(Exception):

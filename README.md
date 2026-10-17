@@ -187,6 +187,7 @@ change that. Age would also be self-declared and easy to fake. If you want Gemin
 | [07 – Deployment & ops](docs/07-deployment-and-ops.md) | Hosting, `mathfix.ai` DNS, BotFather setup, env vars, monitoring, runbooks |
 | [08 – Privacy & safety](docs/08-privacy-and-safety.md) | Minors, provider terms, data handling, privacy policy outline, content safety |
 | [09 – Roadmap: apps](docs/09-roadmap-apps.md) | Web, Android and iOS on the same backend; monetisation later |
+| [Website](website/README.md) | The mathfix.ai home page (static HTML), how to preview it and deploy it on Cloudflare Pages |
 
 ---
 

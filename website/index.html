@@ -79,9 +79,11 @@ p { margin: 0; }
 .head { display: grid; gap: 18px; justify-items: start; max-width: 760px; }
 .head.center { justify-items: center; text-align: center; margin-inline: auto; }
 .grad {
-  background: linear-gradient(92deg, #00B4EE 0%, var(--blue) 42%, var(--blue-deep) 100%);
-  -webkit-background-clip: text; background-clip: text; color: transparent;
+  background: linear-gradient(92deg, #00B4EE 0%, var(--blue) 28%, var(--blue-deep) 50%, var(--blue) 72%, #00B4EE 100%);
+  background-size: 200% auto; -webkit-background-clip: text; background-clip: text; color: transparent;
+  animation: sheen 10s linear infinite;
 }
+@keyframes sheen { to { background-position: 200% 0; } }
 
 /* ---------- buttons ---------- */
 .btn {
@@ -91,10 +93,16 @@ p { margin: 0; }
 }
 .btn svg { width: 18px; height: 18px; flex: none; }
 .btn-primary {
+  position: relative; overflow: hidden; isolation: isolate;
   color: #FFFFFF; background: linear-gradient(180deg, #1A7DFF, #0062F0);
   box-shadow: inset 0 1px 0 rgb(255 255 255 / .22), 0 1px 2px rgb(0 61 227 / .3), 0 10px 24px -10px rgb(0 98 240 / .7);
 }
 .btn-primary:hover { transform: translateY(-1px); box-shadow: inset 0 1px 0 rgb(255 255 255 / .22), 0 2px 4px rgb(0 61 227 / .3), 0 16px 30px -12px rgb(0 98 240 / .75); }
+.btn-primary::after {
+  content: ""; position: absolute; inset: 0; z-index: -1; transform: translateX(-120%); transition: transform .8s ease;
+  background: linear-gradient(110deg, transparent 30%, rgb(255 255 255 / .32) 50%, transparent 70%);
+}
+.btn-primary:hover::after { transform: translateX(120%); }
 .btn-quiet { color: var(--ink); background: var(--bg); border: 1px solid var(--line); box-shadow: var(--shadow-sm); }
 .btn-quiet:hover { border-color: #CAD3E3; }
 .btn-white { color: var(--navy-1); background: #FFFFFF; }
@@ -119,12 +127,35 @@ p { margin: 0; }
 
 /* ---------- hero ---------- */
 .hero { position: relative; overflow: hidden; }
-.hero::before {
-  content: ""; position: absolute; inset: 0; pointer-events: none;
-  background:
-    radial-gradient(48% 38% at 50% 72%, rgb(0 110 252 / .10), transparent 70%),
-    radial-gradient(30% 26% at 30% 64%, rgb(1 227 253 / .10), transparent 70%);
+/* soft brand light drifting behind the product, over a faint dot grid */
+.aurora { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.aurora::after {
+  content: ""; position: absolute; inset: 0;
+  background-image: radial-gradient(rgb(5 23 68 / .10) 1px, transparent 1.3px); background-size: 26px 26px;
+  mask-image: radial-gradient(55% 42% at 50% 26%, #000, transparent 75%); -webkit-mask-image: radial-gradient(55% 42% at 50% 26%, #000, transparent 75%);
 }
+.aurora i { position: absolute; left: 50%; border-radius: 50%; filter: blur(80px); opacity: .6; animation: drift 24s ease-in-out infinite alternate; }
+.aurora i:nth-child(1) { width: 520px; height: 520px; top: 46%; margin-left: -470px; background: rgb(1 227 253 / .30); }
+.aurora i:nth-child(2) { width: 620px; height: 620px; top: 50%; margin-left: -120px; background: rgb(0 110 252 / .22); animation-duration: 28s; animation-delay: -8s; }
+.aurora i:nth-child(3) { width: 380px; height: 380px; top: 40%; margin-left: 200px; background: rgb(0 61 227 / .16); animation-duration: 32s; animation-delay: -14s; }
+@keyframes drift { 0% { transform: translate(0, 0) scale(1); } 50% { transform: translate(70px, -50px) scale(1.08); } 100% { transform: translate(-60px, 40px) scale(.94); } }
+
+/* load sequence: headline, then the phone, then the chat plays out, then the cards */
+@keyframes rise-in { from { opacity: .2; transform: translateY(18px); filter: blur(6px); } to { opacity: 1; transform: none; filter: none; } }
+@keyframes pop { from { opacity: 0; transform: translateY(10px) scale(.96); } to { opacity: 1; transform: none; } }
+@keyframes slide-l { from { opacity: 0; transform: translateX(-28px); } to { opacity: 1; transform: none; } }
+@keyframes slide-r { from { opacity: 0; transform: translateX(28px); } to { opacity: 1; transform: none; } }
+@keyframes bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+.hero-top > * { animation: rise-in .9s cubic-bezier(.2, .7, .2, 1) both; }
+.hero-top > :nth-child(2) { animation-delay: .08s; }
+.hero-top > :nth-child(3) { animation-delay: .16s; }
+.hero-top > :nth-child(4) { animation-delay: .24s; }
+.hero-top > :nth-child(5) { animation-delay: .32s; }
+.stage-hero .phone { animation: rise-in 1s .3s cubic-bezier(.2, .7, .2, 1) both; translate: calc(var(--mx, 0) * 8px) calc(var(--my, 0) * 6px); transition: translate .6s cubic-bezier(.2, .7, .2, 1); }
+.stage-hero .chat > * { animation: pop .5s cubic-bezier(.2, .8, .2, 1.15) both; }
+.stage-hero .chat > :nth-child(1) { animation-delay: .8s; }
+.stage-hero .chat > :nth-child(2) { animation-delay: 1.35s; }
+.stage-hero .chat > :nth-child(3) { animation-delay: 1.8s; }
 .hero-top { position: relative; display: grid; justify-items: center; text-align: center; gap: 26px; padding-block: 88px 64px; }
 .pill {
   display: inline-flex; align-items: center; gap: 10px; padding: 6px 16px 6px 6px; border-radius: 999px;
@@ -139,32 +170,56 @@ p { margin: 0; }
 .facts li { display: inline-flex; align-items: center; gap: 8px; }
 .facts svg { width: 16px; height: 16px; color: var(--green); }
 
-.stage-hero { position: relative; display: grid; justify-items: center; padding-bottom: 112px; }
+.stage-hero { position: relative; display: grid; justify-items: center; padding-bottom: 88px; }
 .float {
   position: absolute; width: 290px; background: var(--bg); border: 1px solid var(--line); border-radius: 20px;
   box-shadow: var(--shadow-lg); padding: 18px; display: grid; gap: 12px; text-align: left;
 }
-.float-check { left: max(0px, calc(50% - 560px)); top: 23%; }
-.float-page { right: max(0px, calc(50% - 560px)); top: 9%; width: 260px; padding: 12px; }
+.float { transition: translate .6s cubic-bezier(.2, .7, .2, 1); }
+.float-check {
+  left: max(0px, calc(50% - 540px)); top: 26%; translate: calc(var(--mx, 0) * -22px) calc(var(--my, 0) * -14px);
+  animation: slide-l .9s 1.2s cubic-bezier(.2, .7, .2, 1) both, bob 7s 2.2s ease-in-out infinite;
+}
+.float-page {
+  right: max(0px, calc(50% - 540px)); top: 10%; width: 240px; padding: 12px; translate: calc(var(--mx, 0) * 22px) calc(var(--my, 0) * -14px);
+  animation: slide-r .9s 1.4s cubic-bezier(.2, .7, .2, 1) both, bob 8s 2.4s ease-in-out infinite;
+}
+.float-check code b { display: inline-block; animation: pop .4s both; }
+.float-check code:nth-child(1) b { animation-delay: 2s; }
+.float-check code:nth-child(2) b { animation-delay: 2.3s; }
+.float-check .verified { animation: pop .5s 2.6s both; }
 .float .label { display: flex; align-items: center; gap: 8px; font: 600 .75rem/1 var(--sans); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
 .float .label i { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 4px var(--green-soft); }
 .float code { display: block; font: 400 .8125rem/1.9 var(--mono); color: var(--text); white-space: nowrap; }
 .float code b { color: var(--green); font-weight: 500; }
 .verified { justify-self: start; display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px; background: var(--green-soft); color: var(--green); font-size: .8125rem; font-weight: 600; }
-.float-page .crop { height: 248px; overflow: hidden; border-radius: 12px; border: 1px solid var(--line); }
+.float-page .crop { height: 220px; overflow: hidden; border-radius: 12px; border: 1px solid var(--line); }
 .float-page .crop img { width: 100%; }
 .float-page .cap { display: flex; justify-content: space-between; align-items: center; padding: 2px 4px; font-size: .875rem; }
 .float-page .cap b { color: var(--ink); font-weight: 600; }
 .float-page .cap span { color: var(--muted); font-size: .8125rem; }
 
+.strip { position: relative; padding-bottom: 104px; }
+.strip-cap { text-align: center; font: 600 .8125rem/1 var(--sans); letter-spacing: .08em; text-transform: uppercase; color: var(--faint); margin: 0 0 22px; }
+.marquee {
+  overflow: hidden; padding-block: 6px 14px;
+  mask-image: linear-gradient(90deg, transparent, #000 14%, #000 86%, transparent); -webkit-mask-image: linear-gradient(90deg, transparent, #000 14%, #000 86%, transparent);
+}
+.track { display: flex; width: max-content; animation: marquee 55s linear infinite; }
+.marquee:hover .track { animation-play-state: paused; }
+.track ul { display: flex; gap: 12px; margin: 0; padding: 0 6px; list-style: none; }
+.track li { white-space: nowrap; padding: 10px 18px; border-radius: 999px; background: var(--bg); border: 1px solid var(--line); box-shadow: var(--shadow-sm); font-size: .9375rem; color: var(--text); }
+.track li.m { font: 500 .875rem/1.55 var(--mono); color: var(--ink); }
+@keyframes marquee { to { transform: translateX(-50%); } }
+
 /* ---------- phone + chat: mirrors the real bot messages ---------- */
 .phone {
-  position: relative; width: 340px; max-width: 100%; border-radius: 48px; padding: 11px;
+  position: relative; width: 300px; max-width: 100%; border-radius: 46px; padding: 10px;
   background: linear-gradient(160deg, #1B2A55, #050D26); box-shadow: var(--shadow-lg), inset 0 0 0 1px rgb(255 255 255 / .08);
 }
-.phone::before { content: ""; position: absolute; top: 22px; left: 50%; width: 92px; height: 26px; margin-left: -46px; border-radius: 20px; background: #050D26; z-index: 2; }
-.screen { border-radius: 38px; overflow: hidden; background: var(--chat); font: 400 13.5px/1.45 var(--ui); color: #10213F; }
-.chat-top { display: flex; align-items: center; gap: 10px; padding: 46px 16px 12px; background: #FFFFFF; border-bottom: 1px solid var(--line); }
+.phone::before { content: ""; position: absolute; top: 20px; left: 50%; width: 84px; height: 24px; margin-left: -42px; border-radius: 20px; background: #050D26; z-index: 2; }
+.screen { border-radius: 37px; overflow: hidden; background: var(--chat); font: 400 12.75px/1.45 var(--ui); color: #10213F; }
+.chat-top { display: flex; align-items: center; gap: 10px; padding: 42px 14px 10px; background: #FFFFFF; border-bottom: 1px solid var(--line); }
 .chat-top img { width: 34px; height: 34px; border-radius: 50%; padding: 4px; background: #FFFFFF; border: 1px solid var(--line); }
 .chat-top b { display: block; font-size: 14.5px; color: #10213F; }
 .chat-top small { color: var(--faint); font-size: 12px; }
@@ -182,8 +237,8 @@ p { margin: 0; }
 .msg .muted { color: var(--faint); }
 .photo {
   position: relative; margin: 0 0 4px; padding: 13px 14px 15px; border-radius: 10px; overflow: hidden;
-  background: repeating-linear-gradient(#FFFDF6 0 24px, #D2E1F6 24px 25px); color: #17338C;
-  font: 400 20px/25px var(--hand); transform: rotate(-1deg);
+  background: repeating-linear-gradient(#FFFDF6 0 22px, #D2E1F6 22px 23px); color: #17338C;
+  font: 400 18px/23px var(--hand); rotate: -1deg;
 }
 .photo::before { content: ""; position: absolute; inset: 0 auto 0 20px; width: 1px; background: #EBA3A3; }
 .photo span { position: relative; display: block; padding-left: 14px; }
@@ -221,11 +276,14 @@ p { margin: 0; }
 .step.is-active .detail { color: var(--text); }
 .stage-col { position: sticky; top: 104px; }
 .panel { background: var(--soft); border: 1px solid var(--line); border-radius: 32px; padding: 44px 32px 24px; display: grid; justify-items: center; gap: 20px; }
-.panel .phone { width: 320px; }
-.panel .screen { min-height: 540px; display: flex; flex-direction: column; }
+.panel .phone { width: 300px; }
+.panel .screen { min-height: 470px; display: flex; flex-direction: column; }
 .panel .chat { flex: 1; align-content: end; }
-.scene { display: grid; gap: 7px; animation: rise .4s cubic-bezier(.2, .7, .2, 1) both; }
-@keyframes rise { from { transform: translateY(10px); opacity: .3; } to { transform: none; opacity: 1; } }
+.scene { display: grid; gap: 7px; }
+.scene > * { animation: pop .45s cubic-bezier(.2, .8, .2, 1.15) both; }
+.scene > :nth-child(2) { animation-delay: .35s; }
+.scene > :nth-child(3) { animation-delay: .7s; }
+.scene > :nth-child(4) { animation-delay: 1.05s; }
 .panel-cap { width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 12px; font-size: .9rem; color: var(--muted); }
 .pager { display: flex; gap: 6px; }
 .pager button { width: 8px; height: 8px; padding: 0; border: 0; border-radius: 99px; background: #D3DAE7; cursor: pointer; transition: width .2s ease, background-color .2s ease; }
@@ -251,12 +309,43 @@ p { margin: 0; }
 .point .ico svg { width: 20px; height: 20px; }
 .point h3 { font: 700 1.0625rem/1.4 var(--sans); letter-spacing: -.01em; }
 .point p { color: var(--muted); font-size: 1rem; }
-.page-panel { background: var(--soft); border: 1px solid var(--line); border-radius: 32px; padding: 48px 32px; display: grid; justify-items: center; }
-.page-panel img { width: 300px; border-radius: 14px; box-shadow: var(--shadow-lg); }
+.page-panel {
+  position: relative; overflow: hidden; background: var(--soft); border: 1px solid var(--line); border-radius: 32px;
+  padding: 64px 32px; display: grid; justify-items: center; perspective: 1400px;
+}
+.page-panel::before { content: ""; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(45% 45% at 50% 50%, rgb(0 110 252 / .12), transparent 72%); }
+.sheet-frame {
+  position: relative; width: 270px; height: 360px; border-radius: 16px; overflow: hidden; background: #FFFFFF;
+  border: 1px solid var(--line); box-shadow: 0 2px 6px rgb(5 23 68 / .05), 0 40px 70px -28px rgb(5 23 68 / .35);
+  transform: rotateY(var(--ry, -9deg)) rotateX(var(--rx, 5deg)); transition: transform .6s cubic-bezier(.2, .7, .2, 1);
+}
+.sheet-frame img { width: 100%; animation: peek 14s 1s ease-in-out infinite alternate; }
+.page-panel:hover .sheet-frame img { animation-play-state: paused; }
+@keyframes peek { 0%, 14% { transform: translateY(0); } 86%, 100% { transform: translateY(calc(-100% + 360px)); } }
+.page-chip {
+  position: absolute; z-index: 1; display: inline-flex; align-items: center; gap: 10px; padding: 10px 14px 10px 10px; border-radius: 14px;
+  background: rgb(255 255 255 / .9); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); border: 1px solid var(--line);
+  box-shadow: var(--shadow-sm), 0 18px 30px -18px rgb(5 23 68 / .3); font-size: .8125rem; font-weight: 600; color: var(--ink);
+  animation: bob 7s ease-in-out infinite;
+}
+.page-chip i { width: 26px; height: 26px; border-radius: 8px; display: grid; place-items: center; font-style: normal; font-size: 13px; color: #FFFFFF; background: var(--green); }
+.page-chip.c1 { left: 6%; top: 40%; }
+.page-chip.c2 { right: 6%; bottom: 16%; animation-delay: -3.5s; }
+.page-chip.c2 i { background: var(--blue); }
 
 /* ---------- features (bento) ---------- */
 .bento { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-top: 64px; }
-.tile { background: var(--soft); border: 1px solid var(--line); border-radius: 28px; padding: 32px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.tile {
+  position: relative; overflow: hidden; background: var(--soft); border: 1px solid var(--line); border-radius: 28px; padding: 32px;
+  display: flex; flex-direction: column; gap: 10px; min-width: 0; transition: translate .35s ease, box-shadow .35s ease, border-color .35s ease;
+}
+.tile::before {
+  content: ""; position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity .35s ease;
+  background: radial-gradient(420px circle at var(--x, 50%) var(--y, 0%), rgb(0 110 252 / .10), transparent 45%);
+}
+.tile > * { position: relative; }
+.tile:hover { translate: 0 -4px; border-color: #D6DEEC; box-shadow: var(--shadow-lg); }
+.tile:hover::before { opacity: 1; }
 .tile.wide { grid-column: span 2; }
 .tile.full { grid-column: 1 / -1; }
 .tile h3 { font: 700 1.25rem/1.35 var(--sans); letter-spacing: -.015em; }
@@ -266,7 +355,7 @@ p { margin: 0; }
 .bubble { background: #FFFFFF; border: 1px solid var(--line); border-radius: 16px 16px 16px 6px; padding: 12px 14px; font-size: .9375rem; color: var(--ink); box-shadow: var(--shadow-sm); }
 .bubble small { display: block; font: 500 .75rem/1 var(--mono); color: var(--faint); margin-bottom: 8px; text-transform: uppercase; letter-spacing: .04em; }
 .classes { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
-.classes span { padding: 6px 12px; border-radius: 999px; background: #FFFFFF; border: 1px solid var(--line); font-size: .8125rem; color: var(--muted); }
+.classes span { padding: 6px 12px; border-radius: 999px; background: #FFFFFF; border: 1px solid var(--line); font-size: .8125rem; color: var(--muted); transition: background-color .35s ease, color .35s ease, border-color .35s ease; }
 .classes span.on { background: var(--blue); border-color: var(--blue); color: #FFFFFF; }
 .mini-keys { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
 .mini-keys.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -275,7 +364,7 @@ p { margin: 0; }
 .big { font: 800 3.4rem/1 var(--sans); letter-spacing: -.04em; color: var(--ink); }
 .big small { font: 600 1rem/1 var(--sans); letter-spacing: 0; color: var(--muted); margin-left: 6px; }
 .week { display: flex; gap: 6px; margin-top: 14px; }
-.week i { flex: 1; height: 8px; border-radius: 99px; background: linear-gradient(90deg, var(--cyan), var(--blue)); }
+.week i { flex: 1; height: 8px; border-radius: 99px; background: linear-gradient(90deg, var(--cyan), var(--blue)); transform-origin: left; }
 .duo { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 .duo div { background: #FFFFFF; border: 1px solid var(--line); border-radius: 16px; padding: 14px 16px; }
 .duo b { display: block; font: 800 2rem/1 var(--sans); letter-spacing: -.03em; color: var(--blue); margin-bottom: 6px; }
@@ -350,6 +439,19 @@ p { margin: 0; }
 .foot li span { color: var(--muted); }
 .legal { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; padding-block: 24px 40px; border-top: 1px solid var(--line); font-size: .875rem; color: var(--faint); }
 
+/* ---------- scroll reveal ---------- */
+.reveal-ready [data-reveal] {
+  opacity: .3; transform: translateY(30px);
+  transition: opacity .9s cubic-bezier(.2, .7, .2, 1), transform .9s cubic-bezier(.2, .7, .2, 1), translate .35s ease, box-shadow .35s ease, border-color .35s ease;
+  transition-delay: var(--d, 0s), var(--d, 0s), 0s, 0s, 0s;
+}
+.reveal-ready [data-reveal].in { opacity: 1; transform: none; }
+.reveal-ready .week i { transform: scaleX(.05); transition: transform .7s cubic-bezier(.2, .7, .2, 1) calc(.35s + var(--i) * 90ms); }
+.reveal-ready .tile.in .week i { transform: none; }
+.reveal-ready .duo b { transform-origin: left center; transform: scale(.5); opacity: .2; transition: transform .6s cubic-bezier(.2, .8, .2, 1.3) .4s, opacity .6s ease .4s; }
+.reveal-ready .tile.in .duo b { transform: none; opacity: 1; }
+.reveal-ready .tile.in .duo div + div b { transition-delay: .55s; }
+
 /* ---------- responsive ---------- */
 @media (max-width: 1180px) { .float { display: none; } }
 @media (max-width: 1000px) {
@@ -380,17 +482,23 @@ p { margin: 0; }
   .site-header .btn span { display: none; }
   .site-header .btn { padding: 0 14px; }
   .hero-top { padding-block: 56px 48px; }
-  .stage-hero { padding-bottom: 80px; }
-  .phone { width: 100%; max-width: 330px; }
+  .stage-hero { padding-bottom: 64px; }
+  .strip { padding-bottom: 72px; }
+  .phone { width: 100%; max-width: 284px; }
   .panel { padding: 32px 14px 16px; border-radius: 24px; }
-  .panel .phone { width: 100%; max-width: 310px; }
+  .panel .phone { width: 100%; max-width: 284px; }
+  .panel .screen { min-height: 440px; }
+  .sheet-frame { width: 230px; height: 310px; }
+  @keyframes peek { 0%, 14% { transform: translateY(0); } 86%, 100% { transform: translateY(calc(-100% + 310px)); } }
+  .page-chip { font-size: .75rem; padding: 8px 12px 8px 8px; }
+  .page-chip.c1 { left: 4%; top: 12%; }
+  .page-chip.c2 { right: 4%; bottom: 10%; }
   .step { grid-template-columns: 40px minmax(0, 1fr); }
   .points, .bento, .facts-row, .plans, .bubbles { grid-template-columns: minmax(0, 1fr); }
   .levels { gap: 32px 20px; }
   .level li { font-size: .9rem; }
   .tile { padding: 26px 22px; }
-  .page-panel { padding: 32px 18px; }
-  .page-panel img { width: 100%; max-width: 300px; }
+  .page-panel { padding: 56px 18px; }
   .plan { padding: 28px 24px; }
   .cta-card { padding: 44px 24px; border-radius: 28px; }
   .foot { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -424,6 +532,7 @@ p { margin: 0; }
 
 <!-- ======================= HERO ======================= -->
 <section class="hero">
+  <div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
   <div class="wrap">
     <div class="hero-top">
       <span class="pill"><img src="assets/logo-mark.png" alt="" width="26" height="26">Free on Telegram for every student</span>
@@ -489,19 +598,36 @@ p { margin: 0; }
       </div>
     </div>
   </div>
+  <div class="strip">
+    <p class="strip-cap">Send anything from Class 6 to college</p>
+    <div class="marquee">
+      <div class="track">
+        <ul>
+          <li class="m">2x² − 8x + 6 = 0</li><li>Quadratic equations</li><li class="m">∫₀¹ x² dx</li><li>Trigonometry</li>
+          <li class="m">15% of 240</li><li>Arithmetic progressions</li><li class="m">sin²θ + cos²θ = 1</li><li>Probability</li>
+          <li class="m">d/dx (x³ sin x)</li><li>Matrices</li><li class="m">lim x→0 (sin x)/x</li><li>Surface areas &amp; volumes</li>
+        </ul>
+        <ul aria-hidden="true">
+          <li class="m">2x² − 8x + 6 = 0</li><li>Quadratic equations</li><li class="m">∫₀¹ x² dx</li><li>Trigonometry</li>
+          <li class="m">15% of 240</li><li>Arithmetic progressions</li><li class="m">sin²θ + cos²θ = 1</li><li>Probability</li>
+          <li class="m">d/dx (x³ sin x)</li><li>Matrices</li><li class="m">lim x→0 (sin x)/x</li><li>Surface areas &amp; volumes</li>
+        </ul>
+      </div>
+    </div>
+  </div>
 </section>
 
 <!-- ======================= HOW IT WORKS ======================= -->
 <section class="section" id="how">
   <div class="wrap">
-    <div class="head">
+    <div class="head" data-reveal>
       <span class="eyebrow">How it works</span>
       <h2 class="h2">From photo to understanding in six steps.</h2>
       <p class="lede">Everything that happens between sending your question and getting the answer. Choose a step to see it in the chat.</p>
     </div>
 
     <div class="how-grid">
-      <ol class="steps" id="steps">
+      <ol class="steps" id="steps" data-reveal style="--d:.1s">
         <li class="step is-active">
           <span class="n">01</span>
           <div>
@@ -553,7 +679,7 @@ p { margin: 0; }
       </ol>
 
       <div class="stage-col" id="stage-col">
-        <div class="panel">
+        <div class="panel" data-reveal style="--d:.2s">
           <div class="phone">
             <div class="screen">
               <div class="chat-top"><img src="assets/logo-mark.png" alt="" width="34" height="34"><div><b>MathFix.ai</b><small>bot</small></div></div>
@@ -628,36 +754,40 @@ p { margin: 0; }
 <section class="section flush" id="page">
   <div class="wrap split">
     <div>
-      <div class="head">
+      <div class="head" data-reveal>
         <span class="eyebrow">The solution page</span>
         <h2 class="h2">A page worth keeping.</h2>
         <p class="lede">Tap 🖼 under any answer and MathFix writes out the whole solution on maths grid paper. Save it for revision or send it to the group chat.</p>
       </div>
       <div class="points">
-        <div class="point">
+        <div class="point" data-reveal style="--d:0.00s">
           <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4Z"/><path d="m13.5 6.5 4 4"/></svg></span>
           <h3>Written like a teacher would</h3>
           <p>Handwriting-style steps, each one numbered, with the maths set out properly.</p>
         </div>
-        <div class="point">
+        <div class="point" data-reveal style="--d:0.08s">
           <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="m8.5 12.3 2.4 2.4 4.8-5"/></svg></span>
           <h3>Answer boxed and stamped</h3>
           <p>A green box for the final answer, and a Verified stamp when the engine agrees.</p>
         </div>
-        <div class="point">
+        <div class="point" data-reveal style="--d:0.16s">
           <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5a6 6 0 0 0-3.5 10.9V17h7v-2.6A6 6 0 0 0 12 3.5Z"/><path d="M9.5 20.5h5"/></svg></span>
           <h3>Key idea and common mistake</h3>
           <p>The one thing to remember, and the trap to avoid in the exam.</p>
         </div>
-        <div class="point">
+        <div class="point" data-reveal style="--d:0.24s">
           <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="3.5" width="6" height="6" rx="1"/><rect x="14.5" y="3.5" width="6" height="6" rx="1"/><rect x="3.5" y="14.5" width="6" height="6" rx="1"/><path d="M14.5 14.5h2v2h-2zM18.5 18.5h2v2h-2zM18.5 14.5h2M14.5 18.5v2"/></svg></span>
           <h3>A QR code on every page</h3>
           <p>Anyone who scans it opens the same solution in MathFix, with hints and steps.</p>
         </div>
       </div>
     </div>
-    <div class="page-panel">
-      <img src="assets/solution-sample.jpg" alt="A MathFix solution page: the question 2x² − 8x + 6 = 0, four numbered handwritten steps, the key idea, the boxed answer x = 1 or x = 3 with a Verified stamp, and a QR code." width="720" height="1375">
+    <div class="page-panel" id="page-panel" data-reveal>
+      <div class="sheet-frame" id="sheet-frame">
+        <img src="assets/solution-sample.jpg" alt="A MathFix solution page: the question 2x² − 8x + 6 = 0, four numbered handwritten steps, the key idea, the boxed answer x = 1 or x = 3 with a Verified stamp, and a QR code." width="720" height="1375">
+      </div>
+      <span class="page-chip c1" aria-hidden="true"><i>✓</i>Verified answer</span>
+      <span class="page-chip c2" aria-hidden="true"><i>⌗</i>Scan the QR to open</span>
     </div>
   </div>
 </section>
@@ -665,12 +795,12 @@ p { margin: 0; }
 <!-- ======================= FEATURES ======================= -->
 <section class="section flush" id="features">
   <div class="wrap">
-    <div class="head">
+    <div class="head" data-reveal>
       <span class="eyebrow">Features</span>
       <h2 class="h2">Built around the way students study.</h2>
     </div>
     <div class="bento">
-      <article class="tile wide">
+      <article class="tile wide" data-reveal style="--d:0.00s">
         <h3>Your class, your language</h3>
         <p>Pick your class once and every explanation matches it. Read the steps in English or Hinglish.</p>
         <div class="viz">
@@ -681,7 +811,7 @@ p { margin: 0; }
           <div class="classes"><span>Class 6–8</span><span class="on">Class 9–10</span><span>Class 11–12</span><span>College</span><span>Parent / Teacher</span></div>
         </div>
       </article>
-      <article class="tile">
+      <article class="tile" data-reveal style="--d:0.08s">
         <h3>A tutor that waits for you</h3>
         <p>Ask for a hint, the next step, or why a step works.</p>
         <div class="viz">
@@ -689,25 +819,25 @@ p { margin: 0; }
           <div class="mini-reply">Try dividing every term by 2 first. What do you get?</div>
         </div>
       </article>
-      <article class="tile">
+      <article class="tile" data-reveal style="--d:0.16s">
         <h3>Fix it or flag it</h3>
         <p>Misread photo? Fix it for free. Wrong answer? Your solve comes back.</p>
         <div class="viz"><div class="mini-keys two"><span>✏️ Fix question</span><span>⚠️ Wrong answer?</span></div></div>
       </article>
-      <article class="tile">
+      <article class="tile" data-reveal style="--d:0.00s">
         <h3>Streaks that keep you going</h3>
         <p>Solve something every day and watch your streak grow.</p>
         <div class="viz">
           <div class="big">7<small>day streak</small></div>
-          <div class="week" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+          <div class="week" aria-hidden="true"><i style="--i:0"></i><i style="--i:1"></i><i style="--i:2"></i><i style="--i:3"></i><i style="--i:4"></i><i style="--i:5"></i><i style="--i:6"></i></div>
         </div>
       </article>
-      <article class="tile">
+      <article class="tile" data-reveal style="--d:0.08s">
         <h3>Invite friends, get more</h3>
         <p>When a friend solves their first sum with your link, you both get extra solves.</p>
         <div class="viz"><div class="duo"><div><b>+3</b><span>solves for you</span></div><div><b>+2</b><span>for your friend</span></div></div></div>
       </article>
-      <article class="tile full">
+      <article class="tile full" data-reveal style="--d:0.16s">
         <div class="privacy">
           <div>
             <h3>Private by design</h3>
@@ -727,25 +857,25 @@ p { margin: 0; }
 <!-- ======================= TOPICS ======================= -->
 <section class="section flush" id="topics">
   <div class="wrap">
-    <div class="head">
+    <div class="head" data-reveal>
       <span class="eyebrow">Topics</span>
       <h2 class="h2">From Class 6 fractions to college calculus.</h2>
       <p class="lede">Any board, any textbook. If it's maths, send it.</p>
     </div>
     <div class="levels">
-      <div class="level">
+      <div class="level" data-reveal style="--d:0.00s">
         <h3>Class 6–8<small>Building blocks</small></h3>
         <ul><li>Fractions &amp; decimals</li><li>Percentages</li><li>Ratio &amp; proportion</li><li>Simple equations</li><li>Exponents</li><li>Area &amp; perimeter</li></ul>
       </div>
-      <div class="level">
+      <div class="level" data-reveal style="--d:0.08s">
         <h3>Class 9–10<small>Board exam years</small></h3>
         <ul><li>Polynomials</li><li>Pair of linear equations</li><li>Quadratic equations</li><li>Arithmetic progressions</li><li>Trigonometry</li><li>Surface areas &amp; volumes</li></ul>
       </div>
-      <div class="level">
+      <div class="level" data-reveal style="--d:0.16s">
         <h3>Class 11–12<small>Entrance prep</small></h3>
         <ul><li>Sequences &amp; series</li><li>Permutations &amp; combinations</li><li>Limits &amp; derivatives</li><li>Integrals</li><li>Matrices &amp; determinants</li><li>Probability</li></ul>
       </div>
-      <div class="level">
+      <div class="level" data-reveal style="--d:0.24s">
         <h3>College<small>Beyond school</small></h3>
         <ul><li>Calculus</li><li>Linear algebra</li><li>Differential equations</li><li>Optimisation</li><li>Statistics</li><li>Vectors</li></ul>
       </div>
@@ -756,13 +886,13 @@ p { margin: 0; }
 <!-- ======================= PRICING ======================= -->
 <section class="section flush" id="pricing">
   <div class="wrap">
-    <div class="head center">
+    <div class="head center" data-reveal>
       <span class="eyebrow">Pricing</span>
       <h2 class="h2">Free for every student.</h2>
       <p class="lede">No sign-up, no card, no ads. Your free solves refill every day.</p>
     </div>
     <div class="plans">
-      <div class="plan main">
+      <div class="plan main" data-reveal>
         <div class="plan-top"><b>Free</b><span class="badge">Available now</span></div>
         <div class="price">₹0 <small>/ day</small></div>
         <ul>
@@ -773,7 +903,7 @@ p { margin: 0; }
         </ul>
         <a class="btn btn-primary" href="https://t.me/mathfixbot" target="_blank" rel="noopener">Start free on Telegram</a>
       </div>
-      <div class="plan later">
+      <div class="plan later" data-reveal style="--d:.1s">
         <div class="plan-top"><b>Premium</b><span class="badge">Coming later</span></div>
         <div class="price">Soon</div>
         <ul>
@@ -791,12 +921,12 @@ p { margin: 0; }
 <!-- ======================= FAQ ======================= -->
 <section class="section flush faq" id="faq">
   <div class="wrap faq-grid">
-    <div class="head">
+    <div class="head" data-reveal>
       <span class="eyebrow">FAQ</span>
       <h2 class="h2">Questions, answered.</h2>
       <p class="lede">Anything else? Write to support@mathfix.ai.</p>
     </div>
-    <div class="faq-list">
+    <div class="faq-list" data-reveal style="--d:.1s">
       <details open>
         <summary>Is MathFix really free?</summary>
         <p>Yes. Every student gets 5 solves and 15 tutor messages a day at no cost, and there are no ads. If a photo can't be read or we're busy, it doesn't count.</p>
@@ -828,7 +958,7 @@ p { margin: 0; }
 <!-- ======================= CLOSING ======================= -->
 <section class="closing">
   <div class="wrap">
-    <div class="cta-card">
+    <div class="cta-card" data-reveal>
       <div>
         <h2>Your next maths question is one photo away.</h2>
         <p>Open MathFix on Telegram, choose your class, and send the question you're stuck on.</p>
@@ -916,6 +1046,52 @@ p { margin: 0; }
     new IntersectionObserver(([e]) => { visible = e.isIntersecting; visible ? play() : halt(); }, { threshold: .3 }).observe(grid);
   }
   show(1);
+
+  if (calm.matches) return;                            // everything below is motion only
+
+  if ("IntersectionObserver" in window) {              // sections glide in as they scroll into view
+    document.documentElement.classList.add("reveal-ready");
+    const io = new IntersectionObserver(entries => entries.forEach(e => {
+      if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); }
+    }), { rootMargin: "0px 0px -8% 0px", threshold: .12 });
+    document.querySelectorAll("[data-reveal]").forEach(el => io.observe(el));
+  }
+
+  const fine = window.matchMedia("(pointer: fine)").matches;
+  const hero = document.querySelector(".hero"), stage = document.querySelector(".stage-hero");
+  if (fine) {
+    let raf = 0;                                       // hero cards drift with the pointer
+    hero.addEventListener("pointermove", ev => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        const r = stage.getBoundingClientRect();
+        stage.style.setProperty("--mx", ((ev.clientX - r.left) / r.width - .5).toFixed(3));
+        stage.style.setProperty("--my", ((ev.clientY - r.top) / r.height - .5).toFixed(3));
+      });
+    });
+    hero.addEventListener("pointerleave", () => { stage.style.removeProperty("--mx"); stage.style.removeProperty("--my"); });
+
+    const pp = document.getElementById("page-panel"), frame = document.getElementById("sheet-frame");
+    pp.addEventListener("pointermove", ev => {          // the solution page tilts toward the pointer
+      const r = pp.getBoundingClientRect();
+      frame.style.setProperty("--ry", `${((ev.clientX - r.left) / r.width - .5) * 18}deg`);
+      frame.style.setProperty("--rx", `${-((ev.clientY - r.top) / r.height - .5) * 12}deg`);
+    });
+    pp.addEventListener("pointerleave", () => { frame.style.removeProperty("--ry"); frame.style.removeProperty("--rx"); });
+
+    document.querySelectorAll(".tile").forEach(t => t.addEventListener("pointermove", ev => {
+      const r = t.getBoundingClientRect();                // light follows the pointer across a tile
+      t.style.setProperty("--x", `${ev.clientX - r.left}px`);
+      t.style.setProperty("--y", `${ev.clientY - r.top}px`);
+    }));
+  }
+
+  const chips = [...document.querySelectorAll(".classes span")];
+  let ci = chips.findIndex(c => c.classList.contains("on"));
+  setInterval(() => {                                  // the class picker steps through the levels
+    if (document.hidden || ci < 0) return;
+    chips[ci].classList.remove("on"); ci = (ci + 1) % chips.length; chips[ci].classList.add("on");
+  }, 2200);
 })();
 </script>
 </body>

@@ -123,7 +123,7 @@ def build_specs(cfg: dict) -> dict[str, ModelSpec]:
             api_key=os.environ.get(prov["api_key_env"], ""), vision=bool(m.get("vision")),
             json_mode=bool(m.get("json_mode")), reasoning_effort=bool(m.get("reasoning_effort")),
             max_tokens=int(m.get("max_tokens", 1500)), max_tokens_big=int(m.get("max_tokens_big") or 0),
-            limits=dict(m.get("limits") or {}),
+            limits=dict(m.get("limits") or {}), allow_paid=bool(m.get("allow_paid")),
             neurons_in=n.get("input", 0) / 1e6, neurons_out=n.get("output", 0) / 1e6, pool=pool_of.get(name))
     return specs
 
@@ -148,7 +148,11 @@ class Router:
         if self.repo:
             day = utc_day()
             self.budget.load(day, await self.repo.provider_day(day))
-        missing = [n for n, s in self.specs.items() if not s.enabled]
+        paid = [n for n, s in self.specs.items() if s.paid_risk and s.api_key]
+        if paid:
+            log.warning("models disabled because they are not free and would be billed: %s "
+                        "(use an OpenRouter id ending in :free)", ", ".join(paid))
+        missing = [n for n, s in self.specs.items() if not s.enabled and n not in paid]
         if missing:
             log.warning("models disabled (no API key or id not filled in): %s", ", ".join(missing))
 
@@ -166,6 +170,19 @@ class Router:
                 headers=headers, transport=self._transport,
                 limits=httpx.Limits(max_keepalive_connections=10, max_connections=20))
         return self._clients[spec.provider]
+
+    async def resync(self) -> None:
+        """Reload today's usage from the database, so calls made by other processes (smoke test,
+        golden eval, a second bot instance) count against the same free limits."""
+        if self.repo:
+            day = utc_day()
+            self.budget.load(day, await self.repo.provider_day(day))
+
+    def calls_left(self, step: str) -> int:
+        """About how many more calls of this step today's free limits allow (all enabled models)."""
+        est = int(self.cfg.get("est_tokens", {}).get(step, 1500))
+        return int(sum(self.budget.daily_capacity(s, est) * (1 - self.budget.fraction_used(s))
+                       for s in self.enabled_models(step)))
 
     def enabled_models(self, step: str) -> list[ModelSpec]:
         return [self.specs[n] for n in self.cfg["steps"][step] if n in self.specs and self.specs[n].enabled]

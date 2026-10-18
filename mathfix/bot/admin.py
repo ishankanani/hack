@@ -48,6 +48,53 @@ async def cmd_stats(message: Message, repo: Repo, limits: Limits, ai: AIRouter):
     await message.answer("\n".join(lines), parse_mode=None)
 
 
+PROVIDER_NAMES = {"groq": "Groq", "cloudflare": "Cloudflare", "openrouter": "OpenRouter"}
+
+
+def quota_report(ai: AIRouter, guard: str, free_plan: dict, now: datetime | None = None) -> str:
+    """Today's use of every free limit, and about how much is left (shown by /quota)."""
+    now = now or datetime.now(timezone.utc)
+    reset = datetime.combine(now.date() + timedelta(days=1), datetime.min.time(), timezone.utc) - now
+    h, m = divmod(int(reset.total_seconds()) // 60, 60)
+    lines = [f"💰 Free quota today (resets in {h} h {m} m, at 00:00 UTC)",
+             "API cost: $0. Every model runs on a free tier and is skipped before its limit, never billed.", ""]
+    budget = ai.budget
+    for name, spec in ai.specs.items():
+        if not spec.enabled:
+            why = "blocked: not a free model, it would be billed" if spec.paid_risk else "off"
+            lines.append(f"{name} ({PROVIDER_NAMES.get(spec.provider, spec.provider)}): {why}")
+            continue
+        t, lim = budget.today[name], spec.limits
+        parts = []
+        if lim.get("rpd"):
+            parts.append(f"requests {t['requests']:,} / {lim['rpd']:,}")
+        if lim.get("tpd"):
+            parts.append(f"tokens {t['tokens']:,} / {lim['tpd']:,}")
+        if lim.get("neurons_per_day"):
+            parts.append(f"neurons {t['neurons']:,.0f} / {lim['neurons_per_day']:,}")
+        if spec.pool and spec.pool in budget.pools:
+            parts.append(f"shared pool {budget._pool_neurons(spec.pool):,.0f} / "
+                         f"{budget.pools[spec.pool]['neurons_per_day']:,}")
+        cool = budget.cooling(name)
+        lines.append(f"{name} ({PROVIDER_NAMES.get(spec.provider, spec.provider)}): "
+                     f"{budget.fraction_used(spec):.0%} used" + (f", cooling {cool:.0f}s" if cool else ""))
+        lines.append("   " + " · ".join(parts))
+    lines += ["", f"Left today, about: {ai.calls_left('solve'):,} solves · {ai.calls_left('read_photo'):,} photo "
+                  f"reads · {ai.calls_left('tutor'):,} tutor replies",
+              "(Cloudflare models share one pool, so photo reads and Cloudflare solves draw on the same neurons.)",
+              f"Per student: {free_plan.get('solves', '?')} solves + {free_plan.get('tutor', '?')} tutor messages a day."
+              f" Capacity guard: {guard}.",
+              "Cache hits, and engine answers when quota is low, use no quota."]
+    return "\n".join(lines)
+
+
+@router.message(Command("quota"))
+async def cmd_quota(message: Message, limits: Limits, ai: AIRouter, settings):
+    await ai.resync()
+    free = (settings.limits.get("plans") or {}).get("free", {})
+    await message.answer(quota_report(ai, await limits.guard_mode(), free), parse_mode=None)
+
+
 PLANS = ("free", "premium")
 
 

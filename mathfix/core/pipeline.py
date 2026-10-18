@@ -84,7 +84,7 @@ class Pipeline:
 
     # ---------------------------------------------------------------- photo
     async def solve_photo(self, image: bytes, progress: Progress = _no_progress, *, grade: str | None = None,
-                          lang: str = "en") -> Outcome:
+                          lang: str = "en", explain: bool = True) -> Outcome:
         jpeg, phash = await asyncio.to_thread(preprocess_image, image)
         if lang not in ("", "en"):
             phash = f"{phash}:{lang}"               # cached explanations are per language
@@ -119,7 +119,8 @@ class Pipeline:
         if not text.strip():
             return Outcome(status="unreadable")
         await progress("read", text)
-        out = await self.solve_text(text, progress, latex=reading.problem_latex, grade=grade, lang=lang)
+        out = await self.solve_text(text, progress, latex=reading.problem_latex, grade=grade, lang=lang,
+                                    explain=explain)
         out.other_problems = problems[1:]
         if out.status == "solved" and out.solution_id:
             await self.repo.put_image(phash, out.solution_id, problems)
@@ -127,7 +128,9 @@ class Pipeline:
 
     # ---------------------------------------------------------------- text
     async def solve_text(self, text: str, progress: Progress = _no_progress, latex: str = "", *,
-                         grade: str | None = None, lang: str = "en") -> Outcome:
+                         grade: str | None = None, lang: str = "en", explain: bool = True) -> Outcome:
+        """explain=False: when today's free AI quota is nearly used up, questions the maths engine can
+        answer get the exact answer without an AI explanation, so they cost no quota at all."""
         t0 = time.monotonic()
         text = text.strip()[:4000]
         key = cache_key(text, lang)
@@ -146,14 +149,17 @@ class Pipeline:
         messages = [{"role": "system", "content": _system(grade, lang)},
                     {"role": "user", "content": user}]
         await progress("solve", "")
-        try:
-            res = await self.router.run("solve", messages, schema=Solution, effort="medium" if hard else "low",
-                                        big=big, on_wait=lambda: progress("queue", ""))
-            sol, model = res.data, res.model
-        except AllModelsBusy as e:
-            if not quick:
-                return Outcome(status="capacity" if e.daily else "busy")
-            # no AI available, but SymPy already knows the answer: still help the student
+        sol = None
+        if explain or not quick:
+            try:
+                res = await self.router.run("solve", messages, schema=Solution, effort="medium" if hard else "low",
+                                            big=big, on_wait=lambda: progress("queue", ""))
+                sol, model = res.data, res.model
+            except AllModelsBusy as e:
+                if not quick:
+                    return Outcome(status="capacity" if e.daily else "busy")
+        if sol is None:
+            # no AI (busy, or saving quota), but the engine already knows the answer: still help the student
             sol = Solution(steps=[Step(say="Worked out exactly with our maths engine.", math=quick["answer_latex"])],
                            final_answer=quick["answer_text"], final_answer_latex=quick["answer_latex"])
             model = "sympy"

@@ -161,3 +161,15 @@ async def test_engine_answer_is_shown_instantly_then_explained(settings, repo):
     assert seen[0] == ("instant", "HCF = 12")                       # before the AI was asked anything
     assert out.solution.final_answer == "HCF = 12" and out.verified == "verified"
     assert fake.calls[0]["reasoning_effort"] == "low" and fake.calls[0]["max_tokens"] == 2500
+
+
+async def test_engine_answers_skip_the_ai_when_free_quota_is_low(settings, repo):
+    fake = FakeAI()
+    p, _ = make(settings, repo, fake)
+    out = await p.solve_text("2x + 3y = 12, x - y = 1", explain=False)
+    assert out.status == "solved" and out.model == "sympy" and out.verified == "verified"
+    assert out.solution.final_answer == "x = 3, y = 2" and fake.calls == []
+    # questions the engine can't answer still use the AI
+    fake.add(SOLVER, sol("60 km/h", {"type": "numeric", "expr": "300/5", "value": "60"}))
+    out = await p.solve_text("A train travels 300 km in 5 hours. Find its speed.", explain=False)
+    assert out.model == "groq_oss_120b" and out.verified == "verified"

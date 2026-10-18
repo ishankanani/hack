@@ -16,6 +16,7 @@ from PIL import Image, ImageDraw, ImageFont
 from mathfix.ai import prompts
 from mathfix.ai.router import Router
 from mathfix.config import load_settings
+from mathfix.db import Repo
 from mathfix.render.handwriting import FONT_DIR
 from mathfix.schemas import Reading, Solution
 
@@ -31,7 +32,10 @@ def sample_photo() -> str:
 
 async def main(only: str | None) -> None:
     settings = load_settings()
-    router = Router(settings.models)
+    repo = Repo(settings.database_path)          # the bot's database: these calls use the same free quota
+    await repo.init()
+    router = Router(settings.models, repo)
+    await router.start()
     photo = sample_photo()
     cases = {
         "read_photo": ([{"role": "system", "content": prompts.READ_SYSTEM},
@@ -63,6 +67,7 @@ async def main(only: str | None) -> None:
             except Exception as e:  # noqa: BLE001 - report every failure and keep going
                 print(f"  {name:18} FAIL {time.monotonic() - t0:5.1f}s  {type(e).__name__}: {e}")
     await router.close()
+    await repo.close()
 
 
 if __name__ == "__main__":

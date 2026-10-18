@@ -292,11 +292,12 @@ async def _solve_flow(message: Message, deps: dict, *, text: str | None = None, 
                 pass
 
         await repo.event(uid, "solve_requested", kind="photo" if image else "text")
+        explain = await limits.guard_mode() == "normal"     # low on free quota: engine answers skip the AI
         try:
             if image:
-                out = await pipeline.solve_photo(image, progress, grade=user.get("grade"), lang=lang)
+                out = await pipeline.solve_photo(image, progress, grade=user.get("grade"), lang=lang, explain=explain)
             else:
-                out = await pipeline.solve_text(text, progress, grade=user.get("grade"), lang=lang)
+                out = await pipeline.solve_text(text, progress, grade=user.get("grade"), lang=lang, explain=explain)
         except Exception:
             log.exception("solve failed")
             await placeholder.edit_text(texts.ERROR)

@@ -36,6 +36,7 @@ async def monitor(bot: Bot, settings: Settings, ai: AIRouter, limits: Limits, re
     last_prune = ""
     while True:
         try:
+            await ai.resync()
             day = ai.budget.day
             if settings.admin_chat_id:
                 for spec in ai.specs.values():

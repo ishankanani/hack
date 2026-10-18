@@ -196,3 +196,26 @@ async def test_request_too_large_only_cools_briefly(models_cfg):
     r, _ = make(models_cfg, fake)
     res = await r.run("solve", MSG, schema=Solution, big=True)
     assert res.model == "cf_oss_120b" and 0 < r.budget.cooling("groq_oss_120b") <= 20
+
+
+def test_openrouter_models_must_be_free_variants(models_cfg):
+    from mathfix.ai.router import build_specs
+    models_cfg["models"]["or_free_text"]["id"] = "openai/gpt-oss-120b"             # a paid model by mistake
+    models_cfg["models"]["or_free_vision"]["id"] = "meta-llama/llama-4-scout:free"
+    specs = build_specs(models_cfg)
+    assert specs["or_free_text"].paid_risk and not specs["or_free_text"].enabled
+    assert specs["or_free_vision"].enabled
+    models_cfg["models"]["or_free_text"]["allow_paid"] = True                       # only if you really mean it
+    assert build_specs(models_cfg)["or_free_text"].enabled
+
+
+async def test_usage_from_other_processes_counts_after_resync(models_cfg, repo):
+    fake = FakeAI()
+    fake.add("openai/gpt-oss-120b", GOOD)
+    script = Router(models_cfg, repo, transport=fake.transport)      # e.g. the golden eval, same database
+    await script.run("solve", MSG, schema=Solution)
+    bot, _ = make(models_cfg, FakeAI(), repo)
+    assert bot.budget.today["groq_oss_120b"]["requests"] == 0
+    await bot.resync()
+    assert bot.budget.today["groq_oss_120b"]["requests"] == 1
+    assert 0 < bot.calls_left("solve") < 10_000

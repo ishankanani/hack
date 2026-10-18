@@ -249,6 +249,12 @@ async def test_admin_commands_only_for_admins(env, settings):
     assert "Premium" in tg.texts()[-1] and "of 50 left" in tg.texts()[-1]
     await send(dp, bot, "/stats", admin_user)
     assert "solve pool used" in tg.texts()[-1] and "shared opens" in tg.texts()[-1]
+    await send(dp, bot, "/quota", admin_user)
+    q = tg.texts()[-1]
+    assert "API cost: $0" in q and "groq_oss_120b (Groq)" in q and "Left today, about:" in q
+    seen = len(tg.texts())
+    await send(dp, bot, "/quota")                                         # not for normal users
+    assert not any("API cost" in t for t in tg.texts()[seen:])
 
 
 async def test_non_maths_text(env):

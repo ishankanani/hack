@@ -30,10 +30,17 @@ class ModelSpec:
     neurons_in: float = 0.0      # neurons per token
     neurons_out: float = 0.0
     pool: str | None = None      # shared daily pool (e.g. all Cloudflare models)
+    allow_paid: bool = False     # OpenRouter: allow a model that isn't ":free" (it would be billed)
+
+    @property
+    def paid_risk(self) -> bool:
+        """An OpenRouter model that is not a free variant would spend account credit."""
+        return (self.provider == "openrouter" and "<" not in self.id and not self.id.endswith(":free")
+                and not self.allow_paid)
 
     @property
     def enabled(self) -> bool:
-        return bool(self.api_key) and "<" not in self.id and "{" not in self.base_url
+        return bool(self.api_key) and "<" not in self.id and "{" not in self.base_url and not self.paid_risk
 
     def neurons(self, tokens_in: int, tokens_out: int) -> float:
         return tokens_in * self.neurons_in + tokens_out * self.neurons_out

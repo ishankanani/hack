@@ -6,7 +6,8 @@
 
 For every problem it records whether the final answer contains the expected numbers, the verification
 status, which model answered, the time until the student first sees an answer (the engine's instant
-answer, or the full answer) and the total time. A fresh database is used, so nothing comes from cache.
+answer, or the full answer) and the total time. A fresh database is used for answers, so nothing comes from cache; model usage is recorded in the bot's
+database, because these calls spend the same free quota.
 The full report is saved to data/golden-report.json.
 """
 from __future__ import annotations
@@ -71,9 +72,11 @@ async def main(category: str | None, limit: int | None) -> None:
     with tempfile.TemporaryDirectory() as tmp:
         repo = Repo(Path(tmp) / "golden.db")
         await repo.init()
+        usage = Repo(settings.database_path)
+        await usage.init()
         sandbox = Sandbox(workers=2)
         await sandbox.start()
-        router = Router(settings.models, repo)
+        router = Router(settings.models, usage)
         await router.start()
         pipeline = Pipeline(router, repo, sandbox)
         rows = []
@@ -104,6 +107,7 @@ async def main(category: str | None, limit: int | None) -> None:
             await router.close()
             await sandbox.close()
             await repo.close()
+            await usage.close()
 
     print("\nCategory            correct   verified   first answer p50/p95   total p50/p95")
     for cat in sorted({r["cat"] for r in rows}) + ["ALL"]:

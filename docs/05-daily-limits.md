@@ -75,6 +75,43 @@ pool_used = Σ requests_today(model) / Σ (rpd(model) × 0.9)      over the solv
 The admin chat gets an alert on entering Soft and Hard mode, which is the signal to consider the
 [paid upgrade path](04-speed-and-cost.md#paid-upgrade-path).
 
+In Soft and Hard mode, questions the maths engine can answer get the exact answer **without** an AI explanation, so
+they use no quota at all. Cache hits never use quota.
+
+## Never exceeding a provider's free limit (and never paying)
+
+Three layers, from the provider up:
+
+1. **Per-model budget (router).** Before every call the router checks today's requests, tokens and neurons, and the
+   current minute's requests and tokens, against the limits in `config/models.yaml` (your console numbers × 0.9).
+   A model without room is skipped *before* it is called, so we never rely on the provider refusing us. Every call
+   is counted, failed ones too, and saved in the database, so the count survives restarts. Calls from the smoke test,
+   the golden eval or a second bot process are counted as well: the bot reloads today's totals from the database
+   every minute. Counters reset at 00:00 UTC, when Cloudflare's free allowance resets.
+2. **Capacity guard (all students).** At 85 % of the day's free solving capacity, per-student limits shrink; at 98 %,
+   new solves pause until 00:00 UTC (see above).
+3. **Per-student limits.** 5 solves and 15 tutor messages a day (`/setlimit` to change them live).
+
+What today's free tiers allow, with the current config (check `/quota` for live numbers):
+
+| Work | Free capacity per day |
+|---|---|
+| AI solves on Groq gpt-oss-120b | ~120 (its 200,000 tokens/day run out first), or ~30 big problems |
+| Photo reads on Cloudflare (Llama 4 Scout) | ~110, **or** ~130 solves on Cloudflare: both share 10,000 neurons/day |
+| Tutor replies on Groq gpt-oss-20b | ~200 |
+
+So the free stack serves roughly **40–60 active students a day** at 5 solves each. Engine answers and cache hits
+stretch that further. Beyond that, the [paid upgrade path](04-speed-and-cost.md#paid-upgrade-path) is the answer;
+more free accounts are not (provider terms).
+
+**Billing safety checklist** (no code can see your billing settings, so check these once):
+
+| Provider | Stay at $0 by | What happens at the limit |
+|---|---|---|
+| Groq | Using the free plan (no card added). If you ever upgrade, set a spend limit in the console | The router stops first; Groq itself returns 429 |
+| Cloudflare Workers AI | Keeping Workers on the **Free** plan. On Workers Paid ($5/month), neurons beyond 10,000/day are **billed** ($0.011 per 1,000) | On Free, requests fail after 10,000 neurons; the router stops at 9,000 |
+| OpenRouter | Only `:free` model ids. **The bot refuses any other OpenRouter model** unless you set `allow_paid: true` | 50 requests/day (45 in config); 1,000/day after a one-time $10 purchase |
+
 ---
 
 ## Anti-abuse (launch level)
@@ -168,6 +205,7 @@ Admin commands work only for the user ids in `admins`:
 | Command | Does |
 |---|---|
 | `/stats` | Today: users, solves, cache-hit %, verification %, p50/p95 latency, per-model quota used, guard mode |
+| `/quota` | Each free limit (requests, tokens, neurons) used vs allowed today, about how many solves / photo reads / tutor replies are left, time to reset, API cost ($0) |
 | `/setlimit solves 8` · `/setlimit tutor 15` | Change the daily limits live |
 | `/guard normal\|soft\|hard\|auto` | Force capacity-guard mode (e.g. `hard` if a provider is misbehaving) |
 | `/grant <user_id> 5` | Give someone bonus solves for today (testers, support cases) |

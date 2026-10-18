@@ -45,7 +45,11 @@ How to explain:
    - antiderivative: "expr" = integrand, "variable", "value" = antiderivative without +C
    - definite_integral: "expr" = integrand, "variable", "lower", "upper", "value"
    - limit: "expr", "variable", "point", "value"
-   - none: only if it truly cannot be checked (proofs, explanations)
+   - system: simultaneous equations: "expr" = "eq1; eq2" (each as "lhs - (rhs)"), "values" = ["x=3", "y=2"]
+   - numeric with several numbers (a vector, coordinates, both parameters): "expr" = "formula1; formula2",
+     "values" = ["v1", "v2"], each formula computed from the given data (not from your rounded steps)
+   - none: ONLY for proofs and explanations. Any answer that is a number, numbers or an expression
+     MUST have a check: that is how we catch arithmetic slips before the student sees them.
 - Write "say", "key_idea" and "tip" in {language}. Keep maths and the answer in standard notation.
 - If the problem is not maths or not appropriate for a school maths helper, return "steps": [] and "topic": "refused"."""
 

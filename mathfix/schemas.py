@@ -1,13 +1,13 @@
 """Structured outputs the AI models must return (validated with pydantic)."""
 from __future__ import annotations
 
-from typing import Literal
+from typing import Literal, get_args
 
 from pydantic import BaseModel, Field, field_validator
 
 CheckType = Literal[
     "equation_solutions", "expression_value", "simplify_equal", "derivative",
-    "antiderivative", "definite_integral", "limit", "numeric", "none",
+    "antiderivative", "definite_integral", "limit", "numeric", "system", "none",
 ]
 
 
@@ -40,6 +40,12 @@ class Check(BaseModel):
     lower: str = ""           # definite_integral
     upper: str = ""
     point: str = ""           # limit
+
+    @field_validator("type", mode="before")
+    @classmethod
+    def _known_type(cls, v):
+        """A check type we don't support means "not machine-checkable", never a rejected answer."""
+        return v if v in get_args(CheckType) else "none"
 
     @field_validator("values", mode="before")
     @classmethod

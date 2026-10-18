@@ -139,7 +139,10 @@ class Pipeline:
         hard, big = is_hard(text), is_big(text)
         user = prompts.SOLVE_USER.format(problem=text)
         if quick:
+            # the exact answer is known in milliseconds: show it now, the AI only has to explain it
+            await progress("instant", quick["answer_text"])
             user += prompts.KNOWN_ANSWER.format(answer=quick["answer_text"])
+            hard = big = False
         messages = [{"role": "system", "content": _system(grade, lang)},
                     {"role": "user", "content": user}]
         await progress("solve", "")
@@ -161,6 +164,8 @@ class Pipeline:
             sol.final_answer, sol.final_answer_latex = quick["answer_text"], quick["answer_latex"]
             sol.check = Check(**quick["check"])
         status = await self._verify(sol.check)
+        if quick and quick.get("exact") and status == "unchecked":
+            status = "verified"      # computed exactly by the engine (e.g. HCF, matrices), not by the model
 
         # Big derivations can rarely be machine-checked; a full second solve would double the wait and
         # use the whole free per-minute token budget, so they get one only when something looks wrong.

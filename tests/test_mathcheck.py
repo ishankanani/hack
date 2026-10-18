@@ -122,3 +122,74 @@ async def test_real_sandbox_kills_runaway_work():
         assert (await sb.run(verify, {"type": "numeric", "expr": "2+2", "value": "4"}, timeout=60))["status"] == "verified"
     finally:
         await sb.close()
+
+
+ENGINE = [  # question -> exact answer text; every one must also pass its own SymPy check
+    ("x^4 - 5x^2 + 4 = 0", "x = -2 or x = -1 or x = 1 or x = 2"),
+    ("Solve x³ − 6x² + 11x − 6 = 0", "x = 1 or x = 2 or x = 3"),
+    ("2x + 3y = 12, x - y = 1", "x = 3, y = 2"),
+    ("Solve: x + y + z = 6; 2x - y + z = 3; x + 2y - z = 2", "x = 1, y = 2, z = 3"),
+    ("Find the derivative of ln(x^2 + 1)", "dy/dx = 2*x/(x^2 + 1)"),
+    ("If y = x^2 e^x, find dy/dx", "dy/dx = x*(x + 2)*e^x"),
+    ("∫ x e^x dx", "(x - 1)*e^x + C"),
+    ("integrate 1/(1+x^2) dx from 0 to 1", "pi/4 ≈ 0.785398"),
+    ("Find the integral of sin x from 0 to pi", "2"),
+    ("lim x→2 (x^2 - 4)/(x - 2)", "4"),
+    ("limit of (1 + 1/n)^n as n -> infinity", "E ≈ 2.71828"),
+    ("Factorise x^2 - 5x + 6", "(x - 3)*(x - 2)"),
+    ("Expand (x + 2)^3", "x^3 + 6*x^2 + 12*x + 8"),
+    ("Simplify (x^2 - 1)/(x - 1)", "x + 1"),
+    ("sqrt(144) + 5!", "132"),
+]
+EXACT_ONLY = [  # computed exactly, no separate re-check
+    ("HCF of 36 and 48", "HCF = 12"), ("LCM of 4, 6 and 8", "LCM = 24"),
+    ("Find the prime factorisation of 360", "360 = 2³ × 3² × 5"), ("What percent of 80 is 20", "25%"),
+    ("Increase 200 by 15%", "230"), ("mean of 4, 8, 15, 16, 23, 42", "mean = 18"),
+    ("median of 3, 1, 4, 1, 5, 9", "median = 7/2 ≈ 3.5"), ("mode of 2, 3, 3, 5, 5, 5, 7", "mode = 5"),
+    ("Find the determinant of [[1,2],[3,4]]", "det = -2"), ("eigenvalues of [[2,1],[1,2]]", "eigenvalues: 1, 3"),
+    ("inverse of [[4, 7], [2, 6]]", "[[3/5, -7/10], [-1/5, 2/5]]"), ("rank of [[1,2],[2,4]]", "rank = 1"),
+    ("2x + 3 > 7", "x > 2"), ("x^2 - 4 < 0", "-2 < x < 2"), ("x^2 >= 9", "x ≤ -3 or x ≥ 3"),
+]
+
+
+@pytest.mark.parametrize("q, answer", ENGINE)
+def test_engine_answers_are_exact_and_pass_their_own_check(q, answer):
+    out = quick_solve(q)
+    assert out["answer_text"] == answer and out["exact"]
+    assert verify(out["check"])["status"] == "verified"
+
+
+@pytest.mark.parametrize("q, answer", EXACT_ONLY)
+def test_engine_exact_answers(q, answer):
+    assert quick_solve(q)["answer_text"] == answer
+
+
+@pytest.mark.parametrize("q", ["integral of e^(x^2) dx", "integral of 1/x dx from -1 to 1", "x + y = 5",
+                               "A train travels 300 km in 5 hours. Find its speed.", "Frank has 5 apples"])
+def test_engine_leaves_non_school_or_unclear_results_to_the_ai(q):
+    assert quick_solve(q) is None
+
+
+def test_factorial_is_not_mistaken_for_punctuation():
+    assert problem_key("5!") != problem_key("5") and problem_key("x = 3!") != problem_key("x = 3")
+    assert problem_key("What is 2 + 3?") == problem_key("2+3")
+
+
+@pytest.mark.parametrize("check, status", [
+    ({"type": "system", "expr": "2*x + 3*y - 12; x - y - 1", "values": ["x=3", "y=2"]}, "verified"),
+    ({"type": "system", "expr": "2*x + 3*y - 12; x - y - 1", "values": ["x=2", "y=3"]}, "failed"),
+    ({"type": "system", "expr": "x + y - 3; x - y - 1", "values": ["x=2"]}, "unchecked"),
+    # a vector answer, e.g. logistic regression parameters after one gradient step
+    ({"type": "numeric", "expr": "0.2 - 0.1*((1/(1+exp(-0.8)) - 1)*2); -0.4 - 0.1*((1/(1+exp(-0.8)) - 1)*(-1) + 0.1*(-0.4))",
+      "values": ["0.262", "-0.427"]}, "verified"),
+    ({"type": "numeric", "expr": "0.2 - 0.1*((1/(1+exp(-0.8)) - 1)*2); -0.4 - 0.1*((1/(1+exp(-0.8)) - 1)*(-1) + 0.1*(-0.4))",
+      "values": ["0.262", "-0.373"]}, "failed"),
+])
+def test_system_and_vector_checks(check, status):
+    assert verify(check)["status"] == status
+
+
+def test_unknown_check_type_means_unchecked_not_a_rejected_answer():
+    from mathfix.schemas import Check
+    assert Check(type="matrix_magic", expr="1").type == "none"
+    assert Check(type="system", expr="x - 1", values=["x=1"]).type == "system"

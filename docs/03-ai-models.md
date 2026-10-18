@@ -323,9 +323,10 @@ failed second opinion) the best answer with a clear warning, logged for review.
 | Statistics & probability, word problems | 5 | 2 |
 | **Total** | **60** | **30** |
 
-Run `python -m tests.run_golden --step solve --model groq_oss_120b` (and `--step read --model cf_llama4_scout`) to
-print accuracy, verification rate, p50/p95 latency and tokens used. Do this for **every model in each chain**, so you
-know what quality each fallback gives.
+Run `python -m scripts.eval_golden` (or one category: `python -m scripts.eval_golden machine-learning`) to print
+accuracy, verification rate and p50/p95 time to first answer and total time per category, on the 40 problems in
+`tests/golden/problems.yaml`. The full report is saved to `data/golden-report.json`. Run it after every prompt or
+model change, and add every wrong answer students report to the golden set.
 
 **Launch bar:** ≥ 90 % correct on text, ≥ 85 % on photos (transcription *and* answer), 0 crashes.
 

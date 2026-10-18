@@ -75,6 +75,9 @@ READING = "🔍 Reading your question…"
 SOLVING = "🧮 Solving…"
 QUEUE = "⏳ Busy right now, you're in line. One moment…"
 DOUBLE_CHECK = "🔁 Double-checking the answer…"
+INSTANT = ("⚡ <b>ANSWER:  {answer}</b>\n"
+           "✔️ <i>Exact answer from our maths engine</i>\n\n"
+           "✍️ Writing the step-by-step explanation…")
 UNREADABLE = ("I couldn't read that clearly 😅\nTry: good light, phone held flat, one question per photo.\n"
               "<i>(This didn't use a free solve.)</i>")
 NOT_MATH = "I only do maths 🙂 Send me a maths question as a photo or text.\n<i>(This didn't use a free solve.)</i>"

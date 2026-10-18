@@ -122,13 +122,40 @@ def _value(check: dict) -> dict:
 
 
 def _rounded(check: dict) -> dict:
-    """'numeric' answers are often rounded: allow half a unit in the last decimal given."""
-    exact, given = _num(parse(check["expr"])), _num(parse(check["value"]))
-    if exact is None or given is None:
-        return _result(None)
-    decimals = len(check["value"].split(".")[1]) if "." in check["value"] else 0
-    tol = max(0.5 * 10 ** -decimals + 1e-12, TOL * max(1.0, abs(exact)))
-    return _result(abs(exact - given) <= tol)
+    """'numeric' answers are often rounded: allow half a unit in the last decimal given.
+    Several numbers (a vector, both coordinates...): expr "f1; f2" with values ["v1", "v2"]."""
+    exprs = [e for e in check["expr"].split(";") if e.strip()]
+    values = [str(v) for v in check.get("values") or [] if str(v).strip()] or [str(check.get("value", ""))]
+    if len(exprs) != len(values):
+        return _result(None, "expr and values don't match")
+    for expr, value in zip(exprs, values):
+        exact, given = _num(parse(expr)), _num(parse(value.strip()))
+        if exact is None or given is None:
+            return _result(None)
+        decimals = len(value.split(".")[1]) if "." in value else 0
+        tol = max(0.5 * 10 ** -decimals + 1e-12, TOL * max(1.0, abs(exact)))
+        if abs(exact - given) > tol:
+            return _result(False, f"{value} should be {complex(exact).real:.6g}")
+    return _result(True)
+
+
+def _system(check: dict) -> dict:
+    """Simultaneous equations: expr "eq1; eq2" (each "lhs - (rhs)" or "lhs = rhs"), values ["x=3", "y=2"]."""
+    eqs = [parse_equation(e) for e in check["expr"].split(";") if e.strip()]
+    sol = {}
+    for item in check.get("values") or []:
+        name, _, val = str(item).partition("=")
+        if name.strip() and val.strip():
+            sol[sp.Symbol(name.strip())] = parse(val.strip())
+    if not eqs or not sol:
+        return _result(None, "no values given")
+    for eq in eqs:
+        residual = eq.subs(sol)
+        if residual.free_symbols:
+            return _result(None, "not every unknown has a value")
+        if not _close(residual, 0):
+            return _result(False, "the values don't satisfy every equation")
+    return _result(True)
 
 
 def _simplify_equal(check: dict) -> dict:
@@ -137,6 +164,7 @@ def _simplify_equal(check: dict) -> dict:
 
 CHECKS = {
     "equation_solutions": _equation_solutions,
+    "system": _system,
     "expression_value": _value,
     "numeric": _rounded,
     "simplify_equal": _simplify_equal,

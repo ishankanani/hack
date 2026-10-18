@@ -207,7 +207,13 @@ def to_ascii_math(text: str) -> str:
     s = _STRIP_WORDS.sub("", s.strip())
     s = re.sub(r"^(?:(?:find|solve\s+for)\s+)?[a-z]\s*:\s*", "", s, flags=re.IGNORECASE)  # "Find x: ..."
     s = re.sub(r"\s*(for|in terms of)\s+[a-z]\s*$", "", s, flags=re.IGNORECASE)
-    return s.strip().rstrip("?.!").strip()
+    return strip_end_punctuation(s)
+
+
+def strip_end_punctuation(s: str) -> str:
+    """Drop a trailing ? . ! but keep a factorial: "5!" stays "5!"."""
+    s = re.sub(r"(?<![\d)])!+\s*$", "", s.strip())
+    return s.rstrip("?.").strip()
 
 
 def problem_key(text: str) -> str:

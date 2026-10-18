@@ -116,6 +116,7 @@ python3 -m venv .venv && .venv/bin/pip install -r requirements-dev.txt
 cp .env.example .env              # fill in TELEGRAM_BOT_TOKEN, GROQ_API_KEY, CF_ACCOUNT_ID, CF_AI_API_TOKEN, ADMIN_USER_IDS
 .venv/bin/python -m pytest -q     # 77 tests, no keys needed
 .venv/bin/python -m scripts.smoke_test   # checks every free model with YOUR keys (uses a little quota)
+.venv/bin/python -m scripts.eval_golden  # accuracy and speed on 40 real problems (school to machine learning)
 .venv/bin/python -m mathfix.main  # MODE=polling: talk to @mathfixbot from your phone right away
 ```
 On the server, set `MODE=webhook` and use [`deploy/mathfix.service`](deploy/mathfix.service) plus the Cloudflare Tunnel
@@ -126,7 +127,7 @@ they're simply skipped.
 | Folder | What's inside |
 |---|---|
 | `mathfix/ai/` | `router.py` (fallback chains, retries, cooldowns), `budget.py` (RPM/RPD/TPM/TPD + Cloudflare neurons per model), `prompts.py` |
-| `mathfix/core/` | `pipeline.py` (cache → read photo → SymPy quick path → solve → verify → second opinion), `limits.py`, `tutor.py` |
+| `mathfix/core/` | `pipeline.py` (cache → read photo → maths engine (instant exact answer) → solve → verify → second opinion), `limits.py`, `tutor.py` |
 | `mathfix/mathcheck/` | SymPy verification, quick answers, safe parsing, process sandbox with timeouts, LaTeX → Unicode |
 | `mathfix/render/` | handwritten-style image (Kalam font, SIL Open Font License) |
 | `mathfix/bot/` | Telegram handlers, buttons, texts, admin commands |

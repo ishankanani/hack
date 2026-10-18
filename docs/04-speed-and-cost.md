@@ -6,9 +6,19 @@
 | Request | First feedback | Full answer p50 | p95 |
 |---|---|---|---|
 | Cached (seen before) | < 0.3 s | **< 0.5 s** | < 1 s |
-| Typed, simple (SymPy quick path) | < 0.3 s | **< 2 s** | < 4 s |
+| Typed, engine can solve it | **exact answer < 0.5 s**, steps follow | 2–3 s | < 4 s |
 | Typed, general | < 0.3 s | **2–4 s** | < 10 s |
-| Photo | < 0.3 s ("🔍 Reading…"), "I read: …" at ~2 s | **4–7 s** | < 15 s |
+| Typed, big (machine learning, long derivations) | < 0.3 s | **6–15 s** | < 30 s (Cloudflare fallback) |
+| Photo | < 0.3 s ("🔍 Reading…"), "I read: …" at ~2–3 s, engine answer right after | **4–7 s** | < 15 s |
+
+**Why not "every question in 2–3 seconds"?** Two things set a floor that no code change removes on free models.
+Reading a photo is one vision-model call (~2–3 s). A long derivation means the model writes thousands of tokens
+of reasoning and steps, and even Groq (~500 tokens/s for gpt-oss-120b) needs 6–15 s for that. What we do instead:
+the maths engine answers everything it recognises *exactly* in milliseconds and shows that answer at once; everything
+else shows live progress ("I read …", "Solving…"). Paid, faster inference would roughly halve the big-problem times.
+
+Measure the real numbers with `python -m scripts.eval_golden` (accuracy, time to first answer and total time per
+category, on 40 problems).
 | Tutor reply | < 0.3 s | **1–2 s** | < 4 s |
 
 ### Where the time goes (photo, Plan A, estimated budget)
@@ -36,7 +46,11 @@
 3. **Groq for every text step.** Solving and tutoring run on one of the fastest inference APIs available.
 4. **Answer cache.** Photos are matched by perceptual hash and text by normalised problem text (the transcription from
    step 4 counts too). Textbook questions repeat a lot across students, so a hit is < 0.5 s and uses no quota.
-5. **SymPy quick path** for arithmetic and simple equations, which finds the answer in milliseconds.
+5. **Maths engine first** (`mathcheck/quick.py`, SymPy). It recognises arithmetic, percentages, HCF/LCM, prime
+   factors, mean/median/mode, equations up to degree 4, simultaneous equations, inequalities, derivatives, integrals,
+   limits, factorise/expand/simplify and matrices (determinant, inverse, eigenvalues, rank), and answers them exactly
+   in under 0.2 s. The exact answer is sent to the student immediately ("⚡ ANSWER … Writing the steps…"); the AI only
+   writes the explanation, at low reasoning effort.
 6. **Right-sized reasoning.** `reasoning_effort: low` for easy problems and `medium` only for calculus, trigonometry, proofs
    or long problems. High is only for second opinions.
 7. **Small images.** ≤ 1280 px, JPEG quality 85, which means fewer image tokens and a faster upload.

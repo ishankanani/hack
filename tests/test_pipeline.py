@@ -49,7 +49,7 @@ async def test_failed_check_gets_second_opinion_from_other_model(settings, repo,
     fake.add(SOLVER, sol("x = 2", {"type": "equation_solutions", "expr": "x**3 - 8 - x + 2", "values": ["3"]}))
     fake.add("qwen/qwen-test", sol("x = 2", {"type": "equation_solutions", "expr": "x**3 - x - 6", "values": ["2"]}))
     p, _ = make(settings, repo, fake)
-    out = await p.solve_text("x^3 - x = 6")             # cubic: not on the SymPy quick path
+    out = await p.solve_text("A number cubed minus the number is 6. Find it.")   # words: not for the engine
     assert out.verified == "verified" and out.model == "groq_qwen"
     assert fake.models_called() == [SOLVER, "qwen/qwen-test"]
 
@@ -79,7 +79,7 @@ async def test_everything_busy_without_quick_answer(settings, repo):
     p, ai = make(settings, repo, FakeAI())
     for s in ai.enabled_models("solve"):
         ai.budget.today[s.name].update(requests=10**6, tokens=10**9, neurons=10**9)
-    assert (await p.solve_text("x^3 - x = 6")).status == "capacity"
+    assert (await p.solve_text("A number cubed minus the number is 6. Find it.")).status == "capacity"
 
 
 def photo_bytes():
@@ -146,3 +146,18 @@ async def test_machine_learning_problem_gets_room_and_no_second_full_solve(setti
     out = await p.solve_text(q)
     assert out.status == "solved" and out.verified == "unchecked" and len(fake.calls) == 1
     assert fake.calls[0]["max_tokens"] == 5500 and fake.calls[0]["reasoning_effort"] == "medium"
+
+
+async def test_engine_answer_is_shown_instantly_then_explained(settings, repo):
+    fake = FakeAI()
+    fake.add(SOLVER, sol("12", {"type": "none"}, steps=3))
+    p, _ = make(settings, repo, fake)
+    seen = []
+
+    async def progress(stage, info=""):
+        seen.append((stage, info))
+
+    out = await p.solve_text("HCF of 36 and 48", progress)
+    assert seen[0] == ("instant", "HCF = 12")                       # before the AI was asked anything
+    assert out.solution.final_answer == "HCF = 12" and out.verified == "verified"
+    assert fake.calls[0]["reasoning_effort"] == "low" and fake.calls[0]["max_tokens"] == 2500

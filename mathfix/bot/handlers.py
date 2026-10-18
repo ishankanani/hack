@@ -280,13 +280,16 @@ async def _solve_flow(message: Message, deps: dict, *, text: str | None = None, 
             if stage == shown["stage"]:
                 return
             shown["stage"] = stage
-            line = {"read": f"📸 I read: {info}\n\n{texts.SOLVING}", "solve": None, "queue": texts.QUEUE,
-                    "double_check": texts.DOUBLE_CHECK}.get(stage)
-            if line:
-                try:
+            try:
+                if stage == "instant":                       # exact answer first, explanation follows
+                    await placeholder.edit_text(texts.INSTANT.format(answer=texts.escape(texts.pretty_math(info))))
+                    return
+                line = {"read": f"📸 I read: {texts.pretty_math(info)}\n\n{texts.SOLVING}", "solve": None,
+                        "queue": texts.QUEUE, "double_check": texts.DOUBLE_CHECK}.get(stage)
+                if line:
                     await placeholder.edit_text(line, parse_mode=None)
-                except TelegramBadRequest:
-                    pass
+            except TelegramBadRequest:
+                pass
 
         await repo.event(uid, "solve_requested", kind="photo" if image else "text")
         try:

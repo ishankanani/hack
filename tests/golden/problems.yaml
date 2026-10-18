@@ -1,0 +1,47 @@
+# Golden problems: run `python -m scripts.eval_golden` (needs your API keys in .env).
+# answer: every number the final answer must contain (order doesn't matter, rounding allowed).
+# Answers were worked out by hand and checked with SymPy; keep them that way when you add more.
+
+- {cat: school-engine, q: "2x + 5 = 17", answer: [6]}
+- {cat: school-engine, q: "x^2 - 5x + 6 = 0", answer: [2, 3]}
+- {cat: school-engine, q: "2x + 3y = 12, x - y = 1", answer: [3, 2]}
+- {cat: school-engine, q: "Solve for x: 3(x - 2) = 2(x + 1)", answer: [8]}
+- {cat: school-engine, q: "15% of 240", answer: [36]}
+- {cat: school-engine, q: "HCF of 36 and 48", answer: [12]}
+- {cat: school-engine, q: "integrate x^2 dx from 0 to 3", answer: [9]}
+- {cat: school-engine, q: "lim x->0 sin(x)/x", answer: [1]}
+- {cat: school-engine, q: "Find the determinant of [[2, 1], [5, 3]]", answer: [1]}
+- {cat: school-engine, q: "mean of 12, 15, 18, 21, 24", answer: [18]}
+
+- {cat: school-ai, q: "A train travels 300 km in 5 hours. What is its average speed in km/h?", answer: [60]}
+- {cat: school-ai, q: "The sum of two numbers is 25 and their difference is 7. Find the numbers.", answer: [16, 9]}
+- {cat: school-ai, q: "Find the area of a circle with radius 7 cm. Use pi = 22/7.", answer: [154]}
+- {cat: school-ai, q: "If sin θ = 3/5 and θ is acute, find cos θ.", answer: [0.8]}
+- {cat: school-ai, q: "A shopkeeper buys an item for ₹500 and sells it for ₹600. Find the profit percentage.", answer: [20]}
+- {cat: school-ai, q: "Find the sum of the first 20 terms of the AP 3, 7, 11, ...", answer: [820]}
+- {cat: school-ai, q: "In how many ways can 5 people sit in a row?", answer: [120]}
+- {cat: school-ai, q: "Two dice are thrown. What is the probability that the sum is 7?", answer: [0.16667]}
+- {cat: school-ai, q: "Find the simple interest on ₹2000 at 5% per annum for 3 years.", answer: [300]}
+- {cat: school-ai, q: "A ladder 10 m long reaches a window 8 m high. How far is the foot of the ladder from the wall?", answer: [6]}
+- {cat: school-ai, q: "Find the volume of a cylinder with radius 7 cm and height 10 cm. Use pi = 22/7.", answer: [1540]}
+- {cat: school-ai, q: "The angles of a triangle are in the ratio 2:3:4. Find the largest angle in degrees.", answer: [80]}
+- {cat: school-ai, q: "Find the 10th term of the AP 5, 8, 11, ...", answer: [32]}
+- {cat: school-ai, q: "Find the compound interest on ₹10000 at 10% per annum for 2 years.", answer: [2100]}
+
+- {cat: college-calculus, q: "Find the maximum value of f(x) = -x^2 + 4x + 1.", answer: [5]}
+- {cat: college-calculus, q: "Evaluate the integral of x e^x from 0 to 1.", answer: [1]}
+- {cat: college-calculus, q: "Find the area enclosed between y = x^2 and y = x.", answer: [0.16667]}
+- {cat: college-calculus, q: "Solve dy/dx = 2y with y(0) = 3, and find y(1) to 2 decimal places.", answer: [22.17]}
+
+- {cat: machine-learning, q: "For a single training example (m=1) in logistic regression with L2 regularization (excluding θ0): h(x) = σ(θᵀx), σ(z) = 1/(1+e^(-z)). Given x = [2, -1], y = 1, θ = [0.2, -0.4], λ = 0.1, α = 0.1. Compute θ_new after one step of gradient descent.", answer: [0.262, -0.427]}
+- {cat: machine-learning, q: "Compute the gradient of f(x, y) = x^2 y + 3y at the point (1, 2).", answer: [4, 4]}
+- {cat: machine-learning, q: "Find the eigenvalues of A = [[4, 1], [2, 3]].", answer: [2, 5]}
+- {cat: machine-learning, q: "Linear regression with one feature: the data points are (1, 2), (2, 4), (3, 5). Find the least-squares slope.", answer: [1.5]}
+- {cat: machine-learning, q: "Compute the softmax of the vector [1, 2, 3]. Give each value to 3 decimal places.", answer: [0.090, 0.245, 0.665]}
+- {cat: machine-learning, q: "What is the binary cross-entropy loss for a prediction p = 0.8 when the true label is y = 1? Use the natural log.", answer: [0.223]}
+- {cat: machine-learning, q: "One step of gradient descent on f(w) = (w - 3)^2 from w = 0 with learning rate 0.1. What is the new w?", answer: [0.6]}
+- {cat: machine-learning, q: "Find the derivative of the sigmoid σ(z) = 1/(1 + e^(-z)) at z = 0.", answer: [0.25]}
+- {cat: machine-learning, q: "Compute the L2 norm of the vector [3, 4, 12].", answer: [13]}
+- {cat: machine-learning, q: "Find the determinant and the trace of the matrix [[2, 1], [1, 2]].", answer: [3, 4]}
+- {cat: machine-learning, q: "Find the population variance of 2, 4, 4, 4, 5, 5, 7, 9.", answer: [4]}
+- {cat: machine-learning, q: "1% of people have a disease. A test detects it 99% of the time and gives a false positive 5% of the time. If a person tests positive, what is the probability they have the disease?", answer: [0.16667]}

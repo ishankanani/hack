@@ -134,3 +134,15 @@ async def test_tutor_uses_fast_model_and_keeps_history(settings, repo):
     last = fake.calls[-1]["messages"]
     assert last[0]["role"] == "system" and "x = 4" in last[0]["content"]
     assert [m["role"] for m in last[1:]] == ["user", "assistant", "user"]
+
+
+async def test_machine_learning_problem_gets_room_and_no_second_full_solve(settings, repo):
+    fake = FakeAI()
+    fake.add(SOLVER, sol("θ_new ≈ [0.262, −0.427]", {"type": "none"}, steps=7, topic="Logistic regression"))
+    p, _ = make(settings, repo, fake)
+    q = ("For a single training example in logistic regression with L2 regularization: h(x) = sigmoid(theta^T x). "
+         "Given x = [2, -1], y = 1, theta = [0.2, -0.4], lambda = 0.1, alpha = 0.1. Compute theta after one step "
+         "of gradient descent.")
+    out = await p.solve_text(q)
+    assert out.status == "solved" and out.verified == "unchecked" and len(fake.calls) == 1
+    assert fake.calls[0]["max_tokens"] == 5500 and fake.calls[0]["reasoning_effort"] == "medium"

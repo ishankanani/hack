@@ -25,6 +25,7 @@ class ModelSpec:
     json_mode: bool = False
     reasoning_effort: bool = False
     max_tokens: int = 1500
+    max_tokens_big: int = 0      # output room for big problems (0 = same as max_tokens)
     limits: dict = field(default_factory=dict)
     neurons_in: float = 0.0      # neurons per token
     neurons_out: float = 0.0

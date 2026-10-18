@@ -1,3 +1,4 @@
+import json
 import httpx
 import pytest
 
@@ -139,3 +140,59 @@ async def test_usage_is_recorded_and_pool_used_grows(models_cfg, repo):
 
 def test_extract_json():
     assert extract_json('Sure! {"a": 1} hope it helps') == {"a": 1}
+
+
+def cut_off(content="{\"steps\": [{\"say\": \"Compute z"):
+    return httpx.Response(200, json={"choices": [{"message": {"content": content}, "finish_reason": "length"}],
+                                     "usage": {"prompt_tokens": 900, "completion_tokens": 2500}})
+
+
+def test_latex_inside_json_is_repaired_not_rejected_or_corrupted():
+    raw = (r'{"final_answer": "W = (X^T X + \lambda I)^{-1} X^T y", "math": "\frac{1}{n}\|XW - y\|_2^2 + \nabla \beta",'
+           r' "say": "line one\nNext \"quoted\" \\alpha é"}')
+    data = extract_json(raw)
+    assert data["final_answer"] == r"W = (X^T X + \lambda I)^{-1} X^T y"
+    assert data["math"] == r"\frac{1}{n}\|XW - y\|_2^2 + \nabla \beta"      # not form-feed / backspace
+    assert data["say"] == 'line one\nNext "quoted" \\alpha é'                 # real escapes still work
+
+
+async def test_answer_cut_off_by_max_tokens_is_retried_with_more_room(models_cfg):
+    fake = FakeAI()
+    fake.add("openai/gpt-oss-120b", cut_off(), GOOD)
+    r, _ = make(models_cfg, fake)
+    res = await r.run("solve", MSG, schema=Solution, effort="medium")
+    assert res.model == "groq_oss_120b" and res.data.final_answer == "x = 4"
+    assert [c["max_tokens"] for c in fake.calls] == [2500, 5500]
+
+
+async def test_big_problems_start_with_the_big_budget_and_give_up_cleanly_when_still_cut(models_cfg):
+    fake = FakeAI()
+    fake.add("openai/gpt-oss-120b", cut_off(), cut_off())
+    fake.add("@cf/openai/gpt-oss-120b", GOOD)
+    r, _ = make(models_cfg, fake)
+    res = await r.run("solve", MSG, schema=Solution, effort="medium", big=True)
+    assert fake.calls[0]["max_tokens"] == 5500 and res.model == "cf_oss_120b"
+    assert fake.calls[-1]["max_tokens"] == 6000
+    assert "cut off" in r.last_error["groq_oss_120b"] and r.budget.cooling("groq_oss_120b") <= 20
+
+
+async def test_groq_json_validate_failed_is_repaired_instead_of_benching_the_model(models_cfg):
+    bad = json.dumps({**GOOD, "final_answer": "x = 4"}).replace('"x = 4"', '"x = 4, so \\\\lambda"')
+    bad = bad.replace("\\\\lambda", "\\lambda")                          # a raw \lambda: invalid JSON
+    fake = FakeAI()
+    fake.add("openai/gpt-oss-120b", httpx.Response(400, json={"error": {
+        "message": "Failed to generate JSON.", "type": "invalid_request_error",
+        "code": "json_validate_failed", "failed_generation": bad}}))
+    r, _ = make(models_cfg, fake)
+    res = await r.run("solve", MSG, schema=Solution)
+    assert res.model == "groq_oss_120b" and res.data.final_answer == r"x = 4, so \lambda"
+    assert r.budget.cooling("groq_oss_120b") == 0
+
+
+async def test_request_too_large_only_cools_briefly(models_cfg):
+    fake = FakeAI()
+    fake.add("openai/gpt-oss-120b", httpx.Response(413, json={"error": {"message": "Request too large"}}))
+    fake.add("@cf/openai/gpt-oss-120b", GOOD)
+    r, _ = make(models_cfg, fake)
+    res = await r.run("solve", MSG, schema=Solution, big=True)
+    assert res.model == "cf_oss_120b" and 0 < r.budget.cooling("groq_oss_120b") <= 20

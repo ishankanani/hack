@@ -88,6 +88,10 @@ def test_pretty_math_and_text():
     assert pretty_math("sqrt(16) + x**3 <= 2") == "√(16) + x³ ≤ 2"
     assert pretty_math(r"min_{W,b} \frac{1}{n}||XW - y||_2^2") == "min (over W,b) (1/n)‖XW - y‖₂²"
     assert pretty_math("Cost is $5 and $7\n15% of 240") == "Cost is $5 and $7\n15% of 240"
+    # typed maths from a real logistic-regression answer
+    assert pretty_math("g_0 = e * x_0 = (-0.31002552)*2") == "g₀ = e·x₀ = (-0.31002552)·2"
+    assert pretty_math("Compute θ^(new), σ(z) = 1/(1+e^(-z)), λ*θ_1") == "Compute θⁿᵉʷ, σ(z) = 1/(1+e⁻ᶻ), λ·θ₁"
+    assert pretty_math("h_θ(x) = σ(θ^Tx)") == "h_θ(x) = σ(θ^Tx)"                  # no Unicode form: left as is
     assert pretty_text(r"Subtract \(3\) from **both** sides") == "Subtract 3 from both sides"
     assert pretty_text(r"Use the subgradient of \|W\|_*") == "Use the subgradient of ‖W‖*"
     assert pretty_text("So $x^2 = 4$, cost $5 and $7") == "So x² = 4, cost $5 and $7"

@@ -169,10 +169,13 @@ _INLINE_MATH = re.compile(r"\\\((.+?)\\\)|\\\[(.+?)\\\]|\$\$(.+?)\$\$|\$(?=\S)([
 
 
 def _plain_math(s: str) -> str:
-    """Light touch for typed maths: x^2 -> x², sqrt( -> √(, <= -> ≤."""
+    """Light touch for typed maths: x^2 -> x², θ^(new) -> θⁿᵉʷ, x_0 -> x₀, e * x -> e·x, <= -> ≤."""
     s = s.replace("**", "^")
-    s = re.sub(r"\^\((-?\d+)\)", lambda m: _script(m.group(1), "^"), s)
+    s = re.sub(r"\^\(([^()\s]{1,6})\)", lambda m: _script(m.group(1), "^") if all(c in _SUP_OK for c in m.group(1))
+               else m.group(0), s)
     s = re.sub(r"\^(-?\d+)(?![\d.])|\^([A-Za-z])(?![A-Za-z(])", lambda m: _script(m.group(1) or m.group(2), "^"), s)
+    s = re.sub(r"_(\d+)(?![\d.])|_([a-z])(?![A-Za-z])", lambda m: _script(m.group(1) or m.group(2), "_"), s)
+    s = re.sub(r"(?<=[\w)\]⁰¹²³⁴-⁹₀-₉ᵀ])\s*\*\s*(?=[\w(\[−-])", "·", s)
     s = re.sub(r"\bsqrt\s*\(", "√(", s)
     s = re.sub(r"\bpi\b", "π", s)
     for a, b in (("<=", "≤"), (">=", "≥"), ("!=", "≠"), ("->", "→"), ("=>", "⇒"), ("||", "‖")):
@@ -215,6 +218,13 @@ def problem_key(text: str) -> str:
     return hashlib.sha256(s.encode()).hexdigest()[:32]
 
 
+# University maths: machine learning, optimisation, linear algebra, statistics
+ADVANCED_HINTS = re.compile(
+    r"(gradient|∇|\\nabla|hessian|jacobian|loss function|cross.entropy|regression|classifier|neural|backprop|"
+    r"softmax|sigmoid|logistic|entropy|likelihood|posterior|eigen|singular value|\bsvd\b|\bnorm\b|\\\||‖|\|\||"
+    r"optimi[sz]|argmin|argmax|\\min|\\max|lagrang|\bkkt\b|convex function|convex optim|covariance|gaussian|"
+    r"kernel|\bsvm\b|\bpca\b|markov|transpose|(?-i:\^\{?T\}?)|\\top|\\mathbb|\bmatrix rank\b)", re.IGNORECASE)
+
 HARD_HINTS = re.compile(
     r"(\\int|∫|integra|d/dx|deriv|differentia|\\lim|limit|lim_|\\sum|Σ|sin|cos|tan|log|ln|proof|prove|"
     r"show that|matrix|determinant|probability|series|vector)", re.IGNORECASE)
@@ -222,4 +232,11 @@ HARD_HINTS = re.compile(
 
 def is_hard(text: str) -> bool:
     """Cheap difficulty guess (no AI): decides reasoning effort low vs medium."""
-    return bool(HARD_HINTS.search(text or "")) or len(text or "") > 200 or (text or "").count("=") > 2
+    t = text or ""
+    return bool(HARD_HINTS.search(t) or ADVANCED_HINTS.search(t)) or len(t) > 200 or t.count("=") > 2
+
+
+def is_big(text: str) -> bool:
+    """Long or university-level (e.g. machine learning): needs a bigger output budget and more time."""
+    t = text or ""
+    return len(t) > 350 or bool(ADVANCED_HINTS.search(t))

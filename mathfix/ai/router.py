@@ -4,6 +4,10 @@ For each request the router walks the step's model list (config/models.yaml) and
 model that is enabled, can handle the input (vision), is not cooling down after an error and has
 budget left. Per-minute limits make it wait briefly (the student sees "busy, you're in line");
 daily limits make it move on. Bad JSON gets one retry on the same model, then the next model.
+
+Big problems (long, or university topics such as machine learning) get a larger output budget and
+timeout: the solve models are reasoning models, and their hidden reasoning counts against max_tokens,
+so a long derivation would otherwise be cut off before the JSON answer is written.
 """
 from __future__ import annotations
 
@@ -58,6 +62,39 @@ class Result:
     latency_ms: int
 
 
+# LaTeX commands that start with a letter JSON treats as an escape (\b \f \n \r \t)
+_LATEX_AFTER_ESCAPE = re.compile(
+    r"(?:frac|forall|beta|bar|binom|boldsymbol|bm|begin|big|bigg|bmod|bot|bullet|because|nabla|neq|ne|nu|not|"
+    r"notin|nolimits|newline|ni|neg|nleq|ngeq|nmid|rho|right|rangle|rightarrow|rfloor|rceil|rm|rVert|rvert|"
+    r"theta|tau|times|to|top|text|textbf|textit|textrm|tan|tanh|tfrac|tilde|therefore|triangle|tag)(?![a-zA-Z])")
+
+
+def _fix_latex_escapes(text: str) -> str:
+    r"""Models write LaTeX inside JSON strings with single backslashes. JSON then rejects \lambda or \|,
+    and quietly turns \frac, \beta, \nabla, \theta into control characters. Double those backslashes."""
+    out, i, n = [], 0, len(text)
+    while i < n:
+        c = text[i]
+        if c != "\\":
+            out.append(c)
+            i += 1
+            continue
+        nxt = text[i + 1:i + 2]
+        if nxt in ("\\", '"', "/"):
+            out.append(text[i:i + 2])
+            i += 2
+        elif nxt == "u" and re.fullmatch(r"[0-9a-fA-F]{4}", text[i + 2:i + 6]):
+            out.append(text[i:i + 6])
+            i += 6
+        elif nxt and nxt in "bfnrt" and not _LATEX_AFTER_ESCAPE.match(text, i + 1):
+            out.append(text[i:i + 2])
+            i += 2
+        else:
+            out.append("\\\\")
+            i += 1
+    return "".join(out)
+
+
 def extract_json(text: str) -> dict:
     """Models sometimes wrap JSON in ``` fences or add a sentence; take the outermost {...}."""
     text = (text or "").strip()
@@ -66,7 +103,7 @@ def extract_json(text: str) -> dict:
     if start < 0 or end <= start:
         raise _BadOutput("no JSON object found")
     try:
-        return json.loads(text[start:end + 1])
+        return json.loads(_fix_latex_escapes(text[start:end + 1]))
     except json.JSONDecodeError as e:
         raise _BadOutput(f"invalid JSON: {e.msg}") from None
 
@@ -85,7 +122,8 @@ def build_specs(cfg: dict) -> dict[str, ModelSpec]:
             name=name, provider=m["provider"], id=str(m["id"]), base_url=base_url.rstrip("/"),
             api_key=os.environ.get(prov["api_key_env"], ""), vision=bool(m.get("vision")),
             json_mode=bool(m.get("json_mode")), reasoning_effort=bool(m.get("reasoning_effort")),
-            max_tokens=int(m.get("max_tokens", 1500)), limits=dict(m.get("limits") or {}),
+            max_tokens=int(m.get("max_tokens", 1500)), max_tokens_big=int(m.get("max_tokens_big") or 0),
+            limits=dict(m.get("limits") or {}),
             neurons_in=n.get("input", 0) / 1e6, neurons_out=n.get("output", 0) / 1e6, pool=pool_of.get(name))
     return specs
 
@@ -134,10 +172,14 @@ class Router:
 
     # ---------------------------------------------------------------- main entry
     async def run(self, step: str, messages: list[dict], *, schema: type[BaseModel] | None = None,
-                  effort: str | None = None, need_vision: bool = False,
+                  effort: str | None = None, need_vision: bool = False, big: bool = False,
                   on_wait: Callable[[], Awaitable] | None = None) -> Result:
+        """big: a long or university-level problem; uses the *_big token budgets and timeouts."""
         est = int(self.cfg.get("est_tokens", {}).get(step, 1500))
         timeout = float(self.cfg.get("timeouts", {}).get(step, 20))
+        if big:
+            est = int(self.cfg.get("est_tokens_big", {}).get(step, est))
+            timeout = float(self.cfg.get("timeouts_big", {}).get(step, timeout))
         deadline = self.clock() + float(self.cfg.get("queue_wait_seconds", 30))
         waited = False
         while True:
@@ -159,7 +201,7 @@ class Router:
                         can_wait = True
                     continue
                 try:
-                    return await self._attempt(spec, messages, schema, effort, timeout)
+                    return await self._attempt(spec, messages, schema, effort, timeout, big)
                 except _RateLimited as e:
                     self.last_error[spec.name] = f"429 rate limited (retry-after {e.retry_after:.0f}s)"
                     log.warning("model %s rate limited by provider, retry-after %.0fs", spec.name, e.retry_after)
@@ -201,10 +243,17 @@ class Router:
             parts.append(f"{name}={state}" + (f" [last error: {err}]" if err else ""))
         log.warning("ALL MODELS BUSY for step '%s': %s", step, " | ".join(parts))
 
-    async def _attempt(self, spec: ModelSpec, messages: list[dict], schema, effort, timeout) -> Result:
+    async def _attempt(self, spec: ModelSpec, messages: list[dict], schema, effort, timeout, big: bool) -> Result:
         msgs = list(messages)
+        room = spec.max_tokens_big if big and spec.max_tokens_big else spec.max_tokens
         for attempt in range(2):
-            text, latency = await self._call(spec, msgs, schema is not None, effort, timeout)
+            text, latency, cut = await self._call(spec, msgs, schema is not None, effort, timeout, room)
+            if cut:  # ran out of output tokens (reasoning included) before finishing the answer
+                if attempt == 0 and spec.max_tokens_big > room:
+                    log.info("model %s hit max_tokens %d, retrying with %d", spec.name, room, spec.max_tokens_big)
+                    room = spec.max_tokens_big
+                    continue
+                raise _BadOutput(f"answer cut off at max_tokens={room}")
             if schema is None:
                 if not text.strip():
                     raise _BadOutput("empty reply")
@@ -220,8 +269,9 @@ class Router:
         raise _BadOutput("unreachable")
 
     async def _call(self, spec: ModelSpec, messages: list[dict], want_json: bool, effort: str | None,
-                    timeout: float) -> tuple[str, int]:
-        body: dict = {"model": spec.id, "messages": messages, "max_tokens": spec.max_tokens}
+                    timeout: float, max_tokens: int) -> tuple[str, int, bool]:
+        """Returns (text, latency_ms, cut_off)."""
+        body: dict = {"model": spec.id, "messages": messages, "max_tokens": max_tokens}
         if want_json and spec.json_mode:
             body["response_format"] = {"type": "json_object"}
         if effort and spec.reasoning_effort:
@@ -235,16 +285,29 @@ class Router:
                 raise _RateLimited(float(resp.headers.get("retry-after", "30") or 30))
             if resp.status_code >= 500:
                 raise _Transient(f"HTTP {resp.status_code}")
+            if resp.status_code == 413:  # this request is too big for the per-minute limit; others are fine
+                raise _Transient("HTTP 413 request too large")
             if resp.status_code >= 400:
+                err = _error_body(resp)
+                if err.get("code") == "json_validate_failed":
+                    # Groq JSON mode rejects the model's own invalid JSON (usually LaTeX backslashes) and
+                    # returns it as failed_generation. That is a bad answer, not a bad request: repair it.
+                    text = str(err.get("failed_generation") or "")
+                    if not text:
+                        raise _BadOutput("json_validate_failed")
+                    tin, tout = _rough_tokens(messages), len(text) // 4
+                    ok = True
+                    return text, int((time.monotonic() - t0) * 1000), False
                 raise _BadRequest(f"HTTP {resp.status_code}: {resp.text[:200]}")
             data = resp.json()
-            msg = (data.get("choices") or [{}])[0].get("message") or {}
+            choice = (data.get("choices") or [{}])[0]
+            msg = choice.get("message") or {}
             text = msg.get("content") or ""
             usage = data.get("usage") or {}
             tin = int(usage.get("prompt_tokens") or _rough_tokens(messages))
             tout = int(usage.get("completion_tokens") or len(text) // 4)
             ok = True
-            return text, int((time.monotonic() - t0) * 1000)
+            return text, int((time.monotonic() - t0) * 1000), choice.get("finish_reason") == "length"
         except (httpx.TimeoutException, httpx.TransportError) as e:
             raise _Transient(type(e).__name__) from None
         finally:
@@ -276,6 +339,15 @@ class Router:
                          "cooling_s": round(self.budget.cooling(name)),
                          "last_error": self.last_error.get(name, "")})
         return rows
+
+
+def _error_body(resp: httpx.Response) -> dict:
+    """The provider's {"error": {...}} object, or {} when the body is not JSON."""
+    try:
+        err = resp.json().get("error")
+    except ValueError:
+        return {}
+    return err if isinstance(err, dict) else {}
 
 
 def _rough_tokens(messages: list[dict]) -> int:

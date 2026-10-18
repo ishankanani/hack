@@ -149,6 +149,28 @@ async def run_step(step: str, request) -> Result:
 - Groq, Cloudflare and OpenRouter all speak the **OpenAI-compatible chat API**, so one client class with three base URLs
   covers Plan A. Plan C adds the Anthropic SDK.
 
+### Big problems (machine learning, long derivations)
+
+gpt-oss is a reasoning model: its hidden reasoning counts against `max_tokens`. With the normal budget (2,500), a
+long university problem used most of it thinking, the JSON answer was cut off, and the solve failed. What the
+pipeline does now:
+
+- `is_big()` (long text, or words like gradient, regression, softmax, eigen, norm, ∇) marks a problem as big.
+- Big problems get `max_tokens_big` (5,500 on Groq, which keeps prompt + output under the free 8,000 tokens per
+  minute; 6,000 on Cloudflare), `timeouts_big` (100 s) and `est_tokens_big` for the budget check.
+- An answer cut off at `max_tokens` (`finish_reason: length`) is retried once with the big budget.
+- Groq's JSON mode rejects a reply with invalid JSON as HTTP 400 `json_validate_failed`. That used to bench the
+  model for 10 minutes; now the reply in `failed_generation` is repaired and used.
+- LaTeX inside JSON (`\lambda`, `\|W\|`, `\frac`) is repaired before parsing. Unrepaired, it either fails to parse
+  or silently becomes control characters (`\f` in `\frac` is a form feed).
+- Big problems skip the automatic second full solve when the answer can't be machine-checked (derivations usually
+  can't), because it doubled the wait and used the whole per-minute token budget. They still get one when the check
+  fails or the model reports low confidence.
+- Photo reading has 1,200 output tokens, since a long question appears up to three times in the reply.
+
+On the free Groq tier one big problem uses most of a minute's tokens, so a burst of big problems falls back to the
+slower Cloudflare model. A paid Groq tier removes that limit.
+
 ---
 
 ## Structured outputs

@@ -25,7 +25,8 @@ Reply ONLY with one JSON object, no other text, in exactly this shape:
  "confidence": 0.0-1.0}
 
 How to explain:
-- Pitch every step at the student's level above. Maximum 10 steps. Never skip algebra.
+- Pitch every step at the student's level above. Maximum 10 steps (12 for long university problems).
+  Never skip algebra. For long problems keep each step to its key line, so the whole answer stays short.
 - Each "say" starts with an action ("Subtract 3 from both sides") and is at most 18 words.
   Say WHY when it isn't obvious. Put the maths itself in "math", not in "say".
 - "final_answer" is what a student copies into their notebook: SHORT (at most 25 words), plain text with

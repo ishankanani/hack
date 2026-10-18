@@ -27,7 +27,7 @@ models:
     id: "@cf/meta/llama-4-scout-17b-16e-instruct"
     vision: true
     json_mode: false
-    max_tokens: 400
+    max_tokens: 1200            # a long question appears up to 3 times in the reply (problems, text, latex)
     # Cloudflare bills "neurons": listed $0.27 / $0.85 per M tokens at $0.011 per 1,000 neurons
     neurons_per_m_tokens: {input: 24545, output: 77273}
     limits: {neurons_per_day: 9000}
@@ -37,7 +37,7 @@ models:
     id: "<pick a :free vision model, e.g. from openrouter.ai/models?max_price=0>"
     vision: true
     json_mode: false
-    max_tokens: 400
+    max_tokens: 1200
     limits: {rpm: 18, rpd: 45}
 
   # --- solving ---
@@ -47,6 +47,9 @@ models:
     json_mode: true
     reasoning_effort: true      # accepts reasoning_effort: low | medium | high
     max_tokens: 2500
+    # gpt-oss counts its hidden reasoning in max_tokens. Big problems need more room, but the prompt plus
+    # max_tokens must stay under Groq's free per-minute token limit (8,000), or the request is refused.
+    max_tokens_big: 5500
     limits: {rpm: 27, rpd: 900, tpm: 7200, tpd: 180000}
 
   groq_qwen:
@@ -54,6 +57,7 @@ models:
     id: "<current free Qwen model id from the Groq console>"
     json_mode: true
     max_tokens: 2500
+    max_tokens_big: 5500
     limits: {rpm: 27, rpd: 900, tpm: 7200, tpd: 180000}
 
   cf_oss_120b:
@@ -61,6 +65,7 @@ models:
     id: "@cf/openai/gpt-oss-120b"
     json_mode: false
     max_tokens: 2500
+    max_tokens_big: 6000
     neurons_per_m_tokens: {input: 31818, output: 68182}   # listed $0.35 / $0.75 per M tokens
     limits: {neurons_per_day: 9000}                        # shares the 10,000/day pool with Llama 4 Scout
 
@@ -69,6 +74,7 @@ models:
     id: "<pick a :free reasoning model>"
     json_mode: false
     max_tokens: 2500
+    max_tokens_big: 6000
     limits: {rpm: 18, rpd: 45}
 
   # --- tutor ---
@@ -76,7 +82,7 @@ models:
     provider: groq
     id: openai/gpt-oss-20b
     reasoning_effort: true
-    max_tokens: 600
+    max_tokens: 1000
     limits: {rpm: 27, rpd: 900, tpm: 7200, tpd: 180000}
 
 # Cloudflare models share ONE daily neuron pool per account
@@ -90,10 +96,16 @@ steps:
   tutor: [groq_oss_20b, groq_oss_120b, or_free_text]
 
 # solve allows 45 s because the Cloudflare gpt-oss fallback measured ~38 s; Groq answers in ~2 s
-timeouts: {read_photo: 30, solve: 45, escalate: 45, tutor: 15}
+timeouts: {read_photo: 30, solve: 45, escalate: 45, tutor: 20}
 
 # rough tokens per call, used to check budgets BEFORE calling
-est_tokens: {read_photo: 1800, solve: 1500, escalate: 2500, tutor: 700}
+est_tokens: {read_photo: 1800, solve: 1500, escalate: 2500, tutor: 900}
+
+# Big problems: long questions or university topics such as machine learning (mathcheck/text.py is_big).
+# They use max_tokens_big, need more time on the slower Cloudflare fallback, and one of them can use most
+# of Groq's free per-minute tokens, so the budget check counts them as large.
+timeouts_big: {solve: 100, escalate: 100}
+est_tokens_big: {solve: 6000, escalate: 6000}
 
 # when every model is only out of PER-MINUTE room, wait this long before giving up
 queue_wait_seconds: 30

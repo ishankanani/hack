@@ -23,7 +23,7 @@ from ..ai.router import AllModelsBusy, Router
 from ..db import Repo
 from ..mathcheck.quick import quick_solve
 from ..mathcheck.sandbox import Sandbox, SandboxTimeout
-from ..mathcheck.text import is_hard, problem_key
+from ..mathcheck.text import is_big, is_hard, problem_key
 from ..mathcheck.verify import verify
 from ..schemas import Check, Reading, Solution, Step
 
@@ -129,14 +129,14 @@ class Pipeline:
     async def solve_text(self, text: str, progress: Progress = _no_progress, latex: str = "", *,
                          grade: str | None = None, lang: str = "en") -> Outcome:
         t0 = time.monotonic()
-        text = text.strip()[:2000]
+        text = text.strip()[:4000]
         key = cache_key(text, lang)
         row = await self.repo.find_solution(key)
         if row:
             return self._from_row(row)
 
         quick = await self._sandboxed(quick_solve, text, timeout=2.0)
-        hard = is_hard(text)
+        hard, big = is_hard(text), is_big(text)
         user = prompts.SOLVE_USER.format(problem=text)
         if quick:
             user += prompts.KNOWN_ANSWER.format(answer=quick["answer_text"])
@@ -145,7 +145,7 @@ class Pipeline:
         await progress("solve", "")
         try:
             res = await self.router.run("solve", messages, schema=Solution, effort="medium" if hard else "low",
-                                        on_wait=lambda: progress("queue", ""))
+                                        big=big, on_wait=lambda: progress("queue", ""))
             sol, model = res.data, res.model
         except AllModelsBusy as e:
             if not quick:
@@ -162,11 +162,13 @@ class Pipeline:
             sol.check = Check(**quick["check"])
         status = await self._verify(sol.check)
 
+        # Big derivations can rarely be machine-checked; a full second solve would double the wait and
+        # use the whole free per-minute token budget, so they get one only when something looks wrong.
         needs_second = (status == "failed" or sol.confidence < 0.7
-                        or (hard and status == "unchecked" and not quick))
+                        or (hard and not big and status == "unchecked" and not quick))
         if needs_second:
             await progress("double_check", "")
-            sol, status, model = await self._second_opinion(text, grade, lang, sol, status, model)
+            sol, status, model = await self._second_opinion(text, grade, lang, sol, status, model, big)
 
         sid = await self.repo.add_solution(
             problem_key=key, problem_text=text, problem_latex=latex, topic=sol.topic, difficulty=sol.difficulty,
@@ -176,13 +178,15 @@ class Pipeline:
                        problem_latex=latex, model=model, latency_ms=int((time.monotonic() - t0) * 1000))
 
     async def _second_opinion(self, text: str, grade: str | None, lang: str, sol: Solution, status: str,
-                              model: str):
+                              model: str, big: bool = False):
         reason = "verification failed" if status == "failed" else "low confidence or not machine-checkable"
         messages = [{"role": "system", "content": _system(grade, lang)},
                     {"role": "user", "content": prompts.ESCALATE_USER.format(
                         problem=text, previous=sol.final_answer, reason=reason)}]
         try:
-            res = await self.router.run("escalate", messages, schema=Solution, effort="high")
+            # high effort on a big problem would spend the whole output budget on reasoning
+            res = await self.router.run("escalate", messages, schema=Solution, effort="medium" if big else "high",
+                                        big=big)
         except AllModelsBusy:
             return sol, status, model
         sol2: Solution = res.data

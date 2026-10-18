@@ -5,6 +5,9 @@ A crash or unsupported check is "unchecked", never "verified".
 """
 from __future__ import annotations
 
+import re
+import unicodedata
+
 import mpmath
 import sympy as sp
 
@@ -175,12 +178,73 @@ CHECKS = {
 }
 
 
-def verify(check: dict) -> dict:
+_NUMBER = re.compile(r"-?\d+(?:\.\d+)?(?:\s*/\s*\d+(?:\.\d+)?)?")
+
+
+def _decimals(s: str) -> int:
+    return len(s.split(".")[1]) if "." in s else 0
+
+
+def _answer_numbers(text: str) -> list[tuple[float, int]]:
+    """(value, decimals shown) for every number in the answer the student will see; a/b counts as a/b."""
+    s = unicodedata.normalize("NFKC", text or "").replace("−", "-").replace("–", "-")
+    out = []
+    for m in _NUMBER.finditer(s):
+        tok = m.group(0).replace(" ", "")
+        if "/" in tok:
+            a, b = tok.split("/")
+            if float(b):
+                out.append((float(a) / float(b), 12))
+            tok = a
+        out.append((float(tok), _decimals(tok)))
+    return out
+
+
+def _checked_values(check: dict) -> list[tuple[float, int]]:
+    """The rational values a check confirmed, with the decimals the model gave (irrational ones are skipped:
+    the answer may show them as π/4 or √2, which has no comparable number in the text)."""
+    kind = check.get("type")
+    if kind in ("numeric", "expression_value", "definite_integral", "limit"):
+        raw = [str(v) for v in check.get("values") or [] if str(v).strip()] or [str(check.get("value", ""))]
+    elif kind == "equation_solutions":
+        raw = [str(v) for v in check.get("values") or []]
+    elif kind == "system":
+        raw = [str(v).partition("=")[2] for v in check.get("values") or []]
+    else:
+        return []                                   # symbolic answers (derivatives, simplifying): nothing to compare
+    out = []
+    for r in raw:
+        r = r.strip()
+        if not r:
+            continue
+        v = parse(r)
+        if v.is_number and (v.is_Rational or "." in r):
+            out.append((float(v), _decimals(r) if "." in r else (0 if v.is_Integer else 12)))
+    return out
+
+
+def answer_agrees(check: dict, answer: str) -> bool:
+    """A verified check only counts if the answer shown to the student contains the same values.
+    (A model can write correct check values and a different, wrong number in its final answer.)"""
+    expected = _checked_values(check)
+    if not expected or not answer.strip():
+        return True
+    shown = _answer_numbers(answer)
+    for v, dv in expected:
+        if not any(abs(a - v) <= 0.5 * 10 ** -min(dv, da) + 1e-9 * max(1.0, abs(v)) for a, da in shown):
+            return False
+    return True
+
+
+def verify(check: dict, answer: str = "") -> dict:
     fn = CHECKS.get(check.get("type", "none"))
     if fn is None or not check.get("expr"):
         return {"status": "unchecked", "reason": "no machine check"}
     try:
-        return fn(check)
+        result = fn(check)
+        if result["status"] == "verified" and not answer_agrees(check, answer):
+            return _result(False, "the final answer doesn't match the checked values")
+        return result
     except UnsafeExpression as e:
         return {"status": "unchecked", "reason": f"unsafe/unsupported: {e}"}
     except Exception as e:  # noqa: BLE001 - any SymPy failure means "can't check", not "verified"

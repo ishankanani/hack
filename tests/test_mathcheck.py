@@ -147,7 +147,8 @@ EXACT_ONLY = [  # computed exactly, no separate re-check
     ("Increase 200 by 15%", "230"), ("mean of 4, 8, 15, 16, 23, 42", "mean = 18"),
     ("median of 3, 1, 4, 1, 5, 9", "median = 7/2 ≈ 3.5"), ("mode of 2, 3, 3, 5, 5, 5, 7", "mode = 5"),
     ("Find the determinant of [[1,2],[3,4]]", "det = -2"), ("eigenvalues of [[2,1],[1,2]]", "eigenvalues: 1, 3"),
-    ("inverse of [[4, 7], [2, 6]]", "[[3/5, -7/10], [-1/5, 2/5]]"), ("rank of [[1,2],[2,4]]", "rank = 1"),
+    ("inverse of [[4, 7], [2, 6]]", "inverse = [[3/5, -7/10], [-1/5, 2/5]]"), ("rank of [[1,2],[2,4]]", "rank = 1"),
+    ("Find the determinant and the trace of the matrix [[2, 1], [1, 2]].", "det = 3; trace = 4"),
     ("2x + 3 > 7", "x > 2"), ("x^2 - 4 < 0", "-2 < x < 2"), ("x^2 >= 9", "x ≤ -3 or x ≥ 3"),
 ]
 
@@ -193,3 +194,32 @@ def test_unknown_check_type_means_unchecked_not_a_rejected_answer():
     from mathfix.schemas import Check
     assert Check(type="matrix_magic", expr="1").type == "none"
     assert Check(type="system", expr="x - 1", values=["x=1"]).type == "system"
+
+
+@pytest.mark.parametrize("q", ["Find the eigenvalues and eigenvectors of [[2,1],[1,2]]", "Find A^2 for A = [[1,2],[3,4]]",
+                               "Find the characteristic polynomial of [[2,1],[1,2]]", "determinant of [[1,2,3],[4,5,6]]",
+                               "Multiply [[1,2],[3,4]] by 2"])
+def test_engine_never_gives_a_partial_matrix_answer(q):
+    assert quick_solve(q) is None
+
+
+@pytest.mark.parametrize("answer, status", [
+    ("θ_new ≈ [0.260, −0.427]", "failed"),          # real case: right check values, wrong number shown
+    ("θ_new ≈ [0.262, −0.427]", "verified"),
+    ("θ₀ = 0.26200510, θ₁ = −0.42700255", "verified"),
+])
+def test_verified_only_if_the_shown_answer_matches_the_checked_values(answer, status):
+    check = {"type": "numeric", "expr": "0.2 - 0.1*((1/(1+exp(-0.8)) - 1)*2); "
+                                        "-0.4 - 0.1*((1/(1+exp(-0.8)) - 1)*(-1) + 0.1*(-0.4))",
+             "values": ["0.262", "-0.427"]}
+    assert verify(check, answer)["status"] == status
+
+
+def test_answer_match_ignores_symbolic_forms_and_fractions():
+    integral = {"type": "definite_integral", "expr": "1/(1+x**2)", "variable": "x", "lower": "0", "upper": "1",
+                "value": "pi/4"}
+    assert verify(integral, "π/4")["status"] == "verified"
+    assert verify({"type": "expression_value", "expr": "3/4+5/6", "value": "19/12"}, "19/12 ≈ 1.58333")["status"] \
+        == "verified"
+    assert verify({"type": "equation_solutions", "expr": "x**2 - 5*x + 6", "variable": "x", "values": ["2", "3"]},
+                  "x = 2 or x = 4")["status"] == "failed"

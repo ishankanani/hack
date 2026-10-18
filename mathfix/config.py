@@ -17,7 +17,7 @@ def load_dotenv(path: Path) -> None:
     """Minimal .env loader: KEY=value lines; existing env vars win."""
     if not path.exists():
         return
-    for line in path.read_text().splitlines():
+    for line in path.read_text(encoding="utf-8-sig").splitlines():
         line = line.strip()
         if not line or line.startswith("#") or "=" not in line:
             continue
@@ -63,8 +63,8 @@ def _ids(raw: str) -> set[int]:
 
 def load_settings(env_file: Path | None = None) -> Settings:
     load_dotenv(env_file or ROOT / ".env")
-    models = yaml.safe_load((ROOT / os.environ.get("MODELS_CONFIG", "config/models.yaml")).read_text())
-    limits = yaml.safe_load((ROOT / os.environ.get("LIMITS_CONFIG", "config/limits.yaml")).read_text())
+    models = yaml.safe_load((ROOT / os.environ.get("MODELS_CONFIG", "config/models.yaml")).read_text(encoding="utf-8"))
+    limits = yaml.safe_load((ROOT / os.environ.get("LIMITS_CONFIG", "config/limits.yaml")).read_text(encoding="utf-8"))
     admin_chat = os.environ.get("ADMIN_CHAT_ID", "").strip()
     return Settings(
         bot_token=os.environ.get("TELEGRAM_BOT_TOKEN", ""),

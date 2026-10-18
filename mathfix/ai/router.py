@@ -198,14 +198,19 @@ class Router:
             est = int(self.cfg.get("est_tokens_big", {}).get(step, est))
             timeout = float(self.cfg.get("timeouts_big", {}).get(step, timeout))
         deadline = self.clock() + float(self.cfg.get("queue_wait_seconds", 30))
-        waited = False
+        # The first model in a step is the fast one (Groq, ~2-8 s); the fallbacks can take 20-60 s. When the
+        # fast one is only full for the current minute, waiting a few seconds for it is quicker than falling back.
+        prefer_wait = float(self.cfg.get("prefer_fast_wait_seconds", 20))
+        waited = fast_waited = False
         while True:
             considered = day_blocked = 0
             can_wait = False          # some model may free up within the queue wait
+            fast_wait = None
             for spec in self.enabled_models(step):
                 if need_vision and not spec.vision:
                     continue
                 considered += 1
+                first = considered == 1
                 cool = self.budget.cooling(spec.name)
                 if cool > 0:
                     can_wait |= cool <= 60
@@ -216,6 +221,11 @@ class Router:
                         day_blocked += 1
                     else:
                         can_wait = True
+                        if first and not fast_waited:
+                            w = self.budget.seconds_until_room(spec, est)
+                            if w is not None and w <= prefer_wait and self.clock() + w <= deadline:
+                                fast_wait = w
+                                break
                     continue
                 try:
                     return await self._attempt(spec, messages, schema, effort, timeout, big)
@@ -233,6 +243,14 @@ class Router:
                     self.last_error[spec.name] = f"rejected: {e}"[:200]
                     log.warning("model %s rejected the request (%s); cooling 10 min", spec.name, e)
                     self.budget.cool(spec.name, 600)
+            if fast_wait is not None:
+                fast_waited = True
+                log.info("step %s: fast model full for this minute, waiting %.0fs for it", step, fast_wait)
+                if on_wait and not waited:
+                    waited = True
+                    await on_wait()
+                await self.sleep(fast_wait)
+                continue
             if considered == 0 or day_blocked == considered:
                 self._log_busy(step, est)
                 raise AllModelsBusy(daily=True)

@@ -351,42 +351,60 @@ def _interval_text(sol: sp.Set, x: sp.Symbol) -> str:
 _MATRIX = re.compile(r"\[\s*\[[-\d.,\s\[\]/]+\]\s*\]")
 
 
+# what the engine can compute for a matrix, and words that mean something else was asked for
+_MATRIX_OPS = (("det", r"\bdet|determinant"), ("trace", r"\btrace\b"), ("rank", r"\brank\b"),
+               ("inverse", r"inverse|\binv\("), ("transpose", r"transpose"), ("eigen", r"eigen ?values?"))
+_MATRIX_UNSUPPORTED = re.compile(r"eigen ?vectors?|characteristic|diagonali|null ?space|kernel|basis|orthogon|"
+                                 r"\blu\b|\bqr\b|\bsvd\b|singular|norm|power|square of|\^|multiply|product|"
+                                 r"\btimes\b|\bsolve\b|system|\bb\s*=|cofactor|adjoint|adjugate|minor|echelon",
+                                 re.IGNORECASE)
+
+
 def _matrix(s: str) -> dict | None:
-    m = _MATRIX.search(s)
-    if not m:
+    """Only when every requested quantity is one the engine computes; a partial answer would be wrong."""
+    found = _MATRIX.findall(s)
+    if len(found) != 1 or _MATRIX_UNSUPPORTED.search(_MATRIX.sub(" ", s)):
         return None
-    rows = re.findall(r"\[([^\[\]]+)\]", m.group(0))
+    rows = re.findall(r"\[([^\[\]]+)\]", found[0])
     data = [[sp.Rational(Fraction(v)) for v in re.split(r"[,\s]+", r.strip()) if v] for r in rows]
     if not (2 <= len(data) <= 4) or len({len(r) for r in data}) != 1:
         return None
     M = sp.Matrix(data)
-    what = s.lower()
-    if "eigen" in what:
-        if not M.is_square:
-            return None
-        vals = []
-        for v, k in M.eigenvals().items():
-            vals += [v] * k
-        if not all(sp.N(v).is_real for v in vals):
-            return None
-        vals = sorted(vals, key=lambda v: float(sp.N(v)))
-        return _answer("eigenvalues: " + ", ".join(_fmt(v)[0] for v in vals),
-                       r"\lambda = " + ",\\ ".join(sp.latex(v) for v in vals), kind="matrix")
-    if "inverse" in what or "inv(" in what:
-        if not M.is_square or M.det() == 0:
-            return _answer("no inverse (the determinant is 0)", r"\det A = 0", kind="matrix") if M.is_square else None
-        inv = M.inv()
-        return _answer(_matrix_text(inv), f"A^{{-1}} = {sp.latex(inv)}", kind="matrix")
-    if "transpose" in what:
-        return _answer(_matrix_text(M.T), f"A^T = {sp.latex(M.T)}", kind="matrix")
-    if "rank" in what:
-        return _answer(f"rank = {M.rank()}", f"\\operatorname{{rank}} A = {M.rank()}", kind="matrix")
-    if "det" in what:
-        if not M.is_square:
-            return None
-        d = M.det()
-        return _answer(f"det = {_fmt(d)[0]}", f"\\det A = {sp.latex(d)}", kind="matrix")
-    return None
+    asked = [name for name, pattern in _MATRIX_OPS if re.search(pattern, s, re.IGNORECASE)]
+    if not asked or (not M.is_square and set(asked) - {"rank", "transpose"}):
+        return None
+    texts, latex = [], []
+    for op in asked:
+        if op == "det":
+            d = M.det()
+            texts.append(f"det = {_fmt(d)[0]}")
+            latex.append(f"\\det A = {sp.latex(d)}")
+        elif op == "trace":
+            texts.append(f"trace = {_fmt(M.trace())[0]}")
+            latex.append(f"\\operatorname{{tr}} A = {sp.latex(M.trace())}")
+        elif op == "rank":
+            texts.append(f"rank = {M.rank()}")
+            latex.append(f"\\operatorname{{rank}} A = {M.rank()}")
+        elif op == "transpose":
+            texts.append(f"transpose = {_matrix_text(M.T)}")
+            latex.append(f"A^T = {sp.latex(M.T)}")
+        elif op == "inverse":
+            if M.det() == 0:
+                texts.append("no inverse (the determinant is 0)")
+                latex.append(r"\det A = 0")
+            else:
+                texts.append(f"inverse = {_matrix_text(M.inv())}")
+                latex.append(f"A^{{-1}} = {sp.latex(M.inv())}")
+        elif op == "eigen":
+            vals = []
+            for v, k in M.eigenvals().items():
+                vals += [v] * k
+            if not all(sp.N(v).is_real for v in vals):
+                return None
+            vals = sorted(vals, key=lambda v: float(sp.N(v)))
+            texts.append("eigenvalues: " + ", ".join(_fmt(v)[0] for v in vals))
+            latex.append(r"\lambda = " + ",\\ ".join(sp.latex(v) for v in vals))
+    return _answer("; ".join(texts), r",\quad ".join(latex), kind="matrix")
 
 
 def _matrix_text(M: sp.Matrix) -> str:

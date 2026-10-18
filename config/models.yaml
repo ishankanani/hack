@@ -109,3 +109,7 @@ est_tokens_big: {solve: 6000, escalate: 6000}
 
 # when every model is only out of PER-MINUTE room, wait this long before giving up
 queue_wait_seconds: 30
+
+# Groq (first in each step) answers in ~2-8 s; the Cloudflare fallback takes 20-60 s. If Groq is only full for
+# the current minute and frees up within this many seconds, wait for it instead of falling back.
+prefer_fast_wait_seconds: 20

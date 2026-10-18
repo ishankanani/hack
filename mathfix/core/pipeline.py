@@ -169,7 +169,7 @@ class Pipeline:
         if quick:  # the exact answer wins; the model only explained it
             sol.final_answer, sol.final_answer_latex = quick["answer_text"], quick["answer_latex"]
             sol.check = Check(**quick["check"])
-        status = await self._verify(sol.check)
+        status = await self._verify(sol.check, sol.final_answer)
         if quick and quick.get("exact") and status == "unchecked":
             status = "verified"      # computed exactly by the engine (e.g. HCF, matrices), not by the model
 
@@ -201,7 +201,7 @@ class Pipeline:
         except AllModelsBusy:
             return sol, status, model
         sol2: Solution = res.data
-        status2 = await self._verify(sol2.check)
+        status2 = await self._verify(sol2.check, sol2.final_answer)
         if status2 == "verified":
             return sol2, "verified", res.model
         if status == "verified":
@@ -214,10 +214,10 @@ class Pipeline:
             return sol2, "unchecked", res.model
         return sol2, status2, res.model
 
-    async def _verify(self, check: Check) -> str:
+    async def _verify(self, check: Check, answer: str = "") -> str:
         if check.type == "none":
             return "unchecked"
-        result = await self._sandboxed(verify, check.model_dump(), timeout=3.0)
+        result = await self._sandboxed(verify, check.model_dump(), answer, timeout=3.0)
         return (result or {}).get("status", "unchecked")
 
     async def _sandboxed(self, fn, *args, timeout: float):

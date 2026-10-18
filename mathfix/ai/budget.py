@@ -107,6 +107,27 @@ class Budget:
             return False, "minute"
         return True, None
 
+    def seconds_until_room(self, spec: ModelSpec, est_tokens: int) -> float | None:
+        """When a model is only full for the current minute: how long until it has room again.
+        None if it is out for the day, or the request could never fit in a minute."""
+        ok, why = self.has_room(spec, est_tokens)
+        if ok:
+            return 0.0
+        if why != "minute":
+            return None
+        lim, q, now = spec.limits, self._minute(spec.name), self.clock()
+
+        def fits(count: int, tokens: int) -> bool:
+            return (not lim.get("rpm") or count + 1 <= lim["rpm"]) and \
+                   (not lim.get("tpm") or tokens + est_tokens <= lim["tpm"])
+
+        count, tokens, wait = len(q), sum(x[1] for x in q), 0.0
+        for t, tok in q:                       # oldest first: each one leaves the window 60 s after it was made
+            if fits(count, tokens):
+                break
+            count, tokens, wait = count - 1, tokens - tok, t + 60 - now
+        return max(0.0, wait) + 0.5 if fits(count, tokens) else None
+
     def record(self, spec: ModelSpec, tokens_in: int, tokens_out: int) -> float:
         self._roll_day()
         neurons = spec.neurons(tokens_in, tokens_out)

@@ -173,3 +173,14 @@ async def test_engine_answers_skip_the_ai_when_free_quota_is_low(settings, repo)
     fake.add(SOLVER, sol("60 km/h", {"type": "numeric", "expr": "300/5", "value": "60"}))
     out = await p.solve_text("A train travels 300 km in 5 hours. Find its speed.", explain=False)
     assert out.model == "groq_oss_120b" and out.verified == "verified"
+
+
+async def test_correct_check_but_wrong_shown_answer_gets_a_second_opinion(settings, repo):
+    settings.models["models"]["groq_qwen"]["id"] = "qwen/qwen-test"
+    check = {"type": "numeric", "expr": "300/5", "value": "60"}
+    fake = FakeAI()
+    fake.add(SOLVER, sol("The speed is 6 km/h", check))             # typo in the answer, check itself is right
+    fake.add("qwen/qwen-test", sol("60 km/h", check))
+    p, _ = make(settings, repo, fake)
+    out = await p.solve_text("A train travels 300 km in 5 hours. Find its speed.")
+    assert out.solution.final_answer == "60 km/h" and out.verified == "verified"

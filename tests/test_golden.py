@@ -6,7 +6,7 @@ from mathfix.config import ROOT
 from mathfix.mathcheck.quick import quick_solve
 from scripts.eval_golden import correct, numbers_in
 
-PROBLEMS = yaml.safe_load((ROOT / "tests" / "golden" / "problems.yaml").read_text())
+PROBLEMS = yaml.safe_load((ROOT / "tests" / "golden" / "problems.yaml").read_text(encoding="utf-8"))
 
 
 def test_scoring_reads_numbers_fractions_and_unicode_minus():

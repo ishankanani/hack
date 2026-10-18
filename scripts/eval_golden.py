@@ -17,6 +17,7 @@ import asyncio
 import json
 import re
 import statistics
+import sys
 import tempfile
 import time
 import unicodedata
@@ -64,8 +65,10 @@ def pct(xs: list[float], q: float) -> float:
 
 
 async def main(category: str | None, limit: int | None) -> None:
+    for stream in (sys.stdout, sys.stderr):          # Windows consoles: never crash on θ, σ, ₹
+        stream.reconfigure(errors="replace")
     settings = load_settings()
-    problems = yaml.safe_load(GOLDEN.read_text())
+    problems = yaml.safe_load(GOLDEN.read_text(encoding="utf-8"))
     if category:
         problems = [p for p in problems if p["cat"] == category]
     problems = problems[:limit] if limit else problems
@@ -117,11 +120,15 @@ async def main(category: str | None, limit: int | None) -> None:
         first, total = [r["first_s"] for r in rs], [r["total_s"] for r in rs]
         print(f"{cat:<18} {good:>3}/{len(rs):<4} {ver:>5}/{len(rs):<4}   {pct(first, .5):>5.1f}s / {pct(first, .95):>5.1f}s"
               f"       {pct(total, .5):>5.1f}s / {pct(total, .95):>5.1f}s")
+    false_ok = [r for r in rows if not r["ok"] and r["verified"] in ("verified", "agreed")]
+    print(f"\nWrong but marked verified: {len(false_ok)}  (must be 0: a student would trust these)")
+    for r in false_ok:
+        print(f"   {r['q'][:70]}  ->  {r['answer'][:60]}")
     instant = sum(r["instant"] for r in rows)
     print(f"\nInstant engine answers: {instant}/{len(rows)}   "
           f"median total time: {statistics.median([r['total_s'] for r in rows]) if rows else 0:.1f}s")
     REPORT.parent.mkdir(parents=True, exist_ok=True)
-    REPORT.write_text(json.dumps(rows, ensure_ascii=False, indent=2))
+    REPORT.write_text(json.dumps(rows, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"Report saved to {REPORT}")
 
 

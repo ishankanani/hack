@@ -219,3 +219,26 @@ async def test_usage_from_other_processes_counts_after_resync(models_cfg, repo):
     await bot.resync()
     assert bot.budget.today["groq_oss_120b"]["requests"] == 1
     assert 0 < bot.calls_left("solve") < 10_000
+
+
+async def test_waits_briefly_for_the_fast_model_instead_of_the_slow_fallback(models_cfg):
+    fake = FakeAI()
+    fake.add("openai/gpt-oss-120b", GOOD)
+    fake.add("@cf/openai/gpt-oss-120b", GOOD)
+    r, clock = make(models_cfg, fake)
+    groq = r.specs["groq_oss_120b"]
+    r.budget.record(groq, 3500, 3500)              # a big problem used Groq's tokens for this minute
+    clock.t += 45
+    res = await r.run("solve", MSG, schema=Solution)
+    assert res.model == "groq_oss_120b" and fake.models_called() == ["openai/gpt-oss-120b"]
+    assert 15 <= clock.t - 1045 <= 16              # waited until that call left the 60 s window
+
+
+async def test_falls_back_when_the_fast_model_needs_too_long(models_cfg):
+    fake = FakeAI()
+    fake.add("@cf/openai/gpt-oss-120b", GOOD)
+    r, clock = make(models_cfg, fake)
+    r.budget.record(r.specs["groq_oss_120b"], 3500, 3500)
+    clock.t += 5                                    # Groq is full for another 55 s: too long to wait
+    res = await r.run("solve", MSG, schema=Solution)
+    assert res.model == "cf_oss_120b" and clock.t == 1005

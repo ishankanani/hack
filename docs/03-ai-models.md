@@ -144,6 +144,10 @@ async def run_step(step: str, request) -> Result:
 
 - **Skip before failing.** Our own counters know when a quota is nearly used up, so we don't waste seconds on 429s.
 - **One retry on bad JSON** with the same model (the error is appended to the prompt), then fall through.
+- **Prefer the fast model.** If Groq (first in each list, ~2–8 s) is only full for the current minute and frees up
+  within `prefer_fast_wait_seconds` (20 s), the router waits for it instead of falling back to Cloudflare (20–60 s).
+- **The shown answer must match the check.** A check only counts as verified if the numbers it confirmed appear
+  in the final answer the student sees; otherwise it counts as failed and gets a second solve.
 - Every call logs `model, latency_ms, tokens_in, tokens_out, ok/error` to `provider_usage`, which drives the admin
   stats and the capacity guard.
 - Groq, Cloudflare and OpenRouter all speak the **OpenAI-compatible chat API**, so one client class with three base URLs

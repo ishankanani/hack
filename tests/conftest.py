@@ -21,14 +21,14 @@ def models_cfg(monkeypatch):
     for k in ("GROQ_API_KEY", "CF_AI_API_TOKEN", "OPENROUTER_API_KEY"):
         monkeypatch.setenv(k, "test-key")
     monkeypatch.setenv("CF_ACCOUNT_ID", "acct")
-    return yaml.safe_load((ROOT / "config/models.yaml").read_text())
+    return yaml.safe_load((ROOT / "config/models.yaml").read_text(encoding="utf-8"))
 
 
 @pytest.fixture
 def settings(models_cfg, tmp_path):
     return Settings(bot_token="x", mode="polling", webhook_base_url="", webhook_secret="", port=8080,
                     database_path=tmp_path / "t.db", admin_user_ids={999}, admin_chat_id=None, log_level="INFO",
-                    models=models_cfg, limits=yaml.safe_load((ROOT / "config/limits.yaml").read_text()))
+                    models=models_cfg, limits=yaml.safe_load((ROOT / "config/limits.yaml").read_text(encoding="utf-8")))
 
 
 @pytest.fixture

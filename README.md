@@ -114,7 +114,7 @@ See [docs/06-weekend-launch-plan.md](docs/06-weekend-launch-plan.md).
 git clone https://github.com/ishankanani/hack.git && cd hack
 python3 -m venv .venv && .venv/bin/pip install -r requirements-dev.txt
 cp .env.example .env              # fill in TELEGRAM_BOT_TOKEN, GROQ_API_KEY, CF_ACCOUNT_ID, CF_AI_API_TOKEN, ADMIN_USER_IDS
-.venv/bin/python -m pytest -q     # 77 tests, no keys needed
+.venv/bin/python -m pytest -q     # 164 tests, no keys needed
 .venv/bin/python -m scripts.smoke_test   # checks every free model with YOUR keys (uses a little quota)
 .venv/bin/python -m scripts.eval_golden  # accuracy and speed on 40 real problems (school to machine learning)
 .venv/bin/python -m mathfix.main  # MODE=polling: talk to @mathfixbot from your phone right away

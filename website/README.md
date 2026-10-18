@@ -8,6 +8,7 @@ The official website. Plain HTML and CSS with a few lines of JavaScript, so ther
 | `assets/logo-full.png` | The full MathFix.ai logo for the header and footer (from `brand/logo-full.png`) |
 | `assets/logo-mark.png` | The M mark (from `brand/logo-mark.png`, resized for the web) |
 | `assets/solution-sample.jpg` | A real solution page drawn by the bot's renderer (`mathfix/render/handwriting.py`) |
+| `assets/question-ml.jpg`, `assets/solution-ml.jpg` | A real machine-learning question photo and the solution page the bot drew for it (hero and solution-page deck) |
 | `assets/favicon-32.png`, `assets/apple-touch-icon.png` | Browser and home-screen icons |
 
 Design: white background so the logo sits naturally, navy text and the logo's blues as the only accent colour.

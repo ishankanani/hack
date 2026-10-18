@@ -184,10 +184,19 @@ p { margin: 0; }
   right: max(0px, calc(50% - 540px)); top: 10%; width: 240px; padding: 12px; translate: calc(var(--mx, 0) * 22px) calc(var(--my, 0) * -14px);
   animation: slide-r .9s 1.4s cubic-bezier(.2, .7, .2, 1) both, bob 8s 2.4s ease-in-out infinite;
 }
-.float-check code b { display: inline-block; animation: pop .4s both; }
-.float-check code:nth-child(1) b { animation-delay: 2s; }
-.float-check code:nth-child(2) b { animation-delay: 2.3s; }
-.float-check .verified { animation: pop .5s 2.6s both; }
+.float-check { width: 336px; }
+.calc { display: grid; gap: 4px; }
+.float-check .calc code { line-height: 1.7; animation: pop .45s both; }
+.float-check .calc code:nth-child(1) { animation-delay: 1.9s; }
+.float-check .calc code:nth-child(2) { animation-delay: 2.25s; }
+.float-check .calc code:nth-child(3) { animation-delay: 2.6s; }
+.float-check .calc code.res {
+  justify-self: start; margin-top: 4px; padding: 4px 10px; border-radius: 8px; background: var(--green-soft); color: var(--green);
+  font-weight: 500; animation-delay: 3s;
+}
+.level-chip { justify-self: start; padding: 6px 12px; border-radius: 999px; background: var(--soft-2); color: var(--blue-deep); font-size: .8125rem; font-weight: 600; animation: pop .5s 3.3s both; }
+.real-note { display: inline-flex; align-items: center; gap: 8px; margin-top: 22px; font-size: .875rem; color: var(--muted); animation: pop .6s 2.2s both; }
+.real-note i { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 4px var(--green-soft); }
 .float .label { display: flex; align-items: center; gap: 8px; font: 600 .75rem/1 var(--sans); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
 .float .label i { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 4px var(--green-soft); }
 .float code { display: block; font: 400 .8125rem/1.9 var(--mono); color: var(--text); white-space: nowrap; }
@@ -195,7 +204,7 @@ p { margin: 0; }
 .verified { justify-self: start; display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px; background: var(--green-soft); color: var(--green); font-size: .8125rem; font-weight: 600; }
 .float-page .crop { height: 220px; overflow: hidden; border-radius: 12px; border: 1px solid var(--line); }
 .float-page .crop img { width: 100%; }
-.float-page .cap { display: flex; justify-content: space-between; align-items: center; padding: 2px 4px; font-size: .875rem; }
+.float-page .cap { display: grid; gap: 2px; padding: 2px 4px; font-size: .875rem; }
 .float-page .cap b { color: var(--ink); font-weight: 600; }
 .float-page .cap span { color: var(--muted); font-size: .8125rem; }
 
@@ -224,6 +233,17 @@ p { margin: 0; }
 .chat-top b { display: block; font-size: 14.5px; color: #10213F; }
 .chat-top small { color: var(--faint); font-size: 12px; }
 .chat { display: grid; gap: 7px; padding: 12px 9px 14px; }
+/* the hero chat scrolls like a screen recording: photo, answer, steps, buttons */
+.viewport {
+  height: 470px; overflow: hidden;
+  mask-image: linear-gradient(transparent, #000 3%, #000 94%, transparent); -webkit-mask-image: linear-gradient(transparent, #000 3%, #000 94%, transparent);
+}
+.feed { animation: feed 12s 3.4s ease-in-out infinite alternate; }
+@keyframes feed { 0%, 12% { transform: none; } 88%, 100% { transform: translateY(calc(-100% + 470px)); } }
+.stage-hero:hover .feed { animation-play-state: paused; }
+.msg.shot { padding: 3px; border-radius: 14px; border-bottom-right-radius: 5px; position: relative; }
+.msg.shot img { border-radius: 11px; width: 100%; }
+.msg.shot .time { position: absolute; right: 9px; bottom: 8px; margin: 0; padding: 1px 6px; border-radius: 8px; background: rgb(5 13 38 / .45); color: #FFFFFF; }
 .msg {
   max-width: 92%; padding: 8px 11px 6px; border-radius: 16px; background: #FFFFFF;
   box-shadow: 0 1px 1px rgb(5 23 68 / .07); overflow-wrap: anywhere;
@@ -314,13 +334,27 @@ p { margin: 0; }
   padding: 64px 32px; display: grid; justify-items: center; perspective: 1400px;
 }
 .page-panel::before { content: ""; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(45% 45% at 50% 50%, rgb(0 110 252 / .12), transparent 72%); }
+.deck { position: relative; width: 270px; height: 360px; margin-right: 44px; }
 .sheet-frame {
-  position: relative; width: 270px; height: 360px; border-radius: 16px; overflow: hidden; background: #FFFFFF;
+  position: absolute; inset: 0; border-radius: 16px; overflow: hidden; background: #FFFFFF;
   border: 1px solid var(--line); box-shadow: 0 2px 6px rgb(5 23 68 / .05), 0 40px 70px -28px rgb(5 23 68 / .35);
-  transform: rotateY(var(--ry, -9deg)) rotateX(var(--rx, 5deg)); transition: transform .6s cubic-bezier(.2, .7, .2, 1);
+  transition: transform .9s cubic-bezier(.2, .7, .2, 1), opacity .9s ease, filter .9s ease;
 }
-.sheet-frame img { width: 100%; animation: peek 14s 1s ease-in-out infinite alternate; }
+/* same transform list on both, so the swap animates smoothly; each page carries its own perspective */
+.sheet-frame.is-front { z-index: 2; transform: perspective(1200px) translate(0, 0) rotate(0deg) rotateY(var(--ry, -9deg)) rotateX(var(--rx, 5deg)) scale(1); }
+.sheet-frame.is-back { z-index: 1; transform: perspective(1200px) translate(54px, -20px) rotate(6deg) rotateY(0deg) rotateX(0deg) scale(.9); filter: saturate(.75) brightness(.97); }
+.sheet-frame img { width: 100%; }
+.sheet-frame.is-front img { animation: peek 14s 1s ease-in-out infinite alternate; }
 .page-panel:hover .sheet-frame img { animation-play-state: paused; }
+.deck-tabs {
+  position: relative; z-index: 3; display: inline-flex; gap: 4px; margin-top: 40px; padding: 4px; border-radius: 999px;
+  background: #FFFFFF; border: 1px solid var(--line); box-shadow: var(--shadow-sm);
+}
+.deck-tabs button {
+  border: 0; background: transparent; padding: 8px 16px; border-radius: 999px; cursor: pointer;
+  font: 600 .8125rem/1.2 var(--sans); color: var(--muted); transition: background-color .3s ease, color .3s ease;
+}
+.deck-tabs button[aria-selected="true"] { background: var(--ink); color: #FFFFFF; }
 @keyframes peek { 0%, 14% { transform: translateY(0); } 86%, 100% { transform: translateY(calc(-100% + 360px)); } }
 .page-chip {
   position: absolute; z-index: 1; display: inline-flex; align-items: center; gap: 10px; padding: 10px 14px 10px 10px; border-radius: 14px;
@@ -488,7 +522,9 @@ p { margin: 0; }
   .panel { padding: 32px 14px 16px; border-radius: 24px; }
   .panel .phone { width: 100%; max-width: 284px; }
   .panel .screen { min-height: 440px; }
-  .sheet-frame { width: 230px; height: 310px; }
+  .deck { width: 230px; height: 310px; margin-right: 36px; }
+  .viewport { height: 430px; }
+  @keyframes feed { 0%, 12% { transform: none; } 88%, 100% { transform: translateY(calc(-100% + 430px)); } }
   @keyframes peek { 0%, 14% { transform: translateY(0); } 86%, 100% { transform: translateY(calc(-100% + 310px)); } }
   .page-chip { font-size: .75rem; padding: 8px 12px 8px 8px; }
   .page-chip.c1 { left: 4%; top: 12%; }
@@ -554,47 +590,63 @@ p { margin: 0; }
 
     <div class="stage-hero">
       <div class="float float-check" aria-hidden="true">
-        <span class="label"><i></i>Maths engine check</span>
-        <div>
-          <code>x = 1 → 2(1)² − 8(1) + 6 = 0 <b>✓</b></code>
-          <code>x = 3 → 2(3)² − 8(3) + 6 = 0 <b>✓</b></code>
+        <span class="label"><i></i>One step of gradient descent</span>
+        <div class="calc">
+          <code>z = θᵀx = 0.2·2 + (−0.4)·(−1) = 0.8</code>
+          <code>h = σ(0.8) ≈ 0.68997</code>
+          <code>∇J = [−0.62005, 0.27003]</code>
+          <code class="res">θⁿᵉʷ ≈ [0.262, −0.427]</code>
         </div>
-        <span class="verified">✔ Verified answer</span>
+        <span class="level-chip">College · Machine learning</span>
       </div>
 
-      <div class="phone" role="img" aria-label="A Telegram chat: a student sends a photo of 2x² − 8x + 6 = 0 and MathFix replies with the verified answer x = 1 or x = 3, the key idea and the steps.">
+      <div class="phone" role="img" aria-label="A real MathFix chat: a student sends a photo of a logistic regression question and MathFix answers θ new ≈ [0.262, −0.427] with the key idea and seven steps.">
         <div class="screen">
           <div class="chat-top"><img src="assets/logo-mark.png" alt="" width="34" height="34"><div><b>MathFix.ai</b><small>bot</small></div></div>
-          <div class="chat">
-            <div class="msg out">
-              <div class="photo"><span>Q4. Solve</span><span>2x² − 8x + 6 = 0</span></div>
-              <span class="time">4:12 PM ✓✓</span>
-            </div>
-            <div class="msg in">
-              ✨ <b>MathFix</b> · <i>Quadratic equations</i>
-              <div class="gap"></div>
-              📸 <b>I read</b>
-              <div class="quote">2x² − 8x + 6 = 0</div>
-              ✅ <b>ANSWER:&nbsp; x = 1 or x = 3</b>
-              <div class="gap"></div>
-              💡 <b>Key idea:</b> Make the numbers smaller first, then factorise.
-              <div class="gap"></div>
-              📝 <b>Step-by-step</b>
-              <div class="quote">1️⃣ Every term is even, so divide by 2<br>&nbsp;&nbsp;&nbsp;<code>x² − 4x + 3 = 0</code><br><span class="muted">…</span></div>
-              ✔️ <i>Verified by our maths engine</i>
-              <span class="time">4:12 PM</span>
-            </div>
-            <div class="keys" aria-hidden="true">
-              <div class="row"><span>🖼 Get solution image</span></div>
-              <div class="row"><span>💡 Hint</span><span>➡️ Next step</span><span>❓ Why?</span></div>
+          <div class="viewport">
+            <div class="chat feed">
+              <div class="msg out shot"><img src="assets/question-ml.jpg" alt="" width="960" height="640"><span class="time">11:29 AM ✓✓</span></div>
+              <div class="msg in">
+                ✨ <b>MathFix</b> · <i>Logistic regression with L2 regularization</i>
+                <div class="gap"></div>
+                📸 <b>I read</b>
+                <div class="quote">For a single training example (m = 1) in logistic regression with L2 regularization (excluding θ₀): h_θ(x) = σ(θᵀx), σ(z) = 1/(1 + e⁻ᶻ). Given x = [2, −1], y = 1, θ = [0.2, −0.4], λ = 0.1, α = 0.1. Compute θⁿᵉʷ after one step of gradient descent.</div>
+                ✅ <b>ANSWER:&nbsp; θⁿᵉʷ ≈ [0.262, −0.427]</b>
+                <div class="gap"></div>
+                💡 <b>Key idea:</b> Add λθⱼ to the gradient for every non-bias parameter before the update.
+                <div class="gap"></div>
+                📝 <b>Step-by-step</b>
+                <div class="quote">
+                  1️⃣ Compute the linear combination z = θᵀx<br><code>z = 0.2·2 + (−0.4)·(−1) = 0.8</code>
+                  <div class="gap"></div>
+                  2️⃣ Apply the sigmoid to get the hypothesis h<br><code>h = 1/(1 + e⁻⁰·⁸) ≈ 0.68997448</code>
+                  <div class="gap"></div>
+                  3️⃣ Find the error term (h − y)<br><code>e = 0.68997448 − 1 = −0.31002552</code>
+                  <div class="gap"></div>
+                  4️⃣ Gradient for θ₀ (no regularization)<br><code>g₀ = e·x₀ = −0.62005104</code>
+                  <div class="gap"></div>
+                  5️⃣ Gradient for θ₁ (add λθ₁)<br><code>g₁ = e·x₁ + λθ₁ = 0.27002552</code>
+                  <div class="gap"></div>
+                  6️⃣ Update θ₀ using learning rate α<br><code>θ₀ⁿᵉʷ = 0.2 − 0.1·(−0.62005104) = 0.26200510</code>
+                  <div class="gap"></div>
+                  7️⃣ Update θ₁ using learning rate α<br><code>θ₁ⁿᵉʷ = −0.4 − 0.1·0.27002552 = −0.42700255</code>
+                </div>
+                ⚠️ <b>Watch out:</b> A common mistake is to regularize the bias term θ₀, which changes the update.
+                <span class="time">11:29 AM</span>
+              </div>
+              <div class="keys" aria-hidden="true">
+                <div class="row"><span>🖼 Get solution image</span></div>
+                <div class="row"><span>💡 Hint</span><span>➡️ Next step</span><span>❓ Why?</span></div>
+              </div>
             </div>
           </div>
         </div>
       </div>
+      <p class="real-note"><i></i>A real question, answered by @mathfixbot</p>
 
       <div class="float float-page" aria-hidden="true">
-        <div class="crop"><img src="assets/solution-sample.jpg" alt="" width="720" height="1375"></div>
-        <div class="cap"><b>Solution page</b><span>Scan the QR to share</span></div>
+        <div class="crop"><img src="assets/solution-ml.jpg" alt="" width="720" height="1830"></div>
+        <div class="cap"><b>Solution page</b><span>Logistic regression</span></div>
       </div>
     </div>
   </div>
@@ -606,11 +658,15 @@ p { margin: 0; }
           <li class="m">2x² − 8x + 6 = 0</li><li>Quadratic equations</li><li class="m">∫₀¹ x² dx</li><li>Trigonometry</li>
           <li class="m">15% of 240</li><li>Arithmetic progressions</li><li class="m">sin²θ + cos²θ = 1</li><li>Probability</li>
           <li class="m">d/dx (x³ sin x)</li><li>Matrices</li><li class="m">lim x→0 (sin x)/x</li><li>Surface areas &amp; volumes</li>
+          <li class="m">∇J = (h − y)x + λθ</li><li>Logistic regression</li><li class="m">σ(z) = 1/(1 + e⁻ᶻ)</li><li>Gradient descent</li>
+          <li class="m">det(A − λI) = 0</li><li>Eigenvalues</li>
         </ul>
         <ul aria-hidden="true">
           <li class="m">2x² − 8x + 6 = 0</li><li>Quadratic equations</li><li class="m">∫₀¹ x² dx</li><li>Trigonometry</li>
           <li class="m">15% of 240</li><li>Arithmetic progressions</li><li class="m">sin²θ + cos²θ = 1</li><li>Probability</li>
           <li class="m">d/dx (x³ sin x)</li><li>Matrices</li><li class="m">lim x→0 (sin x)/x</li><li>Surface areas &amp; volumes</li>
+          <li class="m">∇J = (h − y)x + λθ</li><li>Logistic regression</li><li class="m">σ(z) = 1/(1 + e⁻ᶻ)</li><li>Gradient descent</li>
+          <li class="m">det(A − λI) = 0</li><li>Eigenvalues</li>
         </ul>
       </div>
     </div>
@@ -783,10 +839,19 @@ p { margin: 0; }
       </div>
     </div>
     <div class="page-panel" id="page-panel" data-reveal>
-      <div class="sheet-frame" id="sheet-frame">
-        <img src="assets/solution-sample.jpg" alt="A MathFix solution page: the question 2x² − 8x + 6 = 0, four numbered handwritten steps, the key idea, the boxed answer x = 1 or x = 3 with a Verified stamp, and a QR code." width="720" height="1375">
+      <div class="deck" id="deck">
+        <div class="sheet-frame is-front">
+          <img src="assets/solution-ml.jpg" alt="MathFix solution page for a logistic regression question: seven numbered steps, the key idea, the boxed answer θ new ≈ [0.262, −0.427] and a QR code." width="720" height="1830">
+        </div>
+        <div class="sheet-frame is-back">
+          <img src="assets/solution-sample.jpg" alt="MathFix solution page for 2x² − 8x + 6 = 0: four numbered steps, the boxed answer x = 1 or x = 3 with a Verified stamp, and a QR code." width="720" height="1375">
+        </div>
       </div>
-      <span class="page-chip c1" aria-hidden="true"><i>✓</i>Verified answer</span>
+      <div class="deck-tabs" id="deck-tabs" role="tablist" aria-label="Example solution pages">
+        <button type="button" role="tab" aria-selected="true">Machine learning</button>
+        <button type="button" role="tab" aria-selected="false">Class 10 algebra</button>
+      </div>
+      <span class="page-chip c1" aria-hidden="true"><i>✍</i>Every step written out</span>
       <span class="page-chip c2" aria-hidden="true"><i>⌗</i>Scan the QR to open</span>
     </div>
   </div>
@@ -859,7 +924,7 @@ p { margin: 0; }
   <div class="wrap">
     <div class="head" data-reveal>
       <span class="eyebrow">Topics</span>
-      <h2 class="h2">From Class 6 fractions to college calculus.</h2>
+      <h2 class="h2">From Class 6 fractions to machine learning.</h2>
       <p class="lede">Any board, any textbook. If it's maths, send it.</p>
     </div>
     <div class="levels">
@@ -877,7 +942,7 @@ p { margin: 0; }
       </div>
       <div class="level" data-reveal style="--d:0.24s">
         <h3>College<small>Beyond school</small></h3>
-        <ul><li>Calculus</li><li>Linear algebra</li><li>Differential equations</li><li>Optimisation</li><li>Statistics</li><li>Vectors</li></ul>
+        <ul><li>Calculus</li><li>Linear algebra</li><li>Machine learning maths</li><li>Optimisation</li><li>Statistics</li><li>Differential equations</li></ul>
       </div>
     </div>
   </div>
@@ -1047,7 +1112,23 @@ p { margin: 0; }
   }
   show(1);
 
+  const deck = document.getElementById("deck");
+  const sheets = [...deck.querySelectorAll(".sheet-frame")];
+  const tabs = [...document.querySelectorAll("#deck-tabs button")];
+  let front = 0, deckTimer = null;
+  function showSheet(k) {                              // bring one solution page to the front
+    front = k;
+    sheets.forEach((sh, i) => { sh.classList.toggle("is-front", i === k); sh.classList.toggle("is-back", i !== k); });
+    tabs.forEach((t, i) => t.setAttribute("aria-selected", String(i === k)));
+  }
+  tabs.forEach((t, i) => t.addEventListener("click", () => { clearInterval(deckTimer); showSheet(i); }));
+
   if (calm.matches) return;                            // everything below is motion only
+
+  const pagePanel = document.getElementById("page-panel");
+  deckTimer = setInterval(() => {
+    if (!document.hidden && !pagePanel.matches(":hover")) showSheet((front + 1) % sheets.length);
+  }, 7000);
 
   if ("IntersectionObserver" in window) {              // sections glide in as they scroll into view
     document.documentElement.classList.add("reveal-ready");
@@ -1071,7 +1152,7 @@ p { margin: 0; }
     });
     hero.addEventListener("pointerleave", () => { stage.style.removeProperty("--mx"); stage.style.removeProperty("--my"); });
 
-    const pp = document.getElementById("page-panel"), frame = document.getElementById("sheet-frame");
+    const pp = document.getElementById("page-panel"), frame = deck;
     pp.addEventListener("pointermove", ev => {          // the solution page tilts toward the pointer
       const r = pp.getBoundingClientRect();
       frame.style.setProperty("--ry", `${((ev.clientX - r.left) / r.width - .5) * 18}deg`);

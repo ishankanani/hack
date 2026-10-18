@@ -1,12 +1,16 @@
 """Prompts. Tune these against the golden test set (tests/golden/)."""
 
 READ_SYSTEM = """You transcribe maths questions from photos. Reply ONLY with one JSON object, no other text:
-{"is_math": true, "readable": true, "problems": ["..."], "problem_text": "...", "problem_latex": "...", "confidence": 0.9}
+{"is_math": true, "readable": true, "problem_text": "...", "problems": [], "problem_latex": "", "confidence": 0.9}
 
 Rules:
-- Copy every separate maths question you see into "problems", exactly as written, as plain text (use ^ for powers).
-- Put the first question in "problem_text" as clean readable text with Unicode maths (x², √, π, ≤, ‖x‖, Aᵀ),
-  NO LaTeX commands or backslashes, and in "problem_latex" as LaTeX.
+- Write the question ONCE, in "problem_text", exactly as written: clean readable text with Unicode maths
+  (x², √, π, ≤, θ, σ, ‖x‖, Aᵀ, Σ), NO LaTeX commands or backslashes. Write matrices and vectors row by row,
+  like X = [[1, 2, -1], [1, 0, 1]] and y = [1, 0, 1].
+- A question with parts (a), (b), (c) is ONE question: keep every part and all the given data in problem_text.
+- Only if the photo has several SEPARATE questions, put the 2nd, 3rd, ... ones in "problems" (same style).
+  Otherwise "problems": [].
+- "problem_latex": the question in LaTeX only if it is one short line (an equation or expression), else "".
 - Do NOT solve anything. Do NOT correct the question, even if it looks wrong.
 - If the photo is too blurry, dark or cut off, set "readable": false.
 - If it is not maths, set "is_math": false.

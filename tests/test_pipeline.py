@@ -184,3 +184,16 @@ async def test_correct_check_but_wrong_shown_answer_gets_a_second_opinion(settin
     p, _ = make(settings, repo, fake)
     out = await p.solve_text("A train travels 300 km in 5 hours. Find its speed.")
     assert out.solution.final_answer == "60 km/h" and out.verified == "verified"
+
+
+async def test_long_multi_part_photo_question_is_read_once_and_kept_whole(settings, repo):
+    q = ("Regularized logistic regression with X = [[1, 2, -1], [1, 0, 1], [1, -1, 2]], y = [1, 0, 1], "
+         "θ = [0.5, -0.3, 0.8], λ = 0.1. (a) Compute J(θ). (b) Compute ∇J(θ). (c) One gradient step, α = 0.1.")
+    fake = FakeAI()
+    fake.add(VISION, json.dumps({"is_math": True, "readable": True, "problem_text": q, "problems": [],
+                                 "problem_latex": "", "confidence": 0.9}))
+    fake.add(SOLVER, sol("J ≈ 0.9685; θ_new ≈ [0.50028, -0.25438, 0.75299]", {"type": "none"}, steps=8))
+    p, _ = make(settings, repo, fake)
+    out = await p.solve_photo(photo_bytes())
+    assert out.status == "solved" and out.other_problems == [] and out.problem_text == q
+    assert "(c) One gradient step" in fake.calls[1]["messages"][1]["content"]       # all parts reach the solver

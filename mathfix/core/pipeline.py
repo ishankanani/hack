@@ -114,16 +114,17 @@ class Pipeline:
             return Outcome(status="unreadable")
         if not reading.is_math:
             return Outcome(status="not_math")
-        problems = reading.problems or [reading.problem_text]
-        text = reading.problem_text or problems[0]
-        if not text.strip():
+        text = (reading.problem_text or next((p for p in reading.problems if p.strip()), "")).strip()
+        if not text:
             return Outcome(status="unreadable")
+        # "problems" holds the other questions on the photo (older readers also repeat the first one there)
+        others = [p.strip() for p in reading.problems if p.strip() and problem_key(p) != problem_key(text)]
         await progress("read", text)
         out = await self.solve_text(text, progress, latex=reading.problem_latex, grade=grade, lang=lang,
                                     explain=explain)
-        out.other_problems = problems[1:]
+        out.other_problems = others
         if out.status == "solved" and out.solution_id:
-            await self.repo.put_image(phash, out.solution_id, problems)
+            await self.repo.put_image(phash, out.solution_id, [text, *others])
         return out
 
     # ---------------------------------------------------------------- text

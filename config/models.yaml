@@ -27,7 +27,8 @@ models:
     id: "@cf/meta/llama-4-scout-17b-16e-instruct"
     vision: true
     json_mode: false
-    max_tokens: 1200            # a long question appears up to 3 times in the reply (problems, text, latex)
+    max_tokens: 1200            # the question is written once; long ones with matrices need the room
+    max_tokens_big: 2400        # a reply cut off at max_tokens is retried once with this
     # Cloudflare bills "neurons": listed $0.27 / $0.85 per M tokens at $0.011 per 1,000 neurons
     neurons_per_m_tokens: {input: 24545, output: 77273}
     limits: {neurons_per_day: 9000}
@@ -38,6 +39,7 @@ models:
     vision: true
     json_mode: false
     max_tokens: 1200
+    max_tokens_big: 2400
     limits: {rpm: 18, rpd: 45}
 
   # --- solving ---
@@ -96,7 +98,7 @@ steps:
   tutor: [groq_oss_20b, groq_oss_120b, or_free_text]
 
 # solve allows 45 s because the Cloudflare gpt-oss fallback measured ~38 s; Groq answers in ~2 s
-timeouts: {read_photo: 30, solve: 45, escalate: 45, tutor: 20}
+timeouts: {read_photo: 45, solve: 45, escalate: 45, tutor: 20}   # long photos with matrices take ~20-40 s to read
 
 # rough tokens per call, used to check budgets BEFORE calling
 est_tokens: {read_photo: 1800, solve: 1500, escalate: 2500, tutor: 900}

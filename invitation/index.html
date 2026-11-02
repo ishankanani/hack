@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#5a0a16" />
+  <title>Rahul &amp; Priya · Shubha Vivaham</title>
+  <meta name="description" content="Wedding invitation of Rahul &amp; Priya — 17 December 2026" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Great+Vibes&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="locked">
+  <!-- 1. Temple-door intro -->
+  <section id="intro" class="intro" aria-label="Tap to open the invitation">
+    <div class="intro__sky"></div>
+    <div class="garlands" id="garlands"></div>
+    <div class="intro__title">
+      <div class="intro__kicker">The Wedding of</div>
+      <div class="intro__name" data-bind="groom.first"></div>
+      <div class="intro__amp">&amp;</div>
+      <div class="intro__name" data-bind="bride.first"></div>
+    </div>
+
+    <div class="plant plant--l" data-plant></div>
+    <div class="plant plant--r" data-plant></div>
+    <span class="urn urn--l"></span><span class="urn urn--r"></span>
+    <div class="shrine">
+      <div class="shrine__roof">
+        <span class="shrine__finial shrine__finial--l"></span>
+        <span class="shrine__finial shrine__finial--r"></span>
+        <div class="shrine__eave"></div>
+      </div>
+      <div class="shrine__lintel"><span class="namam"></span></div>
+      <div class="shrine__body">
+        <div class="pillar pillar--l"></div>
+        <div class="doorway">
+          <div class="doorway__glow"></div>
+          <div class="door door--l"><div class="door__grid"></div></div>
+          <div class="door door--r"><div class="door__grid"></div></div>
+          <button class="tap" id="openBtn" aria-label="Tap to open">
+            <span class="tap__ring"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="#5a2a08" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11V5.5a1.5 1.5 0 0 1 3 0V10"/><path d="M12 9.5a1.5 1.5 0 0 1 3 0V11"/><path d="M15 10.5a1.5 1.5 0 0 1 3 0V15a6 6 0 0 1-6 6h-1a6 6 0 0 1-4.8-2.4L3.6 15a1.5 1.5 0 0 1 2.3-1.9L9 15.5"/></svg></span>
+            <span class="tap__label">Tap to open</span>
+          </button>
+        </div>
+        <div class="pillar pillar--r"></div>
+      </div>
+      <div class="shrine__step"></div>
+    </div>
+    <div class="pond">
+      <span class="lotus" style="left:12%;top:30%"></span>
+      <span class="lotus" style="left:70%;top:55%"></span>
+      <span class="lotus lotus--w" style="left:40%;top:70%"></span>
+      <span class="marigold" style="left:22%;top:72%"></span>
+      <span class="marigold" style="left:84%;top:25%"></span>
+    </div>
+  </section>
+
+  <div class="petals" id="petals" aria-hidden="true"></div>
+
+  <main class="invite" id="invite">
+    <!-- 2. Gopuram hero -->
+    <section class="hero">
+      <div class="hero__sun"></div>
+      <svg class="hero__hills" viewBox="0 0 400 220" preserveAspectRatio="none" aria-hidden="true">
+        <path d="M0 120 L60 60 L95 95 L140 40 L190 100 L230 70 L280 110 L330 55 L400 105 V220 H0Z" fill="#c9784a" opacity=".55"/>
+        <path d="M0 150 L50 115 L110 145 L170 110 L240 150 L300 120 L360 150 L400 130 V220 H0Z" fill="#9a5338" opacity=".7"/>
+        <path d="M0 185 Q100 160 200 182 T400 178 V220 H0Z" fill="#5e3a22" opacity=".85"/>
+      </svg>
+      <div class="hero__text">
+        <div class="script hero__script">Shubha Vivaham</div>
+        <div class="hero__name" data-bind="groom.first"></div>
+        <div class="hero__amp">&amp;</div>
+        <div class="hero__name" data-bind="bride.first"></div>
+        <div class="hero__date" data-bind="dateLong"></div>
+      </div>
+      <div class="palm palm--l" data-plant="dark"></div><div class="palm palm--r" data-plant="dark"></div>
+      <div class="gopuram" id="gopuram"></div>
+    </section>
+
+    <!-- 3. Parchment invitation -->
+    <section class="sec sec--first">
+      <div class="parchment">
+        <div class="parchment__arch">
+          <div class="mantra">|| Shri Ganeshaya Namaha ||</div>
+          <div class="script parchment__title">Shubha Vivaham</div>
+          <p class="parchment__lead">Together with their families, request the honour of your presence to celebrate the union of two souls.</p>
+          <div class="orn">❖</div>
+          <div class="script parchment__name" data-bind="groom.full"></div>
+          <div class="parchment__par" data-bind="groom.parents"></div>
+          <div class="parchment__amp">&amp;</div>
+          <div class="script parchment__name" data-bind="bride.full"></div>
+          <div class="parchment__par" data-bind="bride.parents"></div>
+          <div class="orn">❖</div>
+          <div class="parchment__venue-l">Venue</div>
+          <div class="parchment__venue" data-bind="mainVenue"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. Countdown -->
+    <section class="sec">
+      <div class="divider"></div>
+      <h2 class="script sub">Counting the moments</h2>
+      <div class="count" id="count">
+        <div class="count__tile"><b data-c="d">0</b><span>Days</span></div>
+        <div class="count__tile"><b data-c="h">0</b><span>Hours</span></div>
+        <div class="count__tile"><b data-c="m">0</b><span>Minutes</span></div>
+        <div class="count__tile"><b data-c="s">0</b><span>Seconds</span></div>
+      </div>
+    </section>
+
+    <!-- 5. Scratch card -->
+    <section class="sec">
+      <h2 class="script sub">Save the Date</h2>
+      <p class="hint">Scratch the card below to reveal it</p>
+      <div class="scratch">
+        <div class="scratch__inner">
+          <div class="scratch__under">
+            <div class="scratch__k">We're Getting Married!</div>
+            <div class="scratch__d" data-bind="dateShort"></div>
+            <div class="scratch__t" data-bind="time"></div>
+            <div class="scratch__s">Save the date and join us in celebration</div>
+          </div>
+          <canvas id="scratchCanvas"></canvas>
+          <div class="scratch__hint" id="scratchHint">👆 Scratch to reveal our date</div>
+          <button class="scratch__btn" id="revealBtn">Reveal</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. Bride & Groom -->
+    <section class="sec">
+      <h2 class="script sub">With the blessings of our elders</h2>
+      <h3 class="title">The Bride &amp; Groom</h3>
+      <div class="divider"></div>
+      <div class="couple" id="couple"></div>
+    </section>
+
+    <!-- 7. Family -->
+    <section class="sec">
+      <h2 class="script sub">With love and blessings</h2>
+      <h3 class="title">Our Family</h3>
+      <div class="divider"></div>
+      <div id="family"></div>
+    </section>
+
+    <!-- 8. Rituals (banana-leaf timeline) -->
+    <section class="sec">
+      <h2 class="script sub" id="ritualsSub"></h2>
+      <h3 class="title">The Wedding Rituals</h3>
+      <div class="divider"></div>
+      <div class="rituals" id="rituals"></div>
+    </section>
+
+    <!-- 9. Love story -->
+    <section class="sec">
+      <h2 class="script sub">How it all began</h2>
+      <h3 class="title">Our Love Story</h3>
+      <div class="divider"></div>
+      <div class="story" id="story"></div>
+    </section>
+
+    <!-- 10. Coverflow gallery -->
+    <section class="sec">
+      <h2 class="script sub">Moments to treasure</h2>
+      <h3 class="title">Kalyana Moments</h3>
+      <div class="divider"></div>
+      <div class="flow" id="flow">
+        <div class="flow__badge">⌕ Tap to enlarge</div>
+        <div class="flow__track" id="flowTrack"></div>
+        <button class="flow__nav flow__nav--p" id="flowPrev" aria-label="Previous">‹</button>
+        <button class="flow__nav flow__nav--n" id="flowNext" aria-label="Next">›</button>
+      </div>
+      <div class="flow__cap script" id="flowCap"></div>
+      <div class="flow__sub" id="flowSub"></div>
+      <div class="flow__dots" id="flowDots"></div>
+    </section>
+
+    <!-- 11. Venues -->
+    <section class="sec">
+      <h2 class="script sub">Where hearts unite</h2>
+      <h3 class="title">The Venues</h3>
+      <div class="divider"></div>
+      <div id="venues"></div>
+    </section>
+
+    <!-- 12. RSVP + wishes -->
+    <section class="sec">
+      <h2 class="script sub">Kindly respond</h2>
+      <h3 class="title">RSVP</h3>
+      <div class="divider"></div>
+      <form class="leafcard rsvp" id="rsvp" autocomplete="on">
+        <div class="seal"><span data-bind="monogram"></span></div>
+        <div class="script rsvp__q">Will you join us?</div>
+        <div class="rsvp__names" data-bind="couple"></div>
+        <div class="divider divider--sm"></div>
+        <label class="lbl" for="rName">Your name</label>
+        <div class="inp"><span>👤</span><input id="rName" name="name" placeholder="Full name" required /></div>
+        <div class="lbl">Will you attend?</div>
+        <div class="choice">
+          <label class="choice__o"><input type="radio" name="attend" value="yes" checked /><span><i>♥</i><b>Joyfully accept</b><em>We will be there</em></span></label>
+          <label class="choice__o"><input type="radio" name="attend" value="no" /><span><i>♡</i><b>Regretfully decline</b><em>With you in spirit</em></span></label>
+        </div>
+        <div class="guests" id="guestsWrap">
+          <div class="lbl">Number of guests</div>
+          <div class="inp inp--step"><span>👥</span><em>Including you</em>
+            <button type="button" class="step" data-d="-1" aria-label="Fewer">−</button>
+            <b id="gCount">1</b>
+            <button type="button" class="step" data-d="1" aria-label="More">+</button>
+          </div>
+        </div>
+        <label class="lbl" for="rMsg">Blessings for the couple</label>
+        <textarea id="rMsg" name="msg" rows="3" placeholder="Write your wishes…"></textarea>
+        <button class="btn-red" type="submit">➤ Send RSVP</button>
+        <div class="rsvp__done" id="rsvpDone" hidden></div>
+      </form>
+
+      <div class="wishes">
+        <h3 class="title title--dark">Wishes Wall</h3>
+        <div id="wishList"></div>
+        <form id="wishForm" class="wishes__form">
+          <input id="wName" placeholder="Your name" required />
+          <textarea id="wMsg" rows="3" placeholder="Your wish for the couple" required></textarea>
+          <button type="submit">Leave a Wish</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- 13. Contact -->
+    <section class="sec">
+      <h2 class="script sub">For any assistance</h2>
+      <h3 class="title">Contact Us</h3>
+      <div class="divider"></div>
+      <div id="contacts"></div>
+    </section>
+
+    <!-- 14. Closing -->
+    <footer class="closing">
+      <div class="closing__fam" id="closingFam"></div>
+      <div class="divider divider--gold"></div>
+      <div class="script closing__await">We await your gracious presence</div>
+      <div class="closing__names" data-bind="coupleCaps"></div>
+      <div class="closing__date" data-bind="dateLong"></div>
+      <button class="closing__tag" id="tagBtn" data-bind="hashtag"></button>
+      <div class="closing__temples" id="closingTemples"></div>
+    </footer>
+  </main>
+
+  <div class="lightbox" id="lightbox" hidden><button class="lightbox__x" aria-label="Close">×</button><div class="lightbox__img" id="lbImg"></div></div>
+  <div class="toast" id="toast" hidden></div>
+
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
